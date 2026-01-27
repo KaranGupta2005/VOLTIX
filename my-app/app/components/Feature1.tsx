@@ -51,7 +51,7 @@ const Feature1Section = () => {
 
           {/* Right: Text content aligned with the cards */}
           <div className="lg:col-span-6 lg:pl-6">
-            <div className="space-y-24 pb-48 lg:pb-64">
+            <div className="space-y-24 pb-12 lg:pb-16">
               <div className="max-w-md">
                 <h3 className="text-2xl md:text-3xl font-semibold text-slate-900">Build Quick</h3>
                 <p className="mt-3 text-slate-600">
