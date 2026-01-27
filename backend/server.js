@@ -8,6 +8,7 @@ import webpush from "web-push";
 import redis from "./config/redis.js";
 import connectDB from "./config/db.js";
 import { initSocket } from "./config/socket.js";
+import eventProcessor from "./services/eventProcessor.js";
 
 //routes
 import mlRoutes from "./routes/ml.js";
@@ -15,11 +16,12 @@ import authRoutes from "./routes/auth.js";
 import auditRoutes from "./routes/audit.js";
 import notificationRoutes from "./routes/notification.js";
 import pushRoutes from "./routes/push.js";
+import dataRoutes from "./routes/data.js";
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 6000;
 
 app.use(cors({
     origin: process.env.CLIENT_URL || "http://localhost:3000",
@@ -49,6 +51,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/audit", auditRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/push", pushRoutes);
+app.use("/api/data", dataRoutes);
 
 const server = http.createServer(app);
 
@@ -57,6 +60,10 @@ const io = initSocket(server);
 
 // Make io available globally for notification dispatch
 app.set('io', io);
+
+// 🚀 Start Event Processor (THE BRAIN)
+eventProcessor.start(io);
+console.log('🧠 Event Processor started - Ready to process live data!');
 
 // console.log(webpush.generateVAPIDKeys());
 if (process.env.PUBLIC_VAPID_KEY && process.env.PRIVATE_VAPID_KEY) {
