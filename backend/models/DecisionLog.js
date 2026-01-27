@@ -259,6 +259,42 @@ const DecisionLogSchema = new mongoose.Schema({
     type: String,
     enum: ['low', 'medium', 'high', 'urgent'],
     default: 'medium'
+  },
+  // 🔐 BLOCKCHAIN AUDIT FIELDS
+  auditHash: {
+    type: String,
+    required: false, // Will be added by auditor
+    index: true
+  },
+  blockchainTx: {
+    type: String,
+    required: false, // Transaction hash from blockchain
+    index: true
+  },
+  blockNumber: {
+    type: Number,
+    required: false // Block number where transaction was mined
+  },
+  auditedAt: {
+    type: Date,
+    required: false // When the audit was completed
+  },
+  auditMetrics: {
+    quality: {
+      score: { type: Number, min: 0, max: 1 },
+      grade: { type: String, enum: ['A', 'B', 'C', 'D', 'F'] },
+      factors: mongoose.Schema.Types.Mixed
+    },
+    compliance: {
+      status: { type: String, enum: ['COMPLIANT', 'NON_COMPLIANT'] },
+      violations: [String],
+      checks: mongoose.Schema.Types.Mixed
+    },
+    risk: {
+      level: { type: String, enum: ['LOW', 'MEDIUM', 'HIGH'] },
+      score: { type: Number, min: 0, max: 1 },
+      factors: [String]
+    }
   }
 }, {
   timestamps: true,

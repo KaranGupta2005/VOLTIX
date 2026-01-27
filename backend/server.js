@@ -9,6 +9,8 @@ import redis from "./config/redis.js";
 import connectDB from "./config/db.js";
 import { initSocket } from "./config/socket.js";
 import eventProcessor from "./services/eventProcessor.js";
+import blockchainService from "./services/blockchainService.js";
+import agentBus from "./eventBus/agentBus.js";
 
 //routes
 import mlRoutes from "./routes/ml.js";
@@ -17,6 +19,7 @@ import auditRoutes from "./routes/audit.js";
 import notificationRoutes from "./routes/notification.js";
 import pushRoutes from "./routes/push.js";
 import dataRoutes from "./routes/data.js";
+import agentRoutes from "./routes/agents.js";
 
 dotenv.config();
 
@@ -38,6 +41,18 @@ app.get("/test", (req, res) => {
 
 await connectDB();
 
+// 🔗 Initialize Blockchain Service
+console.log('🔗 Initializing blockchain service...');
+const blockchainInit = await blockchainService.initialize();
+if (blockchainInit.success) {
+  console.log('✅ Blockchain service initialized successfully');
+  console.log(`📋 Contract: ${blockchainInit.contractAddress}`);
+  console.log(`👛 Wallet: ${blockchainInit.walletAddress}`);
+} else {
+  console.warn('⚠️ Blockchain service failed to initialize:', blockchainInit.error);
+  console.warn('⚠️ Continuing without blockchain - audit logs will be database-only');
+}
+
 app.use((err, req, res, next) => {
     const status = typeof err.status === "number" ? err.status : 500;
     const message = err.message || "Internal Server Error";
@@ -52,6 +67,7 @@ app.use("/api/audit", auditRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/push", pushRoutes);
 app.use("/api/data", dataRoutes);
+app.use("/api/agents", agentRoutes);
 
 const server = http.createServer(app);
 
@@ -64,6 +80,10 @@ app.set('io', io);
 // 🚀 Start Event Processor (THE BRAIN)
 eventProcessor.start(io);
 console.log('🧠 Event Processor started - Ready to process live data!');
+
+// 🚌 Start Agent Bus (AGENT COORDINATION)
+await agentBus.start(io);
+console.log('🚌 Agent Bus started - Ready to coordinate agents!');
 
 // console.log(webpush.generateVAPIDKeys());
 if (process.env.PUBLIC_VAPID_KEY && process.env.PRIVATE_VAPID_KEY) {
