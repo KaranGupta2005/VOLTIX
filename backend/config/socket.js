@@ -7,6 +7,7 @@ import { addUser, removeUser } from "../utils/socketRegistry.js";
 import stationHandler from "../socket/stationHandler.js";
 import mlAgentHandler from "../socket/mlAgentHandler.js";
 import notificationHandler from "../socket/notificationHandler.js";
+import dataIngestionHandler from "../socket/dataIngestionHandler.js";
 
 export const initSocket = (httpServer) => {
   const io = new Server(httpServer, {
@@ -62,6 +63,7 @@ export const initSocket = (httpServer) => {
     stationHandler(io, socket);
     mlAgentHandler(io, socket);
     notificationHandler(io, socket);
+    dataIngestionHandler(io, socket);
 
     socket.on("disconnect", () => {
       removeUser(socket.userId);
