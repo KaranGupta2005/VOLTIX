@@ -1,5 +1,4 @@
 import { getSocketId } from "./socketRegistry.js";
-import Sub from "../models/Sub.js";
 import pushService from "../services/pushService.js";
 
 export const dispatch = async ({
@@ -22,9 +21,9 @@ export const dispatch = async ({
       context
     });
 
-    // Also send to role-based rooms if applicable
-    if (recipient.profile?.role) {
-      io.to(recipient.profile.role).emit("notification:broadcast", {
+    // Also send to general user rooms for broadcast notifications
+    if (payload.broadcast) {
+      io.to('general_users').emit("notification:broadcast", {
         eventType,
         payload,
         timestamp: new Date().toISOString(),
@@ -32,7 +31,7 @@ export const dispatch = async ({
       });
     }
 
-    console.log(`📡 Socket notification sent to user ${recipient.userId} (${recipient.profile?.role})`);
+    console.log(`📡 Socket notification sent to user ${recipient.userId}`);
   }
 
   /* via webpush */

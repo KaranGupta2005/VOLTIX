@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 const UserSchema = new mongoose.Schema({
@@ -60,7 +60,17 @@ const UserSchema = new mongoose.Schema({
     lockUntil: {
       type: Date,
       default: null
-    }
+    },
+    refreshTokens: [{
+      token: {
+        type: String,
+        required: true
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now
+      }
+    }]
   },
   location: {
     city: {

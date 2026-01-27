@@ -936,3 +936,210 @@ export const notificationQuerySchema = Joi.object({
   startDate: Joi.date().optional(),
   endDate: Joi.date().optional(),
 }).options({ abortEarly: false });
+// OTP verification schema
+export const otpVerificationSchema = Joi.object({
+  userId: Joi.string()
+    .pattern(/^USR_\d{6}$/)
+    .required()
+    .messages({
+      "string.pattern.base": "User ID must follow format USR_000001",
+      "any.required": "User ID is required",
+    }),
+  otp: Joi.string()
+    .length(6)
+    .pattern(/^\d{6}$/)
+    .required()
+    .messages({
+      "string.length": "OTP must be exactly 6 digits",
+      "string.pattern.base": "OTP must contain only numbers",
+      "any.required": "OTP is required",
+    }),
+}).options({ abortEarly: false });
+
+// Password reset schema
+export const passwordResetSchema = Joi.object({
+  email: Joi.string()
+    .email()
+    .trim()
+    .lowercase()
+    .required()
+    .messages({
+      "string.email": "Please provide a valid email address",
+      "any.required": "Email is required",
+    }),
+  otp: Joi.string()
+    .length(6)
+    .pattern(/^\d{6}$/)
+    .required()
+    .messages({
+      "string.length": "OTP must be exactly 6 digits",
+      "string.pattern.base": "OTP must contain only numbers",
+      "any.required": "OTP is required",
+    }),
+  newPassword: Joi.string()
+    .min(6)
+    .required()
+    .messages({
+      "string.min": "Password must be at least 6 characters",
+      "any.required": "New password is required",
+    }),
+}).options({ abortEarly: false });
+
+// Resend OTP schema
+export const resendOTPSchema = Joi.object({
+  userId: Joi.string()
+    .pattern(/^USR_\d{6}$/)
+    .required()
+    .messages({
+      "string.pattern.base": "User ID must follow format USR_000001",
+      "any.required": "User ID is required",
+    }),
+  type: Joi.string()
+    .valid("email_verification", "password_reset", "phone_verification")
+    .default("email_verification")
+    .messages({
+      "any.only": "Type must be email_verification, password_reset, or phone_verification",
+    }),
+}).options({ abortEarly: false });
+
+// Forgot password schema
+export const forgotPasswordSchema = Joi.object({
+  email: Joi.string()
+    .email()
+    .trim()
+    .lowercase()
+    .required()
+    .messages({
+      "string.email": "Please provide a valid email address",
+      "any.required": "Email is required",
+    }),
+}).options({ abortEarly: false });
+
+// Update profile schema
+export const updateProfileSchema = Joi.object({
+  name: Joi.string()
+    .min(2)
+    .max(50)
+    .trim()
+    .optional()
+    .messages({
+      "string.min": "Name must be at least 2 characters",
+      "string.max": "Name must be at most 50 characters",
+    }),
+  phone: Joi.string()
+    .pattern(/^\+91[6-9]\d{9}$/)
+    .optional()
+    .messages({
+      "string.pattern.base": "Phone number must be a valid Indian mobile number (+91XXXXXXXXXX)",
+    }),
+  city: Joi.string()
+    .valid("Mumbai", "Delhi", "Bangalore", "Chennai", "Kolkata")
+    .optional()
+    .messages({
+      "any.only": "City must be one of Mumbai, Delhi, Bangalore, Chennai, or Kolkata",
+    }),
+  vehicleMake: Joi.string().trim().optional(),
+  vehicleModel: Joi.string().trim().optional(),
+  vehicleYear: Joi.number()
+    .integer()
+    .min(2015)
+    .max(new Date().getFullYear() + 1)
+    .optional()
+    .messages({
+      "number.min": "Vehicle year must be 2015 or later",
+      "number.max": `Vehicle year cannot be later than ${new Date().getFullYear() + 1}`,
+    }),
+  batteryCapacity: Joi.number()
+    .min(10)
+    .max(200)
+    .optional()
+    .messages({
+      "number.min": "Battery capacity must be at least 10 kWh",
+      "number.max": "Battery capacity must be at most 200 kWh",
+    }),
+  preferences: Joi.object({
+    maxDistance: Joi.number().min(1).max(50).optional(),
+    pricePreference: Joi.string().valid('lowest', 'balanced', 'premium').optional(),
+    chargingTimePreference: Joi.string().valid('fastest', 'balanced', 'cheapest').optional(),
+    notifications: Joi.object({
+      email: Joi.boolean().optional(),
+      sms: Joi.boolean().optional(),
+      push: Joi.boolean().optional(),
+      marketing: Joi.boolean().optional(),
+    }).optional(),
+    language: Joi.string().valid('en', 'hi', 'mr', 'ta', 'te', 'kn', 'bn').optional(),
+  }).optional(),
+}).options({ abortEarly: false });
+
+// Change password schema
+export const changePasswordSchema = Joi.object({
+  currentPassword: Joi.string()
+    .required()
+    .messages({
+      "any.required": "Current password is required",
+    }),
+  newPassword: Joi.string()
+    .min(6)
+    .required()
+    .messages({
+      "string.min": "New password must be at least 6 characters",
+      "any.required": "New password is required",
+    }),
+}).options({ abortEarly: false });
+
+// Delete account schema
+export const deleteAccountSchema = Joi.object({
+  password: Joi.string()
+    .required()
+    .messages({
+      "any.required": "Password is required to delete account",
+    }),
+}).options({ abortEarly: false });
+
+// Send phone OTP schema
+export const sendPhoneOTPSchema = Joi.object({
+  userId: Joi.string()
+    .pattern(/^USR_\d{6}$/)
+    .required()
+    .messages({
+      "string.pattern.base": "User ID must follow format USR_000001",
+      "any.required": "User ID is required",
+    }),
+}).options({ abortEarly: false });
+
+// Update subscription schema
+export const updateSubscriptionSchema = Joi.object({
+  plan: Joi.string()
+    .valid('basic', 'premium', 'enterprise')
+    .required()
+    .messages({
+      "any.only": "Plan must be basic, premium, or enterprise",
+      "any.required": "Subscription plan is required",
+    }),
+  paymentMethod: Joi.string()
+    .valid('card', 'upi', 'wallet', 'netbanking')
+    .optional()
+    .messages({
+      "any.only": "Payment method must be card, upi, wallet, or netbanking",
+    }),
+}).options({ abortEarly: false });
+
+// Add wallet balance schema
+export const addWalletBalanceSchema = Joi.object({
+  amount: Joi.number()
+    .min(1)
+    .max(10000)
+    .required()
+    .messages({
+      "number.min": "Amount must be at least ₹1",
+      "number.max": "Amount must be at most ₹10,000",
+      "any.required": "Amount is required",
+    }),
+  description: Joi.string()
+    .trim()
+    .max(100)
+    .optional()
+    .messages({
+      "string.max": "Description must be at most 100 characters",
+    }),
+}).options({ abortEarly: false });

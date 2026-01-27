@@ -2,9 +2,6 @@ import Notification from '../models/Notification.js';
 import ExpressError from '../middlewares/expressError.js';
 
 class NotificationService {
-  // =============================================================================
-  // NOTIFICATION CRUD OPERATIONS
-  // =============================================================================
 
   async createNotification(notificationData) {
     try {
@@ -188,10 +185,6 @@ class NotificationService {
     }
   }
 
-  // =============================================================================
-  // SPECIALIZED NOTIFICATION CREATION
-  // =============================================================================
-
   async createAgentNotification(agentType, eventType, payload, targetUsers = null) {
     try {
       const notificationConfig = this.getAgentNotificationConfig(agentType, eventType, payload);
@@ -313,33 +306,29 @@ class NotificationService {
     }
   }
 
-  // =============================================================================
-  // NOTIFICATION CONFIGURATION
-  // =============================================================================
-
   getAgentNotificationConfig(agentType, eventType, payload) {
     const configs = {
       mechanic: {
         failure_detected: {
-          title: "🔧 Hardware Issue Detected",
+          title: "Hardware Issue Detected",
           message: `Station ${payload.stationId}: ${payload.description || 'Hardware failure detected'}`,
           priority: 'high',
           channels: { socket: true, push: true }
         },
         self_healing_started: {
-          title: "🔄 Auto-Healing in Progress",
+          title: "Auto-Healing in Progress",
           message: `Station ${payload.stationId}: Attempting automatic repair`,
           priority: 'medium',
           channels: { socket: true, push: false }
         },
         self_healing_success: {
-          title: "✅ Auto-Healing Successful",
+          title: "Auto-Healing Successful",
           message: `Station ${payload.stationId}: Issue resolved automatically`,
           priority: 'low',
           channels: { socket: true, push: false }
         },
         maintenance_required: {
-          title: "⚠️ Maintenance Required",
+          title: "Maintenance Required",
           message: `Station ${payload.stationId}: Technician dispatch needed`,
           priority: 'urgent',
           channels: { socket: true, push: true }
@@ -347,19 +336,19 @@ class NotificationService {
       },
       traffic: {
         incentive_offered: {
-          title: "💰 Special Offer Available!",
+          title: "Special Offer Available!",
           message: `Save ₹${payload.amount} by switching to ${payload.alternativeStation}`,
           priority: 'high',
           channels: { socket: true, push: true }
         },
         congestion_alert: {
-          title: "🚦 Traffic Alert",
+          title: "Traffic Alert",
           message: `Station ${payload.stationId}: ${payload.waitTime} wait time`,
           priority: 'medium',
           channels: { socket: true, push: false }
         },
         demand_surge: {
-          title: "📈 High Demand Alert",
+          title: "High Demand Alert",
           message: `Station ${payload.stationId}: Surge pricing in effect`,
           priority: 'medium',
           channels: { socket: true, push: true }
@@ -367,19 +356,19 @@ class NotificationService {
       },
       logistics: {
         stockout_predicted: {
-          title: "📦 Low Inventory Alert",
+          title: "Low Inventory Alert",
           message: `Station ${payload.stationId}: Stockout predicted in ${payload.timeToStockout}`,
           priority: 'high',
           channels: { socket: true, push: true }
         },
         dispatch_initiated: {
-          title: "🚚 Dispatch in Progress",
+          title: "Dispatch in Progress",
           message: `Refill truck dispatched to Station ${payload.stationId}`,
           priority: 'medium',
           channels: { socket: true, push: false }
         },
         inventory_critical: {
-          title: "🚨 Critical Inventory",
+          title: "Critical Inventory",
           message: `Station ${payload.stationId}: Only ${payload.remainingUnits} units left`,
           priority: 'urgent',
           channels: { socket: true, push: true }
@@ -387,19 +376,19 @@ class NotificationService {
       },
       energy: {
         price_spike: {
-          title: "⚡ Energy Price Alert",
+          title: "Energy Price Alert",
           message: `Grid prices increased by ${payload.percentage}% - Charging paused`,
           priority: 'high',
           channels: { socket: true, push: true }
         },
         trading_opportunity: {
-          title: "💹 Trading Opportunity",
+          title: "Trading Opportunity",
           message: `Selling ${payload.amount}kWh back to grid for ₹${payload.revenue}`,
           priority: 'medium',
           channels: { socket: true, push: false }
         },
         grid_instability: {
-          title: "⚠️ Grid Instability",
+          title: "Grid Instability",
           message: "Charging temporarily paused for grid stability",
           priority: 'urgent',
           channels: { socket: true, push: true }
@@ -413,13 +402,13 @@ class NotificationService {
           channels: { socket: true, push: true }
         },
         compliance_violation: {
-          title: "⚖️ Compliance Alert",
+          title: "Compliance Alert",
           message: `Policy violation detected: ${payload.violation}`,
           priority: 'urgent',
           channels: { socket: true, push: true }
         },
         audit_complete: {
-          title: "✅ Audit Complete",
+          title: "Audit Complete",
           message: `${payload.decisionsAnalyzed} decisions analyzed - ${payload.issuesFound} issues found`,
           priority: 'low',
           channels: { socket: true, push: false }
@@ -429,10 +418,6 @@ class NotificationService {
 
     return configs[agentType]?.[eventType];
   }
-
-  // =============================================================================
-  // UTILITY METHODS
-  // =============================================================================
 
   async getUnreadCount(userId) {
     try {
@@ -530,10 +515,6 @@ class NotificationService {
       throw new ExpressError(500, `Failed to update delivery status: ${error.message}`);
     }
   }
-
-  // =============================================================================
-  // BULK OPERATIONS
-  // =============================================================================
 
   async createBulkNotifications(notifications) {
     try {
