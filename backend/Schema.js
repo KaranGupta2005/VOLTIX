@@ -1,7 +1,116 @@
 import Joi from "joi";
 
-// station schema
-export const createStationSchema = Joi.object({
+// user signup schema
+export const userSignUpSchema = Joi.object({
+  fullName: Joi.string()
+    .min(2)
+    .max(50)
+    .trim()
+    .required()
+    .messages({
+      "string.min": "Full name must be at least 2 characters",
+      "string.max": "Full name must be at most 50 characters",
+      "any.required": "Full name is required",
+    }),
+  email: Joi.string()
+    .email()
+    .trim()
+    .lowercase()
+    .required()
+    .messages({
+      "string.email": "Please provide a valid email address",
+      "any.required": "Email is required",
+    }),
+  password: Joi.string()
+    .min(6)
+    .required()
+    .messages({
+      "string.min": "Password must be at least 6 characters",
+      "any.required": "Password is required",
+    }),
+  phone: Joi.string()
+    .pattern(/^\+91[6-9]\d{9}$/)
+    .required()
+    .messages({
+      "string.pattern.base": "Phone number must be a valid Indian mobile number (+91XXXXXXXXXX)",
+      "any.required": "Phone number is required",
+    }),
+  city: Joi.string()
+    .valid("Mumbai", "Delhi", "Bangalore", "Chennai", "Kolkata")
+    .required()
+    .messages({
+      "any.only": "City must be one of Mumbai, Delhi, Bangalore, Chennai, or Kolkata",
+      "any.required": "City is required",
+    }),
+  vehicleType: Joi.string()
+    .valid("sedan", "suv", "hatchback", "commercial")
+    .lowercase()
+    .default("sedan")
+    .messages({
+      "any.only": "Vehicle type must be sedan, suv, hatchback, or commercial",
+    }),
+  vehicleMake: Joi.string()
+    .trim()
+    .required()
+    .messages({
+      "any.required": "Vehicle make is required",
+    }),
+  vehicleModel: Joi.string()
+    .trim()
+    .required()
+    .messages({
+      "any.required": "Vehicle model is required",
+    }),
+  vehicleYear: Joi.number()
+    .integer()
+    .min(2015)
+    .max(new Date().getFullYear() + 1)
+    .required()
+    .messages({
+      "number.min": "Vehicle year must be 2015 or later",
+      "number.max": `Vehicle year cannot be later than ${new Date().getFullYear() + 1}`,
+      "any.required": "Vehicle year is required",
+    }),
+  batteryCapacity: Joi.number()
+    .min(10)
+    .max(200)
+    .required()
+    .messages({
+      "number.min": "Battery capacity must be at least 10 kWh",
+      "number.max": "Battery capacity must be at most 200 kWh",
+      "any.required": "Battery capacity is required",
+    }),
+  registrationNumber: Joi.string()
+    .trim()
+    .uppercase()
+    .required()
+    .messages({
+      "any.required": "Vehicle registration number is required",
+    }),
+}).options({ abortEarly: false });
+
+// user login schema
+export const userLoginSchema = Joi.object({
+  email: Joi.string()
+    .email()
+    .trim()
+    .lowercase()
+    .required()
+    .messages({
+      "string.email": "Please provide a valid email address",
+      "any.required": "Email is required",
+    }),
+  password: Joi.string()
+    .min(6)
+    .required()
+    .messages({
+      "string.min": "Password must be at least 6 characters",
+      "any.required": "Password is required",
+    }),
+}).options({ abortEarly: false });
+
+// station state create schema
+export const createStationStateSchema = Joi.object({
   stationId: Joi.string()
     .pattern(/^ST\d{3}$/)
     .required()
@@ -63,29 +172,20 @@ export const createStationSchema = Joi.object({
       }),
     coordinates: Joi.array()
       .items(
-        Joi.number().min(-90).max(90), // latitude
-        Joi.number().min(-180).max(180) // longitude
+        Joi.number().min(-180).max(180), // longitude
+        Joi.number().min(-90).max(90)    // latitude
       )
       .length(2)
       .required()
       .messages({
-        "array.length": "Coordinates must contain exactly 2 values [latitude, longitude]",
+        "array.length": "Coordinates must contain exactly 2 values [longitude, latitude]",
         "any.required": "Coordinates are required",
       }),
   }).required(),
-  locationFlags: Joi.object({
-    isHighway: Joi.boolean().default(false),
-    isMall: Joi.boolean().default(false),
-    isOffice: Joi.boolean().default(false),
-  }).optional(),
   operator: Joi.string()
     .trim()
-    .min(2)
-    .max(50)
     .required()
     .messages({
-      "string.min": "Operator name must be at least 2 characters",
-      "string.max": "Operator name must be at most 50 characters",
       "any.required": "Operator is required",
     }),
   installationDate: Joi.date()
@@ -93,63 +193,38 @@ export const createStationSchema = Joi.object({
     .messages({
       "any.required": "Installation date is required",
     }),
-  status: Joi.string()
-    .valid("active", "maintenance", "offline")
-    .default("active")
-    .messages({
-      "any.only": "Status must be active, maintenance, or offline",
-    }),
-  currentInventory: Joi.number()
-    .integer()
-    .min(0)
-    .max(Joi.ref("maxInventory"))
-    .default(0)
-    .messages({
-      "number.min": "Current inventory cannot be negative",
-      "number.max": "Current inventory cannot exceed max inventory",
-    }),
-  queueLength: Joi.number()
-    .integer()
-    .min(0)
-    .default(0)
-    .messages({
-      "number.min": "Queue length cannot be negative",
-    }),
   pricePerKwh: Joi.number()
     .min(0)
-    .max(50)
     .required()
     .messages({
       "number.min": "Price per kWh cannot be negative",
-      "number.max": "Price per kWh cannot exceed ₹50",
       "any.required": "Price per kWh is required",
     }),
-  rating: Joi.number()
-    .min(1)
-    .max(5)
-    .default(3)
-    .messages({
-      "number.min": "Rating must be at least 1",
-      "number.max": "Rating must be at most 5",
-    }),
-}).options({
-  abortEarly: false,
-  allowUnknown: false,
-});
+}).options({ abortEarly: false });
 
-export const updateStationSchema = Joi.object({
-  name: Joi.string().trim().min(3).max(100).optional(),
-  status: Joi.string().valid("active", "maintenance", "offline").optional(),
-  currentInventory: Joi.number().integer().min(0).optional(),
-  queueLength: Joi.number().integer().min(0).optional(),
-  pricePerKwh: Joi.number().min(0).max(50).optional(),
-  rating: Joi.number().min(1).max(5).optional(),
-}).options({
-  abortEarly: false,
-  allowUnknown: false,
-});
+export const updateStationStateSchema = Joi.object({
+  operationalStatus: Joi.object({
+    status: Joi.string().valid("active", "maintenance", "offline", "emergency").optional(),
+    maintenanceScheduled: Joi.date().optional(),
+    emergencyContact: Joi.string().optional(),
+  }).optional(),
+  realTimeData: Joi.object({
+    currentInventory: Joi.number().integer().min(0).optional(),
+    availableSlots: Joi.number().integer().min(0).optional(),
+    queueLength: Joi.number().integer().min(0).optional(),
+    avgWaitTime: Joi.number().min(0).optional(),
+    currentLoad: Joi.number().min(0).max(100).optional(),
+    powerConsumption: Joi.number().min(0).optional(),
+  }).optional(),
+  pricing: Joi.object({
+    pricePerKwh: Joi.number().min(0).optional(),
+    peakHourMultiplier: Joi.number().min(1.0).max(3.0).optional(),
+    discountActive: Joi.boolean().optional(),
+    discountPercentage: Joi.number().min(0).max(50).optional(),
+  }).optional(),
+}).options({ abortEarly: false });
 
-// signal log schema
+// signal log create schema
 export const createSignalLogSchema = Joi.object({
   signalId: Joi.string()
     .pattern(/^SIG_\d{6}$/)
@@ -216,6 +291,22 @@ export const createSignalLogSchema = Joi.object({
         "number.max": "Humidity must be at most 100%",
         "any.required": "Humidity is required",
       }),
+    powerFactor: Joi.number()
+      .min(0)
+      .max(1)
+      .default(0.95)
+      .messages({
+        "number.min": "Power factor cannot be negative",
+        "number.max": "Power factor must be at most 1",
+      }),
+    frequency: Joi.number()
+      .min(45)
+      .max(55)
+      .default(50)
+      .messages({
+        "number.min": "Frequency must be at least 45 Hz",
+        "number.max": "Frequency must be at most 55 Hz",
+      }),
   }).required(),
   performance: Joi.object({
     uptime: Joi.number()
@@ -234,44 +325,48 @@ export const createSignalLogSchema = Joi.object({
         "number.min": "Error rate cannot be negative",
         "any.required": "Error rate is required",
       }),
+    responseTime: Joi.number()
+      .min(0)
+      .default(0)
+      .messages({
+        "number.min": "Response time cannot be negative",
+      }),
+    throughput: Joi.number()
+      .min(0)
+      .default(0)
+      .messages({
+        "number.min": "Throughput cannot be negative",
+      }),
+    efficiency: Joi.number()
+      .min(0)
+      .max(100)
+      .default(95)
+      .messages({
+        "number.min": "Efficiency cannot be negative",
+        "number.max": "Efficiency must be at most 100%",
+      }),
   }).required(),
   status: Joi.string()
-    .valid("normal", "warning", "critical", "offline")
+    .valid("normal", "warning", "critical", "offline", "maintenance")
     .required()
     .messages({
-      "any.only": "Status must be normal, warning, critical, or offline",
+      "any.only": "Status must be normal, warning, critical, offline, or maintenance",
       "any.required": "Status is required",
     }),
-  mlPredictions: Joi.object({
-    failureProbability: Joi.number()
-      .min(0)
-      .max(1)
-      .optional()
-      .messages({
-        "number.min": "Failure probability must be at least 0",
-        "number.max": "Failure probability must be at most 1",
-      }),
-    anomalyScore: Joi.number()
-      .min(0)
-      .max(1)
-      .optional()
-      .messages({
-        "number.min": "Anomaly score must be at least 0",
-        "number.max": "Anomaly score must be at most 1",
-      }),
-    riskLevel: Joi.string()
-      .valid("low", "medium", "high", "critical")
-      .optional()
-      .messages({
-        "any.only": "Risk level must be low, medium, high, or critical",
-      }),
+  chargingData: Joi.object({
+    activeSessions: Joi.number().integer().min(0).default(0),
+    totalPowerOutput: Joi.number().min(0).default(0),
+    avgChargingRate: Joi.number().min(0).default(0),
+    peakDemand: Joi.number().min(0).default(0),
   }).optional(),
-}).options({
-  abortEarly: false,
-  allowUnknown: false,
-});
+  environmentalData: Joi.object({
+    ambientTemperature: Joi.number().default(25),
+    weatherCondition: Joi.string().valid("sunny", "cloudy", "rainy", "stormy", "foggy").default("sunny"),
+    airQuality: Joi.number().min(0).max(500).default(50),
+  }).optional(),
+}).options({ abortEarly: false });
 
-// decision log schema
+// decision log create schema
 export const createDecisionLogSchema = Joi.object({
   decisionId: Joi.string()
     .pattern(/^DEC_\d{6}$/)
@@ -310,12 +405,28 @@ export const createDecisionLogSchema = Joi.object({
       "any.required": "Action is required",
     }),
   triggerEvent: Joi.string()
-    .valid("routine_monitoring", "threshold_breach", "user_request", "system_alert", "external_event")
+    .valid("routine_monitoring", "threshold_breach", "user_request", "system_alert", "external_event", "scheduled_task", "emergency")
     .required()
     .messages({
-      "any.only": "Trigger event must be one of routine_monitoring, threshold_breach, user_request, system_alert, or external_event",
+      "any.only": "Trigger event must be one of routine_monitoring, threshold_breach, user_request, system_alert, external_event, scheduled_task, or emergency",
       "any.required": "Trigger event is required",
     }),
+  context: Joi.object({
+    inputData: Joi.any().required(),
+    environmentalFactors: Joi.object({
+      weather: Joi.string().optional(),
+      timeOfDay: Joi.string().optional(),
+      dayOfWeek: Joi.string().optional(),
+      isHoliday: Joi.boolean().optional(),
+      nearbyEvents: Joi.array().items(Joi.string()).optional(),
+    }).optional(),
+    stationContext: Joi.object({
+      currentLoad: Joi.number().optional(),
+      queueLength: Joi.number().optional(),
+      inventoryLevel: Joi.number().optional(),
+      recentAlerts: Joi.array().items(Joi.string()).optional(),
+    }).optional(),
+  }).required(),
   mlMetrics: Joi.object({
     confidenceScore: Joi.number()
       .min(0)
@@ -333,6 +444,9 @@ export const createDecisionLogSchema = Joi.object({
         "number.min": "Execution time cannot be negative",
         "any.required": "Execution time is required",
       }),
+    modelVersion: Joi.string().default("1.0.0"),
+    featuresUsed: Joi.array().items(Joi.string()).optional(),
+    predictionAccuracy: Joi.number().min(0).max(1).optional(),
   }).required(),
   impact: Joi.object({
     costImpact: Joi.number()
@@ -372,6 +486,10 @@ export const createDecisionLogSchema = Joi.object({
         "number.max": "Risk score must be at most 1",
         "any.required": "Risk score is required",
       }),
+    environmentalImpact: Joi.object({
+      carbonSaved: Joi.number().default(0),
+      energyEfficiency: Joi.number().default(0),
+    }).optional(),
   }).required(),
   systemMetrics: Joi.object({
     cpuUsage: Joi.number()
@@ -400,43 +518,18 @@ export const createDecisionLogSchema = Joi.object({
         "number.min": "API calls cannot be negative",
         "any.required": "API calls is required",
       }),
+    networkLatency: Joi.number().min(0).default(0),
+    databaseQueries: Joi.number().integer().min(0).default(0),
   }).required(),
-  humanOverride: Joi.boolean()
-    .default(false)
+  priority: Joi.string()
+    .valid("low", "medium", "high", "urgent")
+    .default("medium")
     .messages({
-      "boolean.base": "Human override must be a boolean",
+      "any.only": "Priority must be low, medium, high, or urgent",
     }),
-  approvedBySupervisor: Joi.boolean()
-    .default(true)
-    .messages({
-      "boolean.base": "Approved by supervisor must be a boolean",
-    }),
-  auditResults: Joi.object({
-    anomalyDetected: Joi.boolean()
-      .default(false)
-      .messages({
-        "boolean.base": "Anomaly detected must be a boolean",
-      }),
-    complianceViolation: Joi.boolean()
-      .default(false)
-      .messages({
-        "boolean.base": "Compliance violation must be a boolean",
-      }),
-    auditScore: Joi.number()
-      .min(0)
-      .max(1)
-      .optional()
-      .messages({
-        "number.min": "Audit score must be at least 0",
-        "number.max": "Audit score must be at most 1",
-      }),
-  }).optional(),
-}).options({
-  abortEarly: false,
-  allowUnknown: false,
-});
+}).options({ abortEarly: false });
 
-// energy market schema
+// energy market create schema
 export const createEnergyMarketSchema = Joi.object({
   marketId: Joi.string()
     .pattern(/^MKT_\d{6}$/)
@@ -484,18 +577,8 @@ export const createEnergyMarketSchema = Joi.object({
         "number.min": "Load factor cannot be negative",
         "number.max": "Load factor must be at most 1",
       }),
-    peakDemand: Joi.number()
-      .min(0)
-      .default(0)
-      .messages({
-        "number.min": "Peak demand cannot be negative",
-      }),
-    baseLoad: Joi.number()
-      .min(0)
-      .default(0)
-      .messages({
-        "number.min": "Base load cannot be negative",
-      }),
+    peakDemand: Joi.number().min(0).default(0),
+    baseLoad: Joi.number().min(0).default(0),
   }).required(),
   environmentalData: Joi.object({
     temperature: Joi.number()
@@ -525,28 +608,9 @@ export const createEnergyMarketSchema = Joi.object({
         "number.max": "Wind speed must be at most 50 m/s",
         "any.required": "Wind speed is required",
       }),
-    humidity: Joi.number()
-      .min(0)
-      .max(100)
-      .default(50)
-      .messages({
-        "number.min": "Humidity cannot be negative",
-        "number.max": "Humidity must be at most 100%",
-      }),
-    weatherCondition: Joi.string()
-      .valid("sunny", "cloudy", "rainy", "stormy", "foggy", "snowy")
-      .default("sunny")
-      .messages({
-        "any.only": "Weather condition must be sunny, cloudy, rainy, stormy, foggy, or snowy",
-      }),
-    airQuality: Joi.number()
-      .min(0)
-      .max(500)
-      .default(50)
-      .messages({
-        "number.min": "Air quality cannot be negative",
-        "number.max": "Air quality must be at most 500",
-      }),
+    humidity: Joi.number().min(0).max(100).default(50),
+    weatherCondition: Joi.string().valid("sunny", "cloudy", "rainy", "stormy", "foggy", "snowy").default("sunny"),
+    airQuality: Joi.number().min(0).max(500).default(50),
   }).required(),
   pricing: Joi.object({
     coalPrice: Joi.number()
@@ -585,356 +649,24 @@ export const createEnergyMarketSchema = Joi.object({
         "number.max": "Energy price must be at most ₹50/kWh",
         "any.required": "Current energy price is required",
       }),
-    transmissionCost: Joi.number()
-      .min(0)
-      .default(0.5)
-      .messages({
-        "number.min": "Transmission cost cannot be negative",
-      }),
-    distributionCost: Joi.number()
-      .min(0)
-      .default(1.0)
-      .messages({
-        "number.min": "Distribution cost cannot be negative",
-      }),
-    regulatoryCharges: Joi.number()
-      .min(0)
-      .default(0.2)
-      .messages({
-        "number.min": "Regulatory charges cannot be negative",
-      }),
+    transmissionCost: Joi.number().min(0).default(0.5),
+    distributionCost: Joi.number().min(0).default(1.0),
+    regulatoryCharges: Joi.number().min(0).default(0.2),
   }).required(),
-  mlPredictions: Joi.object({
-    predictedPrice: Joi.number()
-      .min(0)
-      .optional()
-      .messages({
-        "number.min": "Predicted price cannot be negative",
-      }),
-    priceCategory: Joi.string()
-      .valid("low", "medium", "high", "very_high")
-      .optional()
-      .messages({
-        "any.only": "Price category must be low, medium, high, or very_high",
-      }),
-    confidence: Joi.number()
-      .min(0)
-      .max(1)
-      .optional()
-      .messages({
-        "number.min": "Confidence must be at least 0",
-        "number.max": "Confidence must be at most 1",
-      }),
-    priceDirection: Joi.string()
-      .valid("up", "down", "stable")
-      .optional()
-      .messages({
-        "any.only": "Price direction must be up, down, or stable",
-      }),
-    volatilityForecast: Joi.number()
-      .min(0)
-      .max(100)
-      .optional()
-      .messages({
-        "number.min": "Volatility forecast cannot be negative",
-        "number.max": "Volatility forecast must be at most 100",
-      }),
+  renewableGeneration: Joi.object({
+    solar: Joi.object({
+      capacity: Joi.number().min(0).default(0),
+      generation: Joi.number().min(0).default(0),
+      efficiency: Joi.number().min(0).max(1).default(0.2),
+    }).optional(),
+    wind: Joi.object({
+      capacity: Joi.number().min(0).default(0),
+      generation: Joi.number().min(0).default(0),
+      efficiency: Joi.number().min(0).max(1).default(0.35),
+    }).optional(),
+    hydro: Joi.object({
+      capacity: Joi.number().min(0).default(0),
+      generation: Joi.number().min(0).default(0),
+    }).optional(),
   }).optional(),
-}).options({
-  abortEarly: false,
-  allowUnknown: false,
-});
-
-// user schema
-export const createUserSchema = Joi.object({
-  userId: Joi.string()
-    .pattern(/^USR_\d{6}$/)
-    .required()
-    .messages({
-      "string.pattern.base": "User ID must follow format USR_000001",
-      "any.required": "User ID is required",
-    }),
-  profile: Joi.object({
-    name: Joi.string()
-      .trim()
-      .min(2)
-      .max(100)
-      .required()
-      .messages({
-        "string.min": "Name must be at least 2 characters",
-        "string.max": "Name must be at most 100 characters",
-        "any.required": "Name is required",
-      }),
-    email: Joi.string()
-      .email()
-      .trim()
-      .lowercase()
-      .required()
-      .messages({
-        "string.email": "Please provide a valid email address",
-        "any.required": "Email is required",
-      }),
-    phone: Joi.string()
-      .pattern(/^\+91[6-9]\d{9}$/)
-      .required()
-      .messages({
-        "string.pattern.base": "Phone number must be a valid Indian mobile number (+91XXXXXXXXXX)",
-        "any.required": "Phone number is required",
-      }),
-  }).required(),
-  location: Joi.object({
-    city: Joi.string()
-      .valid("Mumbai", "Delhi", "Bangalore", "Chennai", "Kolkata")
-      .required()
-      .messages({
-        "any.only": "City must be one of Mumbai, Delhi, Bangalore, Chennai, or Kolkata",
-        "any.required": "City is required",
-      }),
-    preferredStations: Joi.array()
-      .items(
-        Joi.string().pattern(/^ST\d{3}$/).messages({
-          "string.pattern.base": "Station ID must follow format ST001-ST999",
-        })
-      )
-      .optional(),
-  }).required(),
-  vehicle: Joi.object({
-    type: Joi.string()
-      .valid("sedan", "suv", "hatchback", "commercial")
-      .required()
-      .messages({
-        "any.only": "Vehicle type must be sedan, suv, hatchback, or commercial",
-        "any.required": "Vehicle type is required",
-      }),
-    batteryCapacity: Joi.number()
-      .min(10)
-      .max(200)
-      .required()
-      .messages({
-        "number.min": "Battery capacity must be at least 10 kWh",
-        "number.max": "Battery capacity must be at most 200 kWh",
-        "any.required": "Battery capacity is required",
-      }),
-    chargingSpeed: Joi.string()
-      .valid("standard", "fast", "ultra")
-      .default("standard")
-      .messages({
-        "any.only": "Charging speed must be standard, fast, or ultra",
-      }),
-  }).required(),
-  subscription: Joi.object({
-    plan: Joi.string()
-      .valid("basic", "premium", "enterprise")
-      .required()
-      .messages({
-        "any.only": "Subscription plan must be basic, premium, or enterprise",
-        "any.required": "Subscription plan is required",
-      }),
-    startDate: Joi.date()
-      .required()
-      .messages({
-        "any.required": "Subscription start date is required",
-      }),
-    endDate: Joi.date()
-      .greater(Joi.ref("startDate"))
-      .required()
-      .messages({
-        "date.greater": "End date must be after start date",
-        "any.required": "Subscription end date is required",
-      }),
-    isActive: Joi.boolean()
-      .default(true)
-      .messages({
-        "boolean.base": "Is active must be a boolean",
-      }),
-  }).required(),
-  usage: Joi.object({
-    totalSessions: Joi.number()
-      .integer()
-      .min(0)
-      .default(0)
-      .messages({
-        "number.min": "Total sessions cannot be negative",
-      }),
-    avgSessionDuration: Joi.number()
-      .min(0)
-      .default(0)
-      .messages({
-        "number.min": "Average session duration cannot be negative",
-      }),
-    totalEnergyConsumed: Joi.number()
-      .min(0)
-      .default(0)
-      .messages({
-        "number.min": "Total energy consumed cannot be negative",
-      }),
-    totalAmountSpent: Joi.number()
-      .min(0)
-      .default(0)
-      .messages({
-        "number.min": "Total amount spent cannot be negative",
-      }),
-  }).optional(),
-  preferences: Joi.object({
-    maxDistance: Joi.number()
-      .min(1)
-      .max(50)
-      .default(10)
-      .messages({
-        "number.min": "Max distance must be at least 1 km",
-        "number.max": "Max distance must be at most 50 km",
-      }),
-    pricePreference: Joi.string()
-      .valid("lowest", "balanced", "premium")
-      .default("balanced")
-      .messages({
-        "any.only": "Price preference must be lowest, balanced, or premium",
-      }),
-    notificationsEnabled: Joi.boolean()
-      .default(true)
-      .messages({
-        "boolean.base": "Notifications enabled must be a boolean",
-      }),
-  }).optional(),
-}).options({
-  abortEarly: false,
-  allowUnknown: false,
-});
-
-export const updateUserSchema = Joi.object({
-  profile: Joi.object({
-    name: Joi.string().trim().min(2).max(100).optional(),
-    phone: Joi.string().pattern(/^\+91[6-9]\d{9}$/).optional(),
-  }).optional(),
-  location: Joi.object({
-    city: Joi.string().valid("Mumbai", "Delhi", "Bangalore", "Chennai", "Kolkata").optional(),
-    preferredStations: Joi.array().items(Joi.string().pattern(/^ST\d{3}$/)).optional(),
-  }).optional(),
-  vehicle: Joi.object({
-    type: Joi.string().valid("sedan", "suv", "hatchback", "commercial").optional(),
-    batteryCapacity: Joi.number().min(10).max(200).optional(),
-    chargingSpeed: Joi.string().valid("standard", "fast", "ultra").optional(),
-  }).optional(),
-  preferences: Joi.object({
-    maxDistance: Joi.number().min(1).max(50).optional(),
-    pricePreference: Joi.string().valid("lowest", "balanced", "premium").optional(),
-    notificationsEnabled: Joi.boolean().optional(),
-  }).optional(),
-}).options({
-  abortEarly: false,
-  allowUnknown: false,
-});
-
-// ml prediction schema
-export const mlPredictionRequestSchema = Joi.object({
-  sensorData: Joi.object({
-    temperature: Joi.number().min(-50).max(150).required(),
-    voltage: Joi.number().min(0).max(500).required(),
-    current: Joi.number().min(0).max(200).required(),
-    vibration: Joi.number().min(0).max(5.0).required(),
-    humidity: Joi.number().min(0).max(100).required(),
-    uptime: Joi.number().min(0).max(100).required(),
-    errorRate: Joi.number().min(0).required(),
-  }).optional(),
-  stationData: Joi.object({
-    weather: Joi.string().valid("sunny", "rainy", "cloudy", "stormy").optional(),
-    temperature: Joi.number().min(-10).max(50).optional(),
-    stationCapacity: Joi.number().integer().min(1).max(20).optional(),
-    stationType: Joi.string().valid("standard", "fast", "ultra").optional(),
-    isHighway: Joi.number().valid(0, 1).optional(),
-    isMall: Joi.number().valid(0, 1).optional(),
-    isOffice: Joi.number().valid(0, 1).optional(),
-    isHoliday: Joi.number().valid(0, 1).optional(),
-    nearbyEvent: Joi.number().valid(0, 1).optional(),
-  }).optional(),
-  marketData: Joi.object({
-    gridDemand: Joi.number().min(0).max(10000).optional(),
-    gridSupply: Joi.number().min(0).max(12000).optional(),
-    gridFrequency: Joi.number().min(45).max(55).optional(),
-    temperature: Joi.number().min(-50).max(60).optional(),
-    solarIrradiance: Joi.number().min(0).max(1500).optional(),
-    windSpeed: Joi.number().min(0).max(50).optional(),
-    coalPrice: Joi.number().min(0).max(10000).optional(),
-    gasPrice: Joi.number().min(0).max(100).optional(),
-    carbonPrice: Joi.number().min(0).max(5000).optional(),
-  }).optional(),
-}).options({
-  abortEarly: false,
-  allowUnknown: false,
-});
-
-// route optimization schema
-export const routeRequestSchema = Joi.object({
-  startCoords: Joi.array()
-    .items(
-      Joi.number().min(-90).max(90), // latitude
-      Joi.number().min(-180).max(180) // longitude
-    )
-    .length(2)
-    .required()
-    .messages({
-      "array.length": "Start coordinates must contain exactly 2 values [latitude, longitude]",
-      "any.required": "Start coordinates are required",
-    }),
-  endCoords: Joi.array()
-    .items(
-      Joi.number().min(-90).max(90), // latitude
-      Joi.number().min(-180).max(180) // longitude
-    )
-    .length(2)
-    .required()
-    .messages({
-      "array.length": "End coordinates must contain exactly 2 values [latitude, longitude]",
-      "any.required": "End coordinates are required",
-    }),
-  profile: Joi.string()
-    .valid("driving", "walking", "cycling")
-    .default("driving")
-    .messages({
-      "any.only": "Profile must be driving, walking, or cycling",
-    }),
-}).options({
-  abortEarly: false,
-  allowUnknown: false,
-});
-
-export const stationOptimizationRequestSchema = Joi.object({
-  userLocation: Joi.array()
-    .items(
-      Joi.number().min(-90).max(90), // latitude
-      Joi.number().min(-180).max(180) // longitude
-    )
-    .length(2)
-    .required()
-    .messages({
-      "array.length": "User location must contain exactly 2 values [latitude, longitude]",
-      "any.required": "User location is required",
-    }),
-  stations: Joi.array()
-    .items(
-      Joi.object({
-        stationId: Joi.string().pattern(/^ST\d{3}$/).required(),
-        name: Joi.string().required(),
-        latitude: Joi.number().min(-90).max(90).required(),
-        longitude: Joi.number().min(-180).max(180).required(),
-        queueLength: Joi.number().integer().min(0).required(),
-        pricePerKwh: Joi.number().min(0).required(),
-        rating: Joi.number().min(1).max(5).required(),
-      })
-    )
-    .min(1)
-    .required()
-    .messages({
-      "array.min": "At least one station must be provided",
-      "any.required": "Stations array is required",
-    }),
-  preferences: Joi.object({
-    distanceWeight: Joi.number().min(0).max(1).default(0.4),
-    queueWeight: Joi.number().min(0).max(1).default(0.3),
-    priceWeight: Joi.number().min(0).max(1).default(0.2),
-    ratingWeight: Joi.number().min(0).max(1).default(0.1),
-  }).optional(),
-}).options({
-  abortEarly: false,
-  allowUnknown: false,
-});
+}).options({ abortEarly: false });
