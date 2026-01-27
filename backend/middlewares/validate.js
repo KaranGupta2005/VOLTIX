@@ -9,6 +9,9 @@ import {
     createSubSchema,
     sendNotificationSchema,
     agentNotificationSchema,
+    createNotificationSchema,
+    updateNotificationSchema,
+    notificationQuerySchema,
 } from "../Schema.js";
 import Joi from "joi";
 import ExpressError from "./expressError.js";
@@ -424,4 +427,54 @@ export const validateLocationUpdate = (data) => {
         );
     }
     return true;
+};
+// notification validations
+export const validateCreateNotification = (req, res, next) => {
+    const { error } = createNotificationSchema.validate(req.body, {
+        abortEarly: false,
+    });
+    if (error) {
+        throw new ExpressError(
+            400,
+            error.details.map((err) => err.message).join(", ")
+        );
+    }
+    next();
+};
+
+export const validateUpdateNotification = (req, res, next) => {
+    const { error } = updateNotificationSchema.validate(req.body, {
+        abortEarly: false,
+    });
+    if (error) {
+        throw new ExpressError(
+            400,
+            error.details.map((err) => err.message).join(", ")
+        );
+    }
+    next();
+};
+
+export const validateNotificationQuery = (req, res, next) => {
+    const { error } = notificationQuerySchema.validate(req.query, {
+        abortEarly: false,
+    });
+    if (error) {
+        throw new ExpressError(
+            400,
+            error.details.map((err) => err.message).join(", ")
+        );
+    }
+    next();
+};
+
+// notification ID validation
+export const validateNotificationId = (req, res, next) => {
+    const { notificationId } = req.params;
+
+    if (!notificationId || !/^NOT_\d{6}$/.test(notificationId)) {
+        throw new ExpressError(400, "Notification ID must follow format NOT_000001");
+    }
+
+    next();
 };
