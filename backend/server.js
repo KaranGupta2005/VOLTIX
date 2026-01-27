@@ -11,6 +11,10 @@ import { initSocket } from "./config/socket.js";
 
 //routes
 import mlRoutes from "./routes/ml.js";
+import authRoutes from "./routes/auth.js";
+import auditRoutes from "./routes/audit.js";
+import notificationRoutes from "./routes/notification.js";
+import pushRoutes from "./routes/push.js";
 
 dotenv.config();
 
@@ -41,6 +45,10 @@ app.use((err, req, res, next) => {
 
 //routes
 app.use("/api/ml", mlRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/audit", auditRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/push", pushRoutes);
 
 const server = http.createServer(app);
 
