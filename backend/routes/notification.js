@@ -10,10 +10,6 @@ import {
 
 const router = express.Router();
 
-// =============================================================================
-// NOTIFICATION CRUD ROUTES
-// =============================================================================
-
 // Get User Notifications with filtering and pagination
 router.get('/:userId', validateNotificationQuery, wrapAsync(async (req, res) => {
   const { userId } = req.params;
@@ -105,10 +101,6 @@ router.delete('/:notificationId', validateNotificationId, wrapAsync(async (req, 
   res.json(result);
 }));
 
-// =============================================================================
-// SPECIALIZED NOTIFICATION ROUTES
-// =============================================================================
-
 // Create Agent Notification
 router.post('/agent', wrapAsync(async (req, res) => {
   const { agentType, eventType, payload, targetUsers } = req.body;
@@ -171,10 +163,6 @@ router.post('/system', wrapAsync(async (req, res) => {
   res.status(201).json(result);
 }));
 
-// =============================================================================
-// BULK OPERATIONS
-// =============================================================================
-
 // Mark All Notifications as Read for User
 router.put('/:userId/read-all', wrapAsync(async (req, res) => {
   const { userId } = req.params;
@@ -196,10 +184,6 @@ router.post('/bulk', wrapAsync(async (req, res) => {
   const result = await notificationService.createBulkNotifications(notifications);
   res.json(result);
 }));
-
-// =============================================================================
-// UTILITY ROUTES
-// =============================================================================
 
 // Get Unread Count
 router.get('/:userId/unread-count', wrapAsync(async (req, res) => {
@@ -234,10 +218,6 @@ router.get('/:userId/stats', wrapAsync(async (req, res) => {
   const result = await notificationService.getNotificationStats(userId, timeRange);
   res.json(result);
 }));
-
-// =============================================================================
-// MAINTENANCE ROUTES
-// =============================================================================
 
 // Cleanup Old Notifications
 router.post('/cleanup', wrapAsync(async (req, res) => {

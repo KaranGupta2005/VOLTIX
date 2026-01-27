@@ -49,39 +49,11 @@ export const initSocket = (httpServer) => {
       addUser(socket.userId, socket.id);
       socket.join(socket.userId.toString());
       
-      // Join role-based rooms for targeted notifications
-      if (socket.role) {
-        socket.join(socket.role);
-        console.log(`User ${socket.userId} joined role room: ${socket.role}`);
-      }
+      // All users join general notification rooms
+      socket.join('general_users');
+      socket.join('agent:traffic'); // All users get traffic notifications (incentives)
       
-      // Join operator room for admin/ops users
-      if (socket.role === 'admin' || socket.role === 'operator') {
-        socket.join('operators');
-        console.log(`User ${socket.userId} joined operators room`);
-      }
-
-      // Join agent-specific rooms based on role
-      if (socket.role === 'technician') {
-        socket.join('agent:mechanic');
-        console.log(`User ${socket.userId} joined mechanic agent room`);
-      }
-      if (socket.role === 'logistics') {
-        socket.join('agent:logistics');
-        console.log(`User ${socket.userId} joined logistics agent room`);
-      }
-      if (socket.role === 'energy_manager') {
-        socket.join('agent:energy');
-        console.log(`User ${socket.userId} joined energy agent room`);
-      }
-      if (socket.role === 'compliance' || socket.role === 'auditor') {
-        socket.join('agent:auditor');
-        console.log(`User ${socket.userId} joined auditor agent room`);
-      }
-      
-      // All users can receive traffic agent notifications
-      socket.join('agent:traffic');
-      console.log(`User ${socket.userId} joined traffic agent room`);
+      console.log(`User ${socket.userId} joined general rooms`);
     } else {
       console.warn("Unauthenticated socket:", socket.id);
     }

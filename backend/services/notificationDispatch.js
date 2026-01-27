@@ -4,12 +4,12 @@ import { dispatch } from "../utils/dispatcher.js";
 
 export const decisionEngine = async ({ eventType, payload, context, io }) => {
   try {
-    console.log(`🎯 Decision Engine triggered: ${eventType}`);
+    console.log(`Decision Engine triggered: ${eventType}`);
     
     const recipients = await resolveRecipients(eventType, payload);
     const channels = resolveChannels(eventType, payload);
     
-    console.log(`📤 Dispatching to ${recipients.length} recipients via channels:`, channels);
+    console.log(`Dispatching to ${recipients.length} recipients via channels:`, channels);
     
     for (const recipient of recipients) {
       await dispatch({ 

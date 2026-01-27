@@ -12,6 +12,16 @@ import {
     createNotificationSchema,
     updateNotificationSchema,
     notificationQuerySchema,
+    otpVerificationSchema,
+    passwordResetSchema,
+    resendOTPSchema,
+    forgotPasswordSchema,
+    updateProfileSchema,
+    changePasswordSchema,
+    deleteAccountSchema,
+    sendPhoneOTPSchema,
+    updateSubscriptionSchema,
+    addWalletBalanceSchema,
 } from "../Schema.js";
 import Joi from "joi";
 import ExpressError from "./expressError.js";
@@ -476,5 +486,141 @@ export const validateNotificationId = (req, res, next) => {
         throw new ExpressError(400, "Notification ID must follow format NOT_000001");
     }
 
+    next();
+};
+// OTP validation functions
+export const validateOTPVerification = (req, res, next) => {
+    const { error } = otpVerificationSchema.validate(req.body, {
+        abortEarly: false,
+    });
+    if (error) {
+        throw new ExpressError(
+            400,
+            error.details.map((err) => err.message).join(", ")
+        );
+    }
+    next();
+};
+
+export const validatePasswordReset = (req, res, next) => {
+    const { error } = passwordResetSchema.validate(req.body, {
+        abortEarly: false,
+    });
+    if (error) {
+        throw new ExpressError(
+            400,
+            error.details.map((err) => err.message).join(", ")
+        );
+    }
+    next();
+};
+
+export const validateResendOTP = (req, res, next) => {
+    const { error } = resendOTPSchema.validate(req.body, {
+        abortEarly: false,
+    });
+    if (error) {
+        throw new ExpressError(
+            400,
+            error.details.map((err) => err.message).join(", ")
+        );
+    }
+    next();
+};
+
+export const validateForgotPassword = (req, res, next) => {
+    const { error } = forgotPasswordSchema.validate(req.body, {
+        abortEarly: false,
+    });
+    if (error) {
+        throw new ExpressError(
+            400,
+            error.details.map((err) => err.message).join(", ")
+        );
+    }
+    next();
+};
+
+// Profile update validation
+export const validateUpdateProfile = (req, res, next) => {
+    const { error } = updateProfileSchema.validate(req.body, {
+        abortEarly: false,
+    });
+    if (error) {
+        throw new ExpressError(
+            400,
+            error.details.map((err) => err.message).join(", ")
+        );
+    }
+    next();
+};
+
+// Change password validation
+export const validateChangePassword = (req, res, next) => {
+    const { error } = changePasswordSchema.validate(req.body, {
+        abortEarly: false,
+    });
+    if (error) {
+        throw new ExpressError(
+            400,
+            error.details.map((err) => err.message).join(", ")
+        );
+    }
+    next();
+};
+
+// Delete account validation
+export const validateDeleteAccount = (req, res, next) => {
+    const { error } = deleteAccountSchema.validate(req.body, {
+        abortEarly: false,
+    });
+    if (error) {
+        throw new ExpressError(
+            400,
+            error.details.map((err) => err.message).join(", ")
+        );
+    }
+    next();
+};
+
+// Send phone OTP validation
+export const validateSendPhoneOTP = (req, res, next) => {
+    const { error } = sendPhoneOTPSchema.validate(req.body, {
+        abortEarly: false,
+    });
+    if (error) {
+        throw new ExpressError(
+            400,
+            error.details.map((err) => err.message).join(", ")
+        );
+    }
+    next();
+};
+
+// Update subscription validation
+export const validateUpdateSubscription = (req, res, next) => {
+    const { error } = updateSubscriptionSchema.validate(req.body, {
+        abortEarly: false,
+    });
+    if (error) {
+        throw new ExpressError(
+            400,
+            error.details.map((err) => err.message).join(", ")
+        );
+    }
+    next();
+};
+
+// Add wallet balance validation
+export const validateAddWalletBalance = (req, res, next) => {
+    const { error } = addWalletBalanceSchema.validate(req.body, {
+        abortEarly: false,
+    });
+    if (error) {
+        throw new ExpressError(
+            400,
+            error.details.map((err) => err.message).join(", ")
+        );
+    }
     next();
 };
