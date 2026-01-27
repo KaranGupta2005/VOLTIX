@@ -8,6 +8,9 @@ import webpush from "web-push";
 import redis from "./config/redis.js";
 import connectDB from "./config/db.js";
 
+//routes
+import mlRoutes from "./routes/ml.js";
+
 dotenv.config();
 
 const app = express();
@@ -29,22 +32,24 @@ app.get("/test", (req, res) => {
 await connectDB();
 
 app.use((err, req, res, next) => {
-  const status = typeof err.status === "number" ? err.status : 500;
-  const message = err.message || "Internal Server Error";
-  if (res.headersSent) return next(err);
-  res.status(status).json({ message });
+    const status = typeof err.status === "number" ? err.status : 500;
+    const message = err.message || "Internal Server Error";
+    if (res.headersSent) return next(err);
+    res.status(status).json({ message });
 });
 
-const server=http.createServer(app);
+//routes
+app.use("/api/ml", mlRoutes);
 
-console.log(webpush.generateVAPIDKeys());
+const server = http.createServer(app);
 
+// console.log(webpush.generateVAPIDKeys());
 if (process.env.PUBLIC_VAPID_KEY && process.env.PRIVATE_VAPID_KEY) {
-  webpush.setVapidDetails(
-    "mailto:guptakaran.port@gmail.com",
-    process.env.PUBLIC_VAPID_KEY,
-    process.env.PRIVATE_VAPID_KEY
-  );
+    webpush.setVapidDetails(
+        "mailto:guptakaran.port@gmail.com",
+        process.env.PUBLIC_VAPID_KEY,
+        process.env.PRIVATE_VAPID_KEY
+    );
 }
 
 server.listen(PORT, () => {
