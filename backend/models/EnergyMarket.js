@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const EnergyMarketSchema = new mongoose.Schema({
   marketId: {
@@ -476,4 +476,4 @@ EnergyMarketSchema.methods.getPriceVolatility = function() {
   return 'low';
 };
 
-module.exports = mongoose.model('EnergyMarket', EnergyMarketSchema);
+export default mongoose.model('EnergyMarket', EnergyMarketSchema);

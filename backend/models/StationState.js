@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const StationStateSchema = new mongoose.Schema({
   stationId: {
@@ -416,4 +416,4 @@ StationStateSchema.methods.updateDailyStats = function(statsData) {
   return this.updateOne({ $set: updates });
 };
 
-module.exports = mongoose.model('StationState', StationStateSchema);
+export default mongoose.model('StationState', StationStateSchema);

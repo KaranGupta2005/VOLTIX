@@ -7,6 +7,7 @@ import webpush from "web-push";
 
 import redis from "./config/redis.js";
 import connectDB from "./config/db.js";
+import { initSocket } from "./config/socket.js";
 
 //routes
 import mlRoutes from "./routes/ml.js";
@@ -42,6 +43,12 @@ app.use((err, req, res, next) => {
 app.use("/api/ml", mlRoutes);
 
 const server = http.createServer(app);
+
+// Initialize Socket.IO
+const io = initSocket(server);
+
+// Make io available globally for notification dispatch
+app.set('io', io);
 
 // console.log(webpush.generateVAPIDKeys());
 if (process.env.PUBLIC_VAPID_KEY && process.env.PRIVATE_VAPID_KEY) {

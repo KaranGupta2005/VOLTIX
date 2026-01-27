@@ -6,7 +6,11 @@ import {
     createSignalLogSchema,
     createDecisionLogSchema,
     createEnergyMarketSchema,
+    createSubSchema,
+    sendNotificationSchema,
+    agentNotificationSchema,
 } from "../Schema.js";
+import Joi from "joi";
 import ExpressError from "./expressError.js";
 
 // user validations
@@ -313,4 +317,111 @@ export const validatePagination = (req, res, next) => {
     }
 
     next();
+};
+// push subscription validations
+export const validateCreateSub = (req, res, next) => {
+    const { error } = createSubSchema.validate(req.body, {
+        abortEarly: false,
+    });
+    if (error) {
+        throw new ExpressError(
+            400,
+            error.details.map((err) => err.message).join(", ")
+        );
+    }
+    next();
+};
+
+// push notification validations
+export const validateSendNotification = (req, res, next) => {
+    const { error } = sendNotificationSchema.validate(req.body, {
+        abortEarly: false,
+    });
+    if (error) {
+        throw new ExpressError(
+            400,
+            error.details.map((err) => err.message).join(", ")
+        );
+    }
+    next();
+};
+
+// agent notification validations
+export const validateAgentNotification = (req, res, next) => {
+    const { error } = agentNotificationSchema.validate(req.body, {
+        abortEarly: false,
+    });
+    if (error) {
+        throw new ExpressError(
+            400,
+            error.details.map((err) => err.message).join(", ")
+        );
+    }
+    next();
+};
+
+// socket event validations
+export const validateSocketSubscription = (data) => {
+    const schema = Joi.object({
+        agentType: Joi.string()
+            .valid("mechanic", "traffic", "logistics", "energy", "auditor")
+            .optional(),
+        stationId: Joi.string()
+            .pattern(/^ST\d{3}$/)
+            .optional(),
+        eventType: Joi.string().optional(),
+        userId: Joi.string()
+            .pattern(/^USR_\d{6}$/)
+            .optional(),
+    });
+
+    const { error } = schema.validate(data);
+    if (error) {
+        throw new ExpressError(
+            400,
+            error.details.map((err) => err.message).join(", ")
+        );
+    }
+    return true;
+};
+
+// location update validation
+export const validateLocationUpdate = (data) => {
+    const schema = Joi.object({
+        lat: Joi.number()
+            .min(-90)
+            .max(90)
+            .required()
+            .messages({
+                "number.min": "Latitude must be between -90 and 90",
+                "number.max": "Latitude must be between -90 and 90",
+                "any.required": "Latitude is required",
+            }),
+        lng: Joi.number()
+            .min(-180)
+            .max(180)
+            .required()
+            .messages({
+                "number.min": "Longitude must be between -180 and 180",
+                "number.max": "Longitude must be between -180 and 180",
+                "any.required": "Longitude is required",
+            }),
+        radius: Joi.number()
+            .min(1)
+            .max(50)
+            .default(10)
+            .messages({
+                "number.min": "Radius must be at least 1 km",
+                "number.max": "Radius must be at most 50 km",
+            }),
+    });
+
+    const { error } = schema.validate(data);
+    if (error) {
+        throw new ExpressError(
+            400,
+            error.details.map((err) => err.message).join(", ")
+        );
+    }
+    return true;
 };

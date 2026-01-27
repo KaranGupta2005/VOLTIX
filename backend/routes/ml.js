@@ -346,9 +346,7 @@ router.post('/route/risk-assessment', validateRouteRequest, wrapAsync(async (req
   }
 }));
 
-// =============================================================================
-// COMPREHENSIVE ANALYSIS
-// =============================================================================
+// comprehensive analysis
 
 router.post('/comprehensive-analysis', validateMLPredictionRequest, wrapAsync(async (req, res) => {
   const { 
@@ -380,9 +378,7 @@ router.post('/comprehensive-analysis', validateMLPredictionRequest, wrapAsync(as
   }
 }));
 
-// =============================================================================
-// MODEL MANAGEMENT ROUTES
-// =============================================================================
+// model management routes
 
 router.post('/models/retrain/:modelName', wrapAsync(async (req, res) => {
   const { modelName } = req.params;
@@ -420,9 +416,7 @@ router.get('/models/status', wrapAsync(async (req, res) => {
   }
 }));
 
-// =============================================================================
-// UTILITY ROUTES
-// =============================================================================
+// utility routes
 
 router.get('/service-info', wrapAsync(async (req, res) => {
   const serviceInfo = mlClient.getServiceInfo();

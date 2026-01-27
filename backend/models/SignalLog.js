@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const SignalLogSchema = new mongoose.Schema({
   signalId: {
@@ -371,4 +371,4 @@ SignalLogSchema.statics.getCriticalSignals = function(limit = 50) {
   .exec();
 };
 
-module.exports = mongoose.model('SignalLog', SignalLogSchema);
+export default mongoose.model('SignalLog', SignalLogSchema);

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const DecisionLogSchema = new mongoose.Schema({
   decisionId: {
@@ -458,4 +458,4 @@ DecisionLogSchema.statics.getPerformanceAnalytics = function(agent, timeRange = 
   ]);
 };
 
-module.exports = mongoose.model('DecisionLog', DecisionLogSchema);
+export default mongoose.model('DecisionLog', DecisionLogSchema);
