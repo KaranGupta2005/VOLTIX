@@ -7,6 +7,12 @@ import {
   ProductItem,
 } from "@/componentsAcertinity/ui/navbar-menu";
 import { cn } from "@/lib/utils";
+import { SearchIcon } from "lucide-react"; // Kept from 'main' branch
+
+// Moved these imports to the top for better structure
+import HeroSection from "@/app/components/HeroSectio";
+import ClientsSection from "@/app/components/ClientSection"; // Kept from 'frontend-ui'
+import Feature1Section from "@/app/components/Feature1";      // Kept from 'frontend-ui'
 
 export function NavbarDemo() {
   return (
@@ -22,7 +28,6 @@ function Navbar({ className }: { className?: string }) {
     <div
       className={cn("fixed top-10 inset-x-0 max-w-4xl mx-auto z-50", className)}
     >
-
       <Menu setActive={setActive}>
         <MenuItem setActive={setActive} active={active} item="Home">
           <div className="flex flex-col space-y-4 text-sm">
@@ -33,7 +38,7 @@ function Navbar({ className }: { className?: string }) {
           </div>
         </MenuItem>
         <MenuItem setActive={setActive} active={active} item="Features">
-          <div className="  text-sm grid grid-cols-2 gap-10 p-4">
+          <div className="text-sm grid grid-cols-2 gap-10 p-4">
             <ProductItem
               title="Algochurn"
               href="https://algochurn.com"
@@ -68,15 +73,26 @@ function Navbar({ className }: { className?: string }) {
             <HoveredLink href="/enterprise">Enterprise</HoveredLink>
           </div>
         </MenuItem>
-          <MenuItem setActive={setActive} active={active} item="Blog">
+        <MenuItem setActive={setActive} active={active} item="Blog">
           <div className="flex flex-col space-y-4 text-sm">
-              <HoveredLink href="/hobby">Hobby</HoveredLink>
-              <HoveredLink href="/individual">Individual</HoveredLink>
-              <HoveredLink href="/team">Team</HoveredLink>
-              <HoveredLink href="/enterprise">Enterprise</HoveredLink>
+            <HoveredLink href="/hobby">Hobby</HoveredLink>
+            <HoveredLink href="/individual">Individual</HoveredLink>
+            <HoveredLink href="/team">Team</HoveredLink>
+            <HoveredLink href="/enterprise">Enterprise</HoveredLink>
           </div>
-      </MenuItem>
+        </MenuItem>
       </Menu>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <main className="min-h-screen w-full bg-background text-foreground">
+      {/* We kept the frontend-ui structure because it includes your new sections */}
+      <HeroSection />
+      <ClientsSection />
+      <Feature1Section />
+    </main>
   );
 }

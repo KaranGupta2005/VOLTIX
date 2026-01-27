@@ -1,7 +1,6 @@
 import HeroSection from "@/app/components/HeroSectio";
 import ClientsSection from "@/app/components/ClientSection";
 import Feature1Section from "@/app/components/Feature1";
-// Make sure the import path matches your folder structure
 
 export default function Home() {
   return (
