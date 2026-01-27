@@ -20,8 +20,6 @@ import {
     changePasswordSchema,
     deleteAccountSchema,
     sendPhoneOTPSchema,
-    updateSubscriptionSchema,
-    addWalletBalanceSchema,
 } from "../Schema.js";
 import Joi from "joi";
 import ExpressError from "./expressError.js";
@@ -586,34 +584,6 @@ export const validateDeleteAccount = (req, res, next) => {
 // Send phone OTP validation
 export const validateSendPhoneOTP = (req, res, next) => {
     const { error } = sendPhoneOTPSchema.validate(req.body, {
-        abortEarly: false,
-    });
-    if (error) {
-        throw new ExpressError(
-            400,
-            error.details.map((err) => err.message).join(", ")
-        );
-    }
-    next();
-};
-
-// Update subscription validation
-export const validateUpdateSubscription = (req, res, next) => {
-    const { error } = updateSubscriptionSchema.validate(req.body, {
-        abortEarly: false,
-    });
-    if (error) {
-        throw new ExpressError(
-            400,
-            error.details.map((err) => err.message).join(", ")
-        );
-    }
-    next();
-};
-
-// Add wallet balance validation
-export const validateAddWalletBalance = (req, res, next) => {
-    const { error } = addWalletBalanceSchema.validate(req.body, {
         abortEarly: false,
     });
     if (error) {
