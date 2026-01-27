@@ -7,7 +7,6 @@ import { CircleCheck } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Section,Container } from "../craft"
 
 
 interface PricingCardProps {
@@ -55,7 +54,7 @@ const Pricing = () => {
     const [billingPeriod, setBillingPeriod] = useState<"monthly" | "yearly">("monthly")
 
     return (
-        <section className={'container mx-auto'}>
+        <section className={'container mx-auto my-20 md:my-28'}>
             <div className="flex flex-col items-center  gap-4 text-center container mx-auto">
                 <h2 className="!my-0">Pricing</h2>
                 <p className="text-lg opacity-70 md:text-2xl">
