@@ -7,7 +7,6 @@ import {
   ProductItem,
 } from "@/componentsAcertinity/ui/navbar-menu";
 import { cn } from "@/lib/utils";
-import {SearchIcon} from "lucide-react";
 
 export function NavbarDemo() {
   return (

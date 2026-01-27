@@ -1,14 +1,19 @@
 import HeroSection from "@/app/components/HeroSectio";
+import ClientsSection from "@/app/components/ClientSection";
+import Feature1Section from "@/app/components/Feature1";
+import Feature2Section from "@/app/components/Features2";
+import PricingSection from "@/app/components/PricingSection";
 // Make sure the import path matches your folder structure
 
 export default function Home() {
   return (
     <main className="min-h-screen w-full bg-background text-foreground">
-      {/* Remove 'p-24' and 'flex-col' to allow full-screen sections */}
-        <section className={' w-full h=screen '}>
-
+      {/* Render sections one after another so scroll-based effects can work across the page */}
       <HeroSection />
-        </section>
+      <ClientsSection />
+      <Feature1Section />
+      <Feature2Section />
+        <PricingSection/>
     </main>
   );
 }
