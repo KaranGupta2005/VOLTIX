@@ -1,17 +1,5 @@
-// Audit Service - Placeholder
-// Implement audit functionality when needed
+// This service is kept for backward compatibility
+// All audit functionality is now handled by AuditorAgent
+// The folder structure is maintained as requested
 
-class AuditService {
-  async getAuditLogs() {
-    // Implement when needed
-    return { logs: [], total: 0 };
-  }
-
-  async createAuditLog() {
-    // Implement when needed
-    return { success: true };
-  }
-}
-
-const auditService = new AuditService();
-export default auditService;
+export default {};

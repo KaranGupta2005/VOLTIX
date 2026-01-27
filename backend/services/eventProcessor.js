@@ -56,7 +56,7 @@ class EventProcessor {
         const result = await this.redis.brpop(this.SIGNAL_QUEUE, 1);
 
         if (result) {
-          const [queueName, eventData] = result;
+          const [, eventData] = result; // queueName not used
           const event = JSON.parse(eventData);
 
           await this.processEvent(event);
