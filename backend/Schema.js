@@ -670,3 +670,126 @@ export const createEnergyMarketSchema = Joi.object({
     }).optional(),
   }).optional(),
 }).options({ abortEarly: false });
+
+// push subscription schema
+export const createSubSchema = Joi.object({
+  userId: Joi.string()
+    .pattern(/^USR_\d{6}$/)
+    .required()
+    .messages({
+      "string.pattern.base": "User ID must follow format USR_000001",
+      "any.required": "User ID is required",
+    }),
+  endpoint: Joi.string()
+    .uri()
+    .required()
+    .messages({
+      "string.uri": "Endpoint must be a valid URL",
+      "any.required": "Endpoint is required",
+    }),
+  keys: Joi.object({
+    auth: Joi.string()
+      .required()
+      .messages({
+        "any.required": "Auth key is required",
+      }),
+    p256dh: Joi.string()
+      .required()
+      .messages({
+        "any.required": "P256dh key is required",
+      }),
+  }).required(),
+  deviceInfo: Joi.object({
+    userAgent: Joi.string().optional(),
+    platform: Joi.string().optional(),
+    browser: Joi.string().optional(),
+  }).optional(),
+}).options({ abortEarly: false });
+
+// push notification schema
+export const sendNotificationSchema = Joi.object({
+  title: Joi.string()
+    .trim()
+    .min(1)
+    .max(100)
+    .required()
+    .messages({
+      "string.min": "Title must be at least 1 character",
+      "string.max": "Title must be at most 100 characters",
+      "any.required": "Title is required",
+    }),
+  message: Joi.string()
+    .trim()
+    .min(1)
+    .max(500)
+    .required()
+    .messages({
+      "string.min": "Message must be at least 1 character",
+      "string.max": "Message must be at most 500 characters",
+      "any.required": "Message is required",
+    }),
+  userId: Joi.string()
+    .pattern(/^USR_\d{6}$/)
+    .optional()
+    .messages({
+      "string.pattern.base": "User ID must follow format USR_000001",
+    }),
+  icon: Joi.string().uri().optional(),
+  badge: Joi.string().uri().optional(),
+  data: Joi.object().optional(),
+}).options({ abortEarly: false });
+
+// agent notification schema
+export const agentNotificationSchema = Joi.object({
+  agentType: Joi.string()
+    .valid("mechanic", "traffic", "logistics", "energy", "auditor")
+    .required()
+    .messages({
+      "any.only": "Agent type must be mechanic, traffic, logistics, energy, or auditor",
+      "any.required": "Agent type is required",
+    }),
+  eventType: Joi.string()
+    .required()
+    .messages({
+      "any.required": "Event type is required",
+    }),
+  payload: Joi.object({
+    stationId: Joi.string()
+      .pattern(/^ST\d{3}$/)
+      .optional()
+      .messages({
+        "string.pattern.base": "Station ID must follow format ST001-ST999",
+      }),
+    userId: Joi.string()
+      .pattern(/^USR_\d{6}$/)
+      .optional()
+      .messages({
+        "string.pattern.base": "User ID must follow format USR_000001",
+      }),
+    severity: Joi.string()
+      .valid("low", "medium", "high", "critical")
+      .default("medium")
+      .messages({
+        "any.only": "Severity must be low, medium, high, or critical",
+      }),
+    description: Joi.string().optional(),
+    amount: Joi.number().min(0).optional(),
+    percentage: Joi.number().min(0).max(100).optional(),
+    timeToStockout: Joi.string().optional(),
+    remainingUnits: Joi.number().integer().min(0).optional(),
+    waitTime: Joi.string().optional(),
+    alternativeStation: Joi.string().optional(),
+    revenue: Joi.number().min(0).optional(),
+    violation: Joi.string().optional(),
+    decisionsAnalyzed: Joi.number().integer().min(0).optional(),
+    issuesFound: Joi.number().integer().min(0).optional(),
+  }).required(),
+  targetUsers: Joi.array()
+    .items(
+      Joi.string().pattern(/^USR_\d{6}$/)
+    )
+    .optional()
+    .messages({
+      "string.pattern.base": "Each user ID must follow format USR_000001",
+    }),
+}).options({ abortEarly: false });

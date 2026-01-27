@@ -7,7 +7,7 @@ class MLService {
     try {
       const health = await mlClient.healthCheck();
       const serviceInfo = mlClient.getServiceInfo();
-      
+
       return {
         success: true,
         ml_service: health,
@@ -28,7 +28,7 @@ class MLService {
   async getServiceInfo() {
     const serviceInfo = mlClient.getServiceInfo();
     const isAvailable = await mlClient.isServiceAvailable();
-    
+
     return {
       success: true,
       serviceInfo,
@@ -47,7 +47,7 @@ class MLService {
 
     try {
       const prediction = await mlClient.predictFailure(sensorData);
-      
+
       return {
         success: true,
         stationId,
@@ -68,7 +68,7 @@ class MLService {
 
     try {
       const prediction = await mlClient.predictTrafficDemand(stationData, forecastHours);
-      
+
       return {
         success: true,
         stationId,
@@ -89,11 +89,11 @@ class MLService {
 
     try {
       const incentive = await mlClient.calculateIncentive(
-        currentStation, 
-        alternativeStation, 
+        currentStation,
+        alternativeStation,
         userProfile
       );
-      
+
       return {
         success: true,
         incentive,
@@ -113,7 +113,7 @@ class MLService {
 
     try {
       const prediction = await mlClient.predictStockout(logisticsData, forecastHours);
-      
+
       return {
         success: true,
         stationId,
@@ -133,7 +133,7 @@ class MLService {
 
     try {
       const optimization = await mlClient.optimizeDispatch(logisticsData, availableVehicles);
-      
+
       return {
         success: true,
         stationId,
@@ -154,7 +154,7 @@ class MLService {
 
     try {
       const prediction = await mlClient.predictEnergyPrices(marketData, forecastHours);
-      
+
       return {
         success: true,
         prediction,
@@ -173,7 +173,7 @@ class MLService {
 
     try {
       const optimization = await mlClient.optimizeTrading(marketData, stationData);
-      
+
       return {
         success: true,
         optimization,
@@ -193,7 +193,7 @@ class MLService {
 
     try {
       const analysis = await mlClient.analyzeDecision(decisionData);
-      
+
       return {
         success: true,
         analysis,
@@ -211,7 +211,7 @@ class MLService {
 
     try {
       const analysis = await mlClient.batchAnalyzeDecisions(decisions);
-      
+
       return {
         success: true,
         analysis,
@@ -228,7 +228,7 @@ class MLService {
   async calculateRoute(startCoords, endCoords, profile = 'driving') {
     try {
       const route = await mlClient.calculateRoute(startCoords, endCoords, profile);
-      
+
       return {
         success: true,
         route,
@@ -242,11 +242,11 @@ class MLService {
   async optimizeStationSelection(userLocation, stations, preferences = null) {
     try {
       const optimization = await mlClient.optimizeStationSelection(
-        userLocation, 
-        stations, 
+        userLocation,
+        stations,
         preferences
       );
-      
+
       return {
         success: true,
         optimization,
@@ -262,18 +262,18 @@ class MLService {
     if (!Array.isArray(startLocation) || startLocation.length !== 2) {
       throw new ExpressError(400, 'Start location must be [latitude, longitude]');
     }
-    
+
     if (!Array.isArray(stops) || stops.length === 0) {
       throw new ExpressError(400, 'Stops array is required and cannot be empty');
     }
 
     try {
       const optimization = await mlClient.optimizeMultiStopRoute(
-        startLocation, 
-        stops, 
+        startLocation,
+        stops,
         endLocation
       );
-      
+
       return {
         success: true,
         optimization,
@@ -288,11 +288,11 @@ class MLService {
   async getAlternativeRoutes(startCoords, endCoords, numAlternatives = 3) {
     try {
       const routes = await mlClient.getAlternativeRoutes(
-        startCoords, 
-        endCoords, 
+        startCoords,
+        endCoords,
         numAlternatives
       );
-      
+
       return {
         success: true,
         routes,
@@ -307,11 +307,11 @@ class MLService {
   async assessRouteRisk(startCoords, endCoords, weatherConditions = null) {
     try {
       const assessment = await mlClient.assessRouteRisk(
-        startCoords, 
-        endCoords, 
+        startCoords,
+        endCoords,
         weatherConditions
       );
-      
+
       return {
         success: true,
         assessment,
@@ -327,13 +327,13 @@ class MLService {
   async comprehensiveAnalysis(stationId, sensorData, stationData, logisticsData, marketData, userLocation = null) {
     try {
       const analysis = await mlClient.comprehensiveAnalysis(
-        sensorData, 
-        stationData, 
-        logisticsData, 
-        marketData, 
+        sensorData,
+        stationData,
+        logisticsData,
+        marketData,
         userLocation
       );
-      
+
       return {
         success: true,
         stationId,
@@ -355,7 +355,7 @@ class MLService {
 
     try {
       const result = await mlClient.retrainModel(modelName);
-      
+
       return {
         success: true,
         result,
@@ -372,7 +372,7 @@ class MLService {
   async getModelsStatus() {
     try {
       const status = await mlClient.getModelsStatus();
-      
+
       return {
         success: true,
         status,
