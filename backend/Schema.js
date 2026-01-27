@@ -2,15 +2,15 @@ import Joi from "joi";
 
 // user signup schema
 export const userSignUpSchema = Joi.object({
-  fullName: Joi.string()
+  name: Joi.string()
     .min(2)
     .max(50)
     .trim()
     .required()
     .messages({
-      "string.min": "Full name must be at least 2 characters",
-      "string.max": "Full name must be at most 50 characters",
-      "any.required": "Full name is required",
+      "string.min": "Name must be at least 2 characters",
+      "string.max": "Name must be at most 50 characters",
+      "any.required": "Name is required",
     }),
   email: Joi.string()
     .email()
