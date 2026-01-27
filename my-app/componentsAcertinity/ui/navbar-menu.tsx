@@ -1,6 +1,9 @@
 "use client";
 import React from "react";
 import { motion } from "motion/react";
+import Link from "next/link";
+import {buttonVariants} from "@/componentsAcertinity/shadcnui/button";
+
 
 const transition = {
   type: "spring" as const,
@@ -61,16 +64,37 @@ export const MenuItem = ({
 export const Menu = ({
   setActive,
   children,
+  rightContent,
 }: {
   setActive: (item: string | null) => void;
   children: React.ReactNode;
+  rightContent?: React.ReactNode;
 }) => {
   return (
     <nav
       onMouseLeave={() => setActive(null)} // resets the state
-      className="relative rounded-full border border-transparent dark:bg-black dark:border-white/20 bg-white shadow-input flex justify-center space-x-4 px-8 py-6 "
+      className="relative rounded-full border border-transparent dark:bg-black dark:border-white/20 bg-white shadow-input flex items-center justify-between gap-6 px-8 py-4"
     >
-      {children}
+      {/* Left: Logo */}
+      <Link href="/" className="font-bold text-lg text-black dark:text-white">
+        Voltix
+      </Link>
+
+      {/* Center: Menu items */}
+      <div className="flex-1 flex items-center justify-center gap-6">
+        {children}
+      </div>
+
+      {/* Right: extras + auth */}
+      <div className="flex items-center gap-4">
+        {rightContent}
+        <Link href="/sign-in" className="text-sm text-black dark:text-white hover:opacity-90">
+          Sign In
+        </Link>
+        <Link href={'/sign-up'} className={buttonVariants({ variant: 'outline' })}>
+          Sign Up
+        </Link>
+      </div>
     </nav>
   );
 };
