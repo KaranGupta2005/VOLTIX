@@ -793,3 +793,146 @@ export const agentNotificationSchema = Joi.object({
       "string.pattern.base": "Each user ID must follow format USR_000001",
     }),
 }).options({ abortEarly: false });
+// notification create schema
+export const createNotificationSchema = Joi.object({
+  notificationId: Joi.string()
+    .pattern(/^NOT_\d{6}$/)
+    .optional()
+    .messages({
+      "string.pattern.base": "Notification ID must follow format NOT_000001",
+    }),
+  userId: Joi.string()
+    .pattern(/^USR_\d{6}$/)
+    .required()
+    .messages({
+      "string.pattern.base": "User ID must follow format USR_000001",
+      "any.required": "User ID is required",
+    }),
+  stationId: Joi.string()
+    .pattern(/^ST\d{3}$/)
+    .optional()
+    .messages({
+      "string.pattern.base": "Station ID must follow format ST001-ST999",
+    }),
+  type: Joi.string()
+    .valid("system", "agent_action", "incentive", "maintenance", "emergency", "info", "warning", "success", "error")
+    .default("info")
+    .messages({
+      "any.only": "Type must be one of system, agent_action, incentive, maintenance, emergency, info, warning, success, or error",
+    }),
+  agentType: Joi.string()
+    .valid("mechanic", "traffic", "logistics", "energy", "auditor")
+    .when('type', {
+      is: 'agent_action',
+      then: Joi.required(),
+      otherwise: Joi.optional()
+    })
+    .messages({
+      "any.only": "Agent type must be mechanic, traffic, logistics, energy, or auditor",
+      "any.required": "Agent type is required when type is agent_action",
+    }),
+  title: Joi.string()
+    .trim()
+    .min(1)
+    .max(100)
+    .required()
+    .messages({
+      "string.min": "Title must be at least 1 character",
+      "string.max": "Title must be at most 100 characters",
+      "any.required": "Title is required",
+    }),
+  message: Joi.string()
+    .trim()
+    .min(1)
+    .max(500)
+    .required()
+    .messages({
+      "string.min": "Message must be at least 1 character",
+      "string.max": "Message must be at most 500 characters",
+      "any.required": "Message is required",
+    }),
+  priority: Joi.string()
+    .valid("low", "medium", "high", "urgent")
+    .default("medium")
+    .messages({
+      "any.only": "Priority must be low, medium, high, or urgent",
+    }),
+  channels: Joi.object({
+    socket: Joi.boolean().default(true),
+    push: Joi.boolean().default(false),
+    email: Joi.boolean().default(false),
+  }).optional(),
+  metadata: Joi.object({
+    eventType: Joi.string().optional(),
+    source: Joi.string().optional(),
+    category: Joi.string().optional(),
+    tags: Joi.array().items(Joi.string()).optional(),
+    relatedEntities: Joi.array().items(
+      Joi.object({
+        type: Joi.string().required(),
+        id: Joi.string().required(),
+      })
+    ).optional(),
+  }).optional(),
+  actionData: Joi.object({
+    actionType: Joi.string().optional(),
+    actionUrl: Joi.string().uri().optional(),
+    actionText: Joi.string().optional(),
+    expiresAt: Joi.date().optional(),
+  }).optional(),
+  incentive: Joi.object({
+    amount: Joi.number().min(0).required(),
+    type: Joi.string()
+      .valid("discount_amount", "discount_percentage", "cashback", "points")
+      .required(),
+    validUntil: Joi.date().required(),
+    conditions: Joi.string().optional(),
+  }).when('type', {
+    is: 'incentive',
+    then: Joi.required(),
+    otherwise: Joi.optional()
+  }),
+}).options({ abortEarly: false });
+
+// notification update schema
+export const updateNotificationSchema = Joi.object({
+  status: Joi.string()
+    .valid("unread", "read", "archived")
+    .optional()
+    .messages({
+      "any.only": "Status must be unread, read, or archived",
+    }),
+  priority: Joi.string()
+    .valid("low", "medium", "high", "urgent")
+    .optional()
+    .messages({
+      "any.only": "Priority must be low, medium, high, or urgent",
+    }),
+  metadata: Joi.object({
+    eventType: Joi.string().optional(),
+    source: Joi.string().optional(),
+    category: Joi.string().optional(),
+    tags: Joi.array().items(Joi.string()).optional(),
+  }).optional(),
+}).options({ abortEarly: false });
+
+// notification query schema
+export const notificationQuerySchema = Joi.object({
+  page: Joi.number().integer().min(1).default(1),
+  limit: Joi.number().integer().min(1).max(100).default(20),
+  type: Joi.string()
+    .valid("system", "agent_action", "incentive", "maintenance", "emergency", "info", "warning", "success", "error")
+    .optional(),
+  agentType: Joi.string()
+    .valid("mechanic", "traffic", "logistics", "energy", "auditor")
+    .optional(),
+  status: Joi.string()
+    .valid("unread", "read", "archived")
+    .optional(),
+  priority: Joi.string()
+    .valid("low", "medium", "high", "urgent")
+    .optional(),
+  unreadOnly: Joi.boolean().optional(),
+  startDate: Joi.date().optional(),
+  endDate: Joi.date().optional(),
+}).options({ abortEarly: false });
