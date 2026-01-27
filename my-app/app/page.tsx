@@ -1,6 +1,8 @@
 import HeroSection from "@/app/components/HeroSectio";
 import ClientsSection from "@/app/components/ClientSection";
 import Feature1Section from "@/app/components/Feature1";
+import Feature2Section from "@/app/components/Features2";
+// Make sure the import path matches your folder structure
 
 export default function Home() {
   return (
@@ -9,6 +11,7 @@ export default function Home() {
       <HeroSection />
       <ClientsSection />
       <Feature1Section />
+      <Feature2Section />
     </main>
   );
 }
