@@ -173,7 +173,7 @@ export const resolveRecipients = async (eventType, payload) => {
     index === self.findIndex(r => r.userId === recipient.userId)
   );
 
-  console.log("🎯 recipients:", uniqueRecipients.map((u) => ({
+  console.log("recipients:", uniqueRecipients.map((u) => ({
     id: u.userId,
     city: u.location?.city || 'unknown',
     plan: u.subscription?.plan || 'basic'

@@ -1,6 +1,6 @@
 import express from 'express';
 import mlClient from '../scripts/mlClient.js';
-import { wrapAsync } from '../middlewares/wrapAsync.js';
+import wrapAsync from '../middlewares/wrapAsync.js';
 import ExpressError from '../middlewares/expressError.js';
 import {
   validateMLPredictionRequest,

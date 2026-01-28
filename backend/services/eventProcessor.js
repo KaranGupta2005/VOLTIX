@@ -31,7 +31,7 @@ class EventProcessor {
     this.processedCount = 0;
     this.errorCount = 0;
 
-    console.log('✅ EventProcessor initialized');
+    console.log('EventProcessor initialized');
   }
 
   // Start the event processing loop
@@ -63,7 +63,7 @@ class EventProcessor {
           this.processedCount++;
         }
       } catch (error) {
-        console.error('❌ Event processing error:', error);
+        console.error('Event processing error:', error);
         this.errorCount++;
 
         // Brief pause on error to prevent spam
@@ -75,7 +75,7 @@ class EventProcessor {
   // Process individual event
   async processEvent(event) {
     try {
-      console.log(`🔄 Processing event: ${event.type} - ${event.eventId}`);
+      console.log(`Processing event: ${event.type} - ${event.eventId}`);
 
       // Save to MongoDB (history)
       await this.saveToHistory(event);
@@ -86,10 +86,10 @@ class EventProcessor {
       // Trigger agent analysis
       await this.triggerAgents(event);
 
-      console.log(`✅ Event processed: ${event.eventId}`);
+      console.log(`Event processed: ${event.eventId}`);
 
     } catch (error) {
-      console.error(`❌ Failed to process event ${event.eventId}:`, error);
+      console.error(`Failed to process event ${event.eventId}:`, error);
       throw error;
     }
   }
@@ -219,10 +219,10 @@ class EventProcessor {
       // Set expiration (24 hours)
       await this.redis.expire(stateKey, 24 * 60 * 60);
 
-      console.log(`📊 Live state updated: ${stateKey}`);
+      console.log(`Live state updated: ${stateKey}`);
 
     } catch (error) {
-      console.error('❌ Live state update failed:', error);
+      console.error('Live state update failed:', error);
       throw error;
     }
   }
@@ -264,7 +264,7 @@ class EventProcessor {
       console.log(`Agents triggered for event: ${event.eventId}`);
 
     } catch (error) {
-      console.error('❌ Agent trigger failed:', error);
+      console.error('Agent trigger failed:', error);
       throw error;
     }
   }
@@ -339,7 +339,7 @@ class EventProcessor {
   // Stop processing
   stop() {
     this.isProcessing = false;
-    console.log('⏹️ EventProcessor stopped');
+    console.log('EventProcessor stopped');
   }
 
   // Close connections
@@ -347,7 +347,7 @@ class EventProcessor {
     this.stop();
     await this.redis.quit();
     await this.publisher.quit();
-    console.log('🔌 EventProcessor connections closed');
+    console.log('EventProcessor connections closed');
   }
 }
 

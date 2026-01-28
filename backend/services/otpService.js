@@ -14,8 +14,8 @@ class OTPService {
 
     // Verify transporter
     this.transporter.verify((err) => {
-      if (err) console.error("❌ Mailer connection failed:", err);
-      else console.log("✅ Mailer ready to send emails");
+      if (err) console.error("Mailer connection failed:", err);
+      else console.log("Mailer ready to send emails");
     });
 
     // In-memory OTP storage (in production, use Redis)
@@ -109,7 +109,7 @@ class OTPService {
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
         <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #16a34a; margin: 0;">⚡ EV Copilot</h1>
+            <h1 style="color: #16a34a; margin: 0;">EV Copilot</h1>
             <p style="color: #666; margin: 5px 0;">Smart EV Charging Solutions</p>
           </div>
     `;
@@ -120,7 +120,7 @@ class OTPService {
             <p>If you didn't request this, please ignore this email.</p>
             <p style="margin-top: 20px;">
               <strong>EV Copilot Team</strong><br>
-              Smart Charging for a Sustainable Future 🌱
+              Smart Charging for a Sustainable Future
             </p>
           </div>
         </div>
@@ -130,10 +130,10 @@ class OTPService {
     switch (type) {
       case 'email_verification':
         return {
-          subject: "Verify Your EV Copilot Account ⚡",
+          subject: "Verify Your EV Copilot Account",
           html: `
             ${baseStyle}
-            <h2 style="color: #333; text-align: center;">Welcome to EV Copilot! 🚗⚡</h2>
+            <h2 style="color: #333; text-align: center;">Welcome to EV Copilot!</h2>
             <p style="color: #666; font-size: 16px; line-height: 1.6;">
               Thank you for joining our smart EV charging platform. To complete your registration and start finding the best charging stations, please verify your email address.
             </p>
@@ -147,10 +147,10 @@ class OTPService {
               Once verified, you'll be able to:
             </p>
             <ul style="color: #666; font-size: 16px; line-height: 1.8;">
-              <li>🔍 Find nearby charging stations</li>
-              <li>💰 Get exclusive incentive offers</li>
-              <li>📊 Track your charging history</li>
-              <li>🌱 Monitor your carbon savings</li>
+              <li>Find nearby charging stations</li>
+              <li>Get exclusive incentive offers</li>
+              <li>Track your charging history</li>
+              <li>Monitor your carbon savings</li>
             </ul>
             ${footerStyle}
           `
@@ -158,10 +158,10 @@ class OTPService {
 
       case 'password_reset':
         return {
-          subject: "Reset Your EV Copilot Password 🔐",
+          subject: "Reset Your EV Copilot Password",
           html: `
             ${baseStyle}
-            <h2 style="color: #333; text-align: center;">Password Reset Request 🔐</h2>
+            <h2 style="color: #333; text-align: center;">Password Reset Request</h2>
             <p style="color: #666; font-size: 16px; line-height: 1.6;">
               We received a request to reset your EV Copilot account password. Use the code below to create a new password.
             </p>

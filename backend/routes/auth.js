@@ -27,7 +27,7 @@ import {
   validateDeleteAccount,
   validateSendPhoneOTP
 } from '../middlewares/validate.js';
-import { wrapAsync } from '../middlewares/wrapAsync.js';
+import wrapAsync from '../middlewares/wrapAsync.js';
 import User from '../models/User.js';
 import ExpressError from '../middlewares/expressError.js';
 

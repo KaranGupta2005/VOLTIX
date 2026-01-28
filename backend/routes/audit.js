@@ -1,7 +1,7 @@
 import express from 'express';
 import blockchainService from '../services/blockchainService.js';
 import auditorAgent from '../agents/AuditorAgent.js';
-import { wrapAsync } from '../middlewares/wrapAsync.js';
+import wrapAsync from '../middlewares/wrapAsync.js';
 import { userAuth } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();

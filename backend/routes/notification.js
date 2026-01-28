@@ -1,6 +1,6 @@
 import express from 'express';
 import notificationService from '../services/notificationService.js';
-import { wrapAsync } from '../middlewares/wrapAsync.js';
+import wrapAsync from '../middlewares/wrapAsync.js';
 import { 
   validateCreateNotification,
   validateUpdateNotification,

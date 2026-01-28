@@ -72,7 +72,7 @@ class BlockchainConfig {
 
   async initialize() {
     try {
-      console.log('🔗 Initializing blockchain connection...');
+      console.log('Initializing blockchain connection...');
       
       // Create provider
       this.provider = new ethers.JsonRpcProvider(this.RPC_URL);
@@ -114,7 +114,7 @@ class BlockchainConfig {
       };
       
     } catch (error) {
-      console.error('❌ Blockchain initialization failed:', error);
+      console.error('Blockchain initialization failed:', error);
       this.isConnected = false;
       
       return {
@@ -193,7 +193,7 @@ class BlockchainConfig {
       };
       
     } catch (error) {
-      console.error('❌ Blockchain read failed:', error);
+      console.error('Blockchain read failed:', error);
       
       return {
         success: false,
@@ -216,7 +216,7 @@ class BlockchainConfig {
       };
       
     } catch (error) {
-      console.error('❌ Get total logs failed:', error);
+      console.error('Get total logs failed:', error);
       
       return {
         success: false,
@@ -245,7 +245,7 @@ class BlockchainConfig {
       };
       
     } catch (error) {
-      console.error('❌ Audit verification failed:', error);
+      console.error('Audit verification failed:', error);
       
       return {
         success: false,
@@ -290,7 +290,7 @@ class BlockchainConfig {
     }
   }
 
-  // 🔌 Close connection
+  // Close connection
   async close() {
     if (this.provider) {
       await this.provider.destroy();

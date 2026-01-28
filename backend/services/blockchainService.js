@@ -8,21 +8,21 @@ class BlockchainService {
     this.isInitialized = false;
   }
 
-  // 🚀 Initialize blockchain service
+  // Initialize blockchain service
   async initialize() {
     try {
       const result = await blockchainConfig.initialize();
       this.isInitialized = result.success;
       
       if (this.isInitialized) {
-        console.log('✅ BlockchainService initialized successfully');
+        console.log('BlockchainService initialized successfully');
       } else {
-        console.error('❌ BlockchainService initialization failed:', result.error);
+        console.error('BlockchainService initialization failed:', result.error);
       }
       
       return result;
     } catch (error) {
-      console.error('❌ BlockchainService initialization error:', error);
+      console.error('BlockchainService initialization error:', error);
       this.isInitialized = false;
       return {
         success: false,
@@ -31,7 +31,7 @@ class BlockchainService {
     }
   }
 
-  // 🔐 Generate hash for audit data
+  // Generate hash for audit data
   generateAuditHash(data) {
     const auditData = {
       agent: data.agent,
@@ -49,10 +49,10 @@ class BlockchainService {
       .digest("hex");
   }
 
-  // 📝 Audit decision and write to blockchain
+  // Audit decision and write to blockchain
   async auditDecision(decisionData) {
     try {
-      console.log(`🔍 Auditing decision: ${decisionData.agent} - ${decisionData.action}`);
+      console.log(`Auditing decision: ${decisionData.agent} - ${decisionData.action}`);
       
       // Generate audit hash
       const auditHash = this.generateAuditHash(decisionData);
@@ -72,10 +72,10 @@ class BlockchainService {
         blockchainResult = await blockchainConfig.writeAuditLog(blockchainData);
         
         if (!blockchainResult.success) {
-          console.error('⚠️ Blockchain write failed, continuing without blockchain:', blockchainResult.error);
+          console.error('Blockchain write failed, continuing without blockchain:', blockchainResult.error);
         }
       } else {
-        console.warn('⚠️ Blockchain not initialized, skipping blockchain write');
+        console.warn('Blockchain not initialized, skipping blockchain write');
       }
       
       // Always save to database
@@ -91,7 +91,7 @@ class BlockchainService {
         auditedAt: new Date()
       });
       
-      console.log(`✅ Decision audited: ${decisionId}`);
+      console.log(`Decision audited: ${decisionId}`);
       
       return {
         success: true,
@@ -103,12 +103,12 @@ class BlockchainService {
       };
       
     } catch (error) {
-      console.error('❌ Decision audit failed:', error);
+      console.error('Decision audit failed:', error);
       throw new ExpressError(500, `Audit failed: ${error.message}`);
     }
   }
 
-  // 🔍 Verify decision integrity
+  // Verify decision integrity
   async verifyDecision(decisionId) {
     try {
       // Get decision from database
@@ -173,12 +173,12 @@ class BlockchainService {
       };
       
     } catch (error) {
-      console.error('❌ Decision verification failed:', error);
+      console.error('Decision verification failed:', error);
       throw new ExpressError(500, `Verification failed: ${error.message}`);
     }
   }
 
-  // 📊 Get audit statistics
+  // Get audit statistics
   async getAuditStats() {
     try {
       const totalDecisions = await DecisionLog.countDocuments();
@@ -214,12 +214,12 @@ class BlockchainService {
       };
       
     } catch (error) {
-      console.error('❌ Audit stats failed:', error);
+      console.error('Audit stats failed:', error);
       throw new ExpressError(500, `Stats failed: ${error.message}`);
     }
   }
 
-  // 🔍 Search audit logs
+  // Search audit logs
   async searchAuditLogs(filters = {}) {
     try {
       const query = {};
@@ -255,12 +255,12 @@ class BlockchainService {
       };
       
     } catch (error) {
-      console.error('❌ Audit search failed:', error);
+      console.error('Audit search failed:', error);
       throw new ExpressError(500, `Search failed: ${error.message}`);
     }
   }
 
-  // 🏥 Health check
+  // Health check
   async healthCheck() {
     try {
       const dbHealth = await DecisionLog.countDocuments();
@@ -291,13 +291,13 @@ class BlockchainService {
     }
   }
 
-  // 🔌 Close service
+  // Close service
   async close() {
     if (this.isInitialized) {
       await blockchainConfig.close();
       this.isInitialized = false;
     }
-    console.log('🔌 BlockchainService closed');
+    console.log('BlockchainService closed');
   }
 }
 

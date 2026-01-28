@@ -1,6 +1,6 @@
 import express from 'express';
 import pushService from '../services/pushService.js';
-import { wrapAsync } from '../middlewares/wrapAsync.js';
+import wrapAsync from '../middlewares/wrapAsync.js';
 
 const router = express.Router();
 
