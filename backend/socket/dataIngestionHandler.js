@@ -25,7 +25,7 @@ export default function dataIngestionHandler(io, socket) {
       });
 
     } catch (error) {
-      console.error('❌ Station update error:', error);
+      console.error('Station update error:', error);
       socket.emit('error', {
         message: 'Failed to process station update',
         error: error.message
@@ -52,7 +52,7 @@ export default function dataIngestionHandler(io, socket) {
       });
 
     } catch (error) {
-      console.error('❌ Sensor update error:', error);
+      console.error('Sensor update error:', error);
       socket.emit('error', {
         message: 'Failed to process sensor update',
         error: error.message
@@ -79,7 +79,7 @@ export default function dataIngestionHandler(io, socket) {
       });
 
     } catch (error) {
-      console.error('❌ User event error:', error);
+      console.error('User event error:', error);
       socket.emit('error', {
         message: 'Failed to process user event',
         error: error.message
@@ -106,7 +106,7 @@ export default function dataIngestionHandler(io, socket) {
       });
 
     } catch (error) {
-      console.error('❌ Energy update error:', error);
+      console.error('Energy update error:', error);
       socket.emit('error', {
         message: 'Failed to process energy update',
         error: error.message
@@ -162,7 +162,7 @@ export default function dataIngestionHandler(io, socket) {
       });
 
     } catch (error) {
-      console.error('❌ Batch update error:', error);
+      console.error('Batch update error:', error);
       socket.emit('error', {
         message: 'Failed to process batch update',
         error: error.message
@@ -176,7 +176,7 @@ export default function dataIngestionHandler(io, socket) {
       const stats = await dataIngestionService.getQueueStats();
       socket.emit('queue:stats:response', stats);
     } catch (error) {
-      console.error('❌ Queue stats error:', error);
+      console.error('Queue stats error:', error);
       socket.emit('error', {
         message: 'Failed to get queue stats',
         error: error.message
@@ -190,7 +190,7 @@ export default function dataIngestionHandler(io, socket) {
       const items = await dataIngestionService.peekQueue(count);
       socket.emit('queue:peek:response', items);
     } catch (error) {
-      console.error('❌ Queue peek error:', error);
+      console.error('Queue peek error:', error);
       socket.emit('error', {
         message: 'Failed to peek queue',
         error: error.message
@@ -204,7 +204,7 @@ export default function dataIngestionHandler(io, socket) {
       const health = await dataIngestionService.healthCheck();
       socket.emit('ingestion:health:response', health);
     } catch (error) {
-      console.error('❌ Health check error:', error);
+      console.error('Health check error:', error);
       socket.emit('error', {
         message: 'Health check failed',
         error: error.message
@@ -219,7 +219,7 @@ export default function dataIngestionHandler(io, socket) {
       const result = await dataIngestionService.clearQueue();
       socket.emit('queue:clear:response', result);
     } catch (error) {
-      console.error('❌ Queue clear error:', error);
+      console.error('Queue clear error:', error);
       socket.emit('error', {
         message: 'Failed to clear queue',
         error: error.message

@@ -402,21 +402,21 @@ class BaseAgent {
     console.log(`🛑 [${this.agentName}] Agent stopped`);
   }
 
-  // 🚀 Start agent
+  // Start agent
   start() {
     this.isActive = true;
     this.startTime = Date.now();
-    console.log(`🚀 [${this.agentName}] Agent started`);
+    console.log(`[${this.agentName}] Agent started`);
   }
 
-  // 📋 Audit decision helper method (avoids circular dependency)
+  // Audit decision helper method (avoids circular dependency)
   async auditDecision(decisionData, io) {
     try {
       // Dynamic import to avoid circular dependency
       const { default: auditorAgent } = await import('./AuditorAgent.js');
       await auditorAgent.auditDecision(decisionData, io);
     } catch (error) {
-      console.error(`❌ [${this.agentName}] Audit failed:`, error);
+      console.error(`[${this.agentName}] Audit failed:`, error);
     }
   }
 }

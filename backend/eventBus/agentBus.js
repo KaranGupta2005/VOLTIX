@@ -26,7 +26,7 @@ class AgentBus {
     this.io = null;
     this.supervisorAgent = null; // Will be loaded dynamically
 
-    console.log('🚌 AgentBus initialized');
+    console.log('AgentBus initialized');
   }
 
   // Start listening for agent events
@@ -50,10 +50,10 @@ class AgentBus {
     // Subscribe to agent events channel
     this.subscriber.subscribe(this.AGENT_CHANNEL, (err, count) => {
       if (err) {
-        console.error('❌ AgentBus subscription failed:', err);
+        console.error('AgentBus subscription failed:', err);
         return;
       }
-      console.log(`🚌 AgentBus subscribed to ${count} channel(s)`);
+      console.log(`AgentBus subscribed to ${count} channel(s)`);
     });
 
     // Handle incoming agent events
@@ -63,18 +63,18 @@ class AgentBus {
       }
     });
 
-    console.log('🚌 AgentBus started - listening for agent events');
+    console.log('AgentBus started - listening for agent events');
   }
 
-  // 🔄 Load supervisor agent dynamically
+  // Load supervisor agent dynamically
   async loadSupervisorAgent() {
     if (!this.supervisorAgent) {
       try {
         const { default: supervisorAgent } = await import('../agents/SupervisorAgent.js');
         this.supervisorAgent = supervisorAgent;
-        console.log('🎯 SupervisorAgent loaded successfully');
+        console.log('SupervisorAgent loaded successfully');
       } catch (error) {
-        console.error('❌ Failed to load SupervisorAgent:', error);
+        console.error('Failed to load SupervisorAgent:', error);
       }
     }
   }
@@ -98,14 +98,14 @@ class AgentBus {
           await this.publishCoordinationResult(event, result);
         }
       } else {
-        console.error(`❌ [AgentBus] Event processing failed: ${event.eventId}`, result.error);
+        console.error(`[AgentBus] Event processing failed: ${event.eventId}`, result.error);
         
         // Publish failure notification
         await this.publishFailureNotification(event, result);
       }
       
     } catch (error) {
-      console.error('❌ [AgentBus] Event handling error:', error);
+      console.error('[AgentBus] Event handling error:', error);
     }
   }
 
@@ -128,7 +128,7 @@ class AgentBus {
       console.log(`📢 [AgentBus] Coordination result published: ${coordinationResult.eventId}`);
       
     } catch (error) {
-      console.error('❌ [AgentBus] Coordination result publish failed:', error);
+      console.error('[AgentBus] Coordination result publish failed:', error);
     }
   }
 
@@ -150,7 +150,7 @@ class AgentBus {
       console.log(`🚨 [AgentBus] Failure notification published: ${failureNotification.eventId}`);
       
     } catch (error) {
-      console.error('❌ [AgentBus] Failure notification publish failed:', error);
+      console.error('[AgentBus] Failure notification publish failed:', error);
     }
   }
 
@@ -177,7 +177,7 @@ class AgentBus {
       };
       
     } catch (error) {
-      console.error('❌ [AgentBus] Agent message publish failed:', error);
+      console.error('[AgentBus] Agent message publish failed:', error);
       return {
         success: false,
         error: error.message
@@ -208,7 +208,7 @@ class AgentBus {
       };
       
     } catch (error) {
-      console.error('❌ [AgentBus] Broadcast failed:', error);
+      console.error('[AgentBus] Broadcast failed:', error);
       return {
         success: false,
         error: error.message
@@ -264,7 +264,7 @@ class AgentBus {
     this.stop();
     await this.subscriber.quit();
     await this.publisher.quit();
-    console.log('🔌 AgentBus connections closed');
+    console.log('AgentBus connections closed');
   }
 }
 

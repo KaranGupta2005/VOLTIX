@@ -28,7 +28,7 @@ export const decisionEngine = async ({ eventType, payload, context, io }) => {
       channels
     };
   } catch (error) {
-    console.error('❌ Decision Engine error:', error);
+    console.error('Decision Engine error:', error);
     throw error;
   }
 };

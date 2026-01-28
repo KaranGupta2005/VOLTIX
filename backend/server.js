@@ -20,6 +20,7 @@ import notificationRoutes from "./routes/notification.js";
 import pushRoutes from "./routes/push.js";
 import dataRoutes from "./routes/data.js";
 import agentRoutes from "./routes/agents.js";
+import blockchainRoutes from "./routes/blockchain.js";
 
 dotenv.config();
 
@@ -41,16 +42,16 @@ app.get("/test", (req, res) => {
 
 await connectDB();
 
-// 🔗 Initialize Blockchain Service
-console.log('🔗 Initializing blockchain service...');
+// Initialize Blockchain Service
+console.log('Initializing blockchain service...');
 const blockchainInit = await blockchainService.initialize();
 if (blockchainInit.success) {
-  console.log('✅ Blockchain service initialized successfully');
-  console.log(`📋 Contract: ${blockchainInit.contractAddress}`);
-  console.log(`👛 Wallet: ${blockchainInit.walletAddress}`);
+  console.log('Blockchain service initialized successfully');
+  console.log(`Contract: ${blockchainInit.contractAddress}`);
+  console.log(`Wallet: ${blockchainInit.walletAddress}`);
 } else {
-  console.warn('⚠️ Blockchain service failed to initialize:', blockchainInit.error);
-  console.warn('⚠️ Continuing without blockchain - audit logs will be database-only');
+  console.warn('Blockchain service failed to initialize:', blockchainInit.error);
+  console.warn('Continuing without blockchain - audit logs will be database-only');
 }
 
 app.use((err, req, res, next) => {
@@ -68,6 +69,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/push", pushRoutes);
 app.use("/api/data", dataRoutes);
 app.use("/api/agents", agentRoutes);
+app.use("/api/blockchain", blockchainRoutes);
 
 const server = http.createServer(app);
 
@@ -77,13 +79,13 @@ const io = initSocket(server);
 // Make io available globally for notification dispatch
 app.set('io', io);
 
-// 🚀 Start Event Processor (THE BRAIN)
+// Start Event Processor (THE BRAIN)
 eventProcessor.start(io);
-console.log('🧠 Event Processor started - Ready to process live data!');
+console.log('Event Processor started - Ready to process live data!');
 
-// 🚌 Start Agent Bus (AGENT COORDINATION)
+// Start Agent Bus (AGENT COORDINATION)
 await agentBus.start(io);
-console.log('🚌 Agent Bus started - Ready to coordinate agents!');
+console.log('Agent Bus started - Ready to coordinate agents!');
 
 // console.log(webpush.generateVAPIDKeys());
 if (process.env.PUBLIC_VAPID_KEY && process.env.PRIVATE_VAPID_KEY) {

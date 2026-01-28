@@ -58,7 +58,7 @@ class DataIngestionService {
         queued: true
       };
     } catch (error) {
-      console.error('❌ Data ingestion failed:', error);
+      console.error('Data ingestion failed:', error);
       throw error;
     }
   }
@@ -92,7 +92,7 @@ class DataIngestionService {
         queued: true
       };
     } catch (error) {
-      console.error('❌ Sensor ingestion failed:', error);
+      console.error('Sensor ingestion failed:', error);
       throw error;
     }
   }
@@ -127,7 +127,7 @@ class DataIngestionService {
         queued: true
       };
     } catch (error) {
-      console.error('❌ User event ingestion failed:', error);
+      console.error('User event ingestion failed:', error);
       throw error;
     }
   }
@@ -178,7 +178,7 @@ class DataIngestionService {
         queueName: this.SIGNAL_QUEUE
       };
     } catch (error) {
-      console.error('❌ Queue stats failed:', error);
+      console.error('Queue stats failed:', error);
       return {
         queueLength: 0,
         memoryUsage: 0,
@@ -194,7 +194,7 @@ class DataIngestionService {
       console.log(`🧹 Queue cleared: ${deleted} items removed`);
       return { success: true, itemsRemoved: deleted };
     } catch (error) {
-      console.error('❌ Queue clear failed:', error);
+      console.error('Queue clear failed:', error);
       throw error;
     }
   }
@@ -205,7 +205,7 @@ class DataIngestionService {
       const items = await this.redis.lrange(this.SIGNAL_QUEUE, 0, count - 1);
       return items.map(item => JSON.parse(item));
     } catch (error) {
-      console.error('❌ Queue peek failed:', error);
+      console.error('Queue peek failed:', error);
       return [];
     }
   }

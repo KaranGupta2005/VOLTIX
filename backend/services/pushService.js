@@ -187,29 +187,29 @@ class PushService {
           icon: "/icons/mechanic.png"
         },
         self_healing_started: {
-          title: "🔄 Auto-Healing in Progress",
+          title: "Auto-Healing in Progress",
           message: `Station ${payload.stationId}: Attempting automatic repair`,
           icon: "/icons/healing.png"
         },
         self_healing_success: {
-          title: "✅ Auto-Healing Successful",
+          title: "Auto-Healing Successful",
           message: `Station ${payload.stationId}: Issue resolved automatically`,
           icon: "/icons/success.png"
         },
         maintenance_required: {
-          title: "⚠️ Maintenance Required",
+          title: "Maintenance Required",
           message: `Station ${payload.stationId}: Technician dispatch needed`,
           icon: "/icons/maintenance.png"
         }
       },
       traffic: {
         incentive_offered: {
-          title: "💰 Special Offer Available!",
+          title: "Special Offer Available!",
           message: `Save ₹${payload.amount} by switching to ${payload.alternativeStation}`,
           icon: "/icons/incentive.png"
         },
         congestion_alert: {
-          title: "🚦 Traffic Alert",
+          title: "Traffic Alert",
           message: `Station ${payload.stationId}: ${payload.waitTime} min wait time`,
           icon: "/icons/traffic.png"
         },
@@ -221,12 +221,12 @@ class PushService {
       },
       logistics: {
         stockout_predicted: {
-          title: "📦 Low Inventory Alert",
+          title: "Low Inventory Alert",
           message: `Station ${payload.stationId}: Stockout predicted in ${payload.timeToStockout}`,
           icon: "/icons/inventory.png"
         },
         dispatch_initiated: {
-          title: "🚚 Dispatch in Progress",
+          title: "Dispatch in Progress",
           message: `Refill truck dispatched to Station ${payload.stationId}`,
           icon: "/icons/dispatch.png"
         },
@@ -238,34 +238,34 @@ class PushService {
       },
       energy: {
         price_spike: {
-          title: "⚡ Energy Price Alert",
+          title: "Energy Price Alert",
           message: `Grid prices increased by ${payload.percentage}% - Charging paused`,
           icon: "/icons/energy.png"
         },
         trading_opportunity: {
-          title: "💹 Trading Opportunity",
+          title: "Trading Opportunity",
           message: `Selling ${payload.amount}kWh back to grid for ₹${payload.revenue}`,
           icon: "/icons/trading.png"
         },
         grid_instability: {
-          title: "⚠️ Grid Instability",
+          title: "Grid Instability",
           message: "Charging temporarily paused for grid stability",
           icon: "/icons/grid.png"
         }
       },
       auditor: {
         anomaly_detected: {
-          title: "🔍 Anomaly Detected",
+          title: "Anomaly Detected",
           message: `Unusual activity flagged for review: ${payload.description}`,
           icon: "/icons/audit.png"
         },
         compliance_violation: {
-          title: "⚖️ Compliance Alert",
+          title: "Compliance Alert",
           message: `Policy violation detected: ${payload.violation}`,
           icon: "/icons/compliance.png"
         },
         audit_complete: {
-          title: "✅ Audit Complete",
+          title: "Audit Complete",
           message: `${payload.decisionsAnalyzed} decisions analyzed - ${payload.issuesFound} issues found`,
           icon: "/icons/audit-complete.png"
         }

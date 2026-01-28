@@ -45,9 +45,9 @@ export const dispatch = async ({
         [recipient.userId]
       );
       
-      console.log(`📲 Push notification sent to user ${recipient.userId}`);
+      console.log(`Push notification sent to user ${recipient.userId}`);
     } catch (error) {
-      console.error(`❌ Push notification failed for user ${recipient.userId}:`, error.message);
+      console.error(`Push notification failed for user ${recipient.userId}:`, error.message);
     }
   }
 };

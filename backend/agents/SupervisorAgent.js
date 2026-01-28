@@ -39,10 +39,10 @@ class SupervisorAgent extends BaseAgent {
     this.activeAgentSessions = new Map();
     this.agentPerformance = new Map();
     
-    console.log('🎯 SupervisorAgent initialized - Ready to orchestrate agents');
+    console.log('SupervisorAgent initialized - Ready to orchestrate agents');
   }
 
-  // 🔄 Dynamically load agents to avoid circular dependencies
+  // Dynamically load agents to avoid circular dependencies
   async loadAgents() {
     if (Object.keys(this.agents).length === 0) {
       try {
@@ -60,9 +60,9 @@ class SupervisorAgent extends BaseAgent {
           auditor: auditorAgent
         };
         
-        console.log('🤖 All agents loaded successfully');
+        console.log('All agents loaded successfully');
       } catch (error) {
-        console.error('❌ Failed to load agents:', error);
+        console.error('Failed to load agents:', error);
       }
     }
   }
@@ -466,7 +466,7 @@ class SupervisorAgent extends BaseAgent {
     };
   }
 
-  // 🎯 Set IO reference for notifications
+  // Set IO reference for notifications
   setIO(io) {
     this.io = io;
   }

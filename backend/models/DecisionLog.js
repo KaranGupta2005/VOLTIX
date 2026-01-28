@@ -9,8 +9,7 @@ const DecisionLogSchema = new mongoose.Schema({
   },
   timestamp: {
     type: Date,
-    required: true,
-    index: true
+    required: true
   },
   stationId: {
     type: String,
@@ -260,7 +259,7 @@ const DecisionLogSchema = new mongoose.Schema({
     enum: ['low', 'medium', 'high', 'urgent'],
     default: 'medium'
   },
-  // 🔐 BLOCKCHAIN AUDIT FIELDS
+  // BLOCKCHAIN AUDIT FIELDS
   auditHash: {
     type: String,
     required: false, // Will be added by auditor

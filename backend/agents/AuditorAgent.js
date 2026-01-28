@@ -186,7 +186,7 @@ class AuditorAgent extends BaseAgent {
       // STEP 6: Check for violations and alerts
       await this.checkViolations(decisionData, qualityAnalysis, complianceCheck, riskAssessment, io);
       
-      console.log(`✅ Decision audited successfully: ${auditResult.decisionId}`);
+      console.log(`Decision audited successfully: ${auditResult.decisionId}`);
       
       return {
         success: true,
@@ -199,7 +199,7 @@ class AuditorAgent extends BaseAgent {
       };
       
     } catch (error) {
-      console.error(`❌ Audit failed:`, error);
+      console.error(`Audit failed:`, error);
       await this.reportViolation('AUDIT_SYSTEM_ERROR', decisionData, [error.message], io);
       throw error;
     }
@@ -487,7 +487,7 @@ class AuditorAgent extends BaseAgent {
       console.log(`[AUDITOR] Violation reported: ${violationType}`);
       
     } catch (error) {
-      console.error('❌ [AUDITOR] Failed to report violation:', error);
+      console.error('[AUDITOR] Failed to report violation:', error);
     }
   }
 
@@ -539,7 +539,7 @@ class AuditorAgent extends BaseAgent {
       };
       
     } catch (error) {
-      console.error('❌ [AUDITOR] Report generation failed:', error);
+      console.error('[AUDITOR] Report generation failed:', error);
       throw error;
     }
   }

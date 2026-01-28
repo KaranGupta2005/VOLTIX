@@ -396,7 +396,7 @@ class NotificationService {
       },
       auditor: {
         anomaly_detected: {
-          title: "🔍 Anomaly Detected",
+          title: "Anomaly Detected",
           message: `Unusual activity flagged: ${payload.description}`,
           priority: 'high',
           channels: { socket: true, push: true }

@@ -1,7 +1,7 @@
 import express from 'express';
 import dataIngestionService from '../services/dataIngestionService.js';
 import eventProcessor from '../services/eventProcessor.js';
-import { wrapAsync } from '../middlewares/wrapAsync.js';
+import wrapAsync from '../middlewares/wrapAsync.js';
 import { userAuth } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();

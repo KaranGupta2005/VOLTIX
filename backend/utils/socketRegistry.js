@@ -2,7 +2,7 @@ export const onlineUsers = new Map();
 
 export const addUser = (userId, socketId) => {
   if (!userId) {
-    console.error("❌ addUser called with invalid userId");
+    console.error("addUser called with invalid userId");
     return;
   }
   onlineUsers.set(String(userId), socketId);
