@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,14 +21,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { signup, type SignupData } from "@/lib/api";
 
 export function SignUpForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -54,13 +58,26 @@ export function SignUpForm({
     setLoading(true);
     setError("");
 
-    // TODO: Add API integration here
-    console.log("Form submitted:", formData);
+    try {
+      const response = await signup(formData as SignupData);
 
-    setTimeout(() => {
+      if (response.success) {
+        setSuccess(true);
+        // Redirect to email verification page with email pre-filled
+        setTimeout(() => {
+          router.push(
+            `/verify-email?email=${encodeURIComponent(formData.email)}`,
+          );
+        }, 1500);
+      } else {
+        setError(response.message || "Registration failed. Please try again.");
+      }
+    } catch (err) {
+      setError("Something went wrong. Please try again.");
+      console.error("Signup error:", err);
+    } finally {
       setLoading(false);
-      alert("Form submitted! (API not connected yet)");
-    }, 1000);
+    }
   };
 
   return (
@@ -81,6 +98,12 @@ export function SignUpForm({
           {error && (
             <div className="text-red-500 text-sm mb-4 p-3 bg-red-50 dark:bg-red-900/20 rounded border border-red-200 dark:border-red-800">
               {error}
+            </div>
+          )}
+          {success && (
+            <div className="text-green-600 text-sm mb-4 p-3 bg-green-50 dark:bg-green-900/20 rounded border border-green-200 dark:border-green-800">
+              ✅ Account created successfully! Please check your email for
+              verification. Redirecting to login...
             </div>
           )}
 
