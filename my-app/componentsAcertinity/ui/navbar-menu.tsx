@@ -2,8 +2,7 @@
 import React from "react";
 import { motion } from "motion/react";
 import Link from "next/link";
-import {buttonVariants} from "@/components/ui/button";
-
+import { buttonVariants } from "@/components/ui/button";
 
 const transition = {
   type: "spring" as const,
@@ -88,10 +87,13 @@ export const Menu = ({
       {/* Right: extras + auth */}
       <div className="flex items-center gap-4">
         {rightContent}
-        <Link href="/sign-in" className="text-sm text-black dark:text-white hover:opacity-90">
+        <Link
+          href="/login"
+          className="text-sm text-black dark:text-white hover:opacity-90"
+        >
           Sign In
         </Link>
-        <Link href={'/sign-up'} className={buttonVariants({ variant: 'outline' })}>
+        <Link href="/SignUp" className={buttonVariants({ variant: "outline" })}>
           Sign Up
         </Link>
       </div>

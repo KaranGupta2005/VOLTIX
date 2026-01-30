@@ -22,60 +22,50 @@ function Navbar({ className }: { className?: string }) {
     <div
       className={cn("fixed top-10 inset-x-0 max-w-4xl mx-auto z-50", className)}
     >
-
       <Menu setActive={setActive}>
         <MenuItem setActive={setActive} active={active} item="Home">
           <div className="flex flex-col space-y-4 text-sm">
-            <HoveredLink href="/web-dev">Web Development</HoveredLink>
-            <HoveredLink href="/interface-design">Interface Design</HoveredLink>
-            <HoveredLink href="/seo">Search Engine Optimization</HoveredLink>
-            <HoveredLink href="/branding">Branding</HoveredLink>
+            <HoveredLink href="/">Home</HoveredLink>
+            <HoveredLink href="/#features">Features</HoveredLink>
+            <HoveredLink href="/#pricing">Pricing</HoveredLink>
+            <HoveredLink href="/#contact">Contact</HoveredLink>
           </div>
         </MenuItem>
         <MenuItem setActive={setActive} active={active} item="Features">
-          <div className="  text-sm grid grid-cols-2 gap-10 p-4">
+          <div className="text-sm grid grid-cols-2 gap-10 p-4">
             <ProductItem
-              title="Algochurn"
-              href="https://algochurn.com"
+              title="Smart Charging"
+              href="/#features"
               src="https://assets.aceternity.com/demos/algochurn.webp"
-              description="Prepare for tech interviews like never before."
+              description="AI-powered charging optimization for your EV."
             />
             <ProductItem
-              title="Tailwind Master Kit"
-              href="https://tailwindmasterkit.com"
+              title="Station Finder"
+              href="/#features"
               src="https://assets.aceternity.com/demos/tailwindmasterkit.webp"
-              description="Production ready Tailwind css components for your next project"
+              description="Find the nearest charging station instantly."
             />
             <ProductItem
-              title="Moonbeam"
-              href="https://gomoonbeam.com"
+              title="Real-time Monitoring"
+              href="/#features"
               src="https://assets.aceternity.com/demos/Screenshot+2024-02-21+at+11.51.31%E2%80%AFPM.png"
-              description="Never write from scratch again. Go from idea to blog in minutes."
+              description="Track your charging status in real-time."
             />
             <ProductItem
-              title="Rogue"
-              href="https://userogue.com"
+              title="Fleet Management"
+              href="/#features"
               src="https://assets.aceternity.com/demos/Screenshot+2024-02-21+at+11.47.07%E2%80%AFPM.png"
-              description="Respond to government RFPs, RFIs and RFQs 10x faster using AI"
+              description="Manage your entire EV fleet efficiently."
             />
           </div>
         </MenuItem>
         <MenuItem setActive={setActive} active={active} item="Pricing">
           <div className="flex flex-col space-y-4 text-sm">
-            <HoveredLink href="/hobby">Hobby</HoveredLink>
-            <HoveredLink href="/individual">Individual</HoveredLink>
-            <HoveredLink href="/team">Team</HoveredLink>
-            <HoveredLink href="/enterprise">Enterprise</HoveredLink>
+            <HoveredLink href="/#pricing">Basic Plan</HoveredLink>
+            <HoveredLink href="/#pricing">Premium Plan</HoveredLink>
+            <HoveredLink href="/#pricing">Enterprise Plan</HoveredLink>
           </div>
         </MenuItem>
-          <MenuItem setActive={setActive} active={active} item="Blog">
-          <div className="flex flex-col space-y-4 text-sm">
-              <HoveredLink href="/hobby">Hobby</HoveredLink>
-              <HoveredLink href="/individual">Individual</HoveredLink>
-              <HoveredLink href="/team">Team</HoveredLink>
-              <HoveredLink href="/enterprise">Enterprise</HoveredLink>
-          </div>
-      </MenuItem>
       </Menu>
     </div>
   );
