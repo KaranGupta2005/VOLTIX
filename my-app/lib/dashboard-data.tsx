@@ -14,6 +14,7 @@ import {
   LifeBuoy,
   Users,
   Video,
+  Download,
 } from "lucide-react";
 
 import type {
@@ -229,5 +230,10 @@ export const sidebarItems: SidebarItem[] = [
     title: "Settings",
     icon: <Bookmark className="h-4 w-4" />,
     url: "/dashboard/settings",
+  },
+  {
+    title: "Download App",
+    icon: <Download className="h-4 w-4" />,
+    url: "/download",
   },
 ];

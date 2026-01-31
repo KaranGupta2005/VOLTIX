@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Download, Plus } from "lucide-react";
+import Link from "next/link";
 
 import ChatBot from "@/app/components/ChatBot";
 import NotificationsList from "@/app/components/notifications-list";
@@ -69,14 +70,12 @@ export default function Dashboard() {
                   </TabsTrigger>
                 </TabsList>
                 <div className="hidden gap-2 md:flex">
-                  <Button variant="outline" className="rounded-2xl">
-                    <Download className="mr-2 h-4 w-4" />
-                    Install App
-                  </Button>
-                  <Button className="rounded-2xl">
-                    <Plus className="mr-2 h-4 w-4" />
-                    New Project
-                  </Button>
+                  <Link href="/download">
+                    <Button className="rounded-2xl bg-green-500 hover:bg-green-600 text-white">
+                      <Download className="mr-2 h-4 w-4" />
+                      Download App
+                    </Button>
+                  </Link>
                 </div>
               </div>
 
