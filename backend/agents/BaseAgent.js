@@ -130,13 +130,25 @@ class BaseAgent {
         await this.escalate(decision, actionResult, verificationResult, eventData, io);
         this.failedActions++;
         
-        // Audit the failed decision
+        // Audit the failed decision with explainability
         if (auditorAgent && this.agentName !== 'AuditorAgent') {
           await auditorAgent.auditDecision({
             ...decisionData,
             action: `${decision.action}_FAILED`,
             verificationFailure: verificationResult.reason
           }, io);
+        }
+        
+        // Log failed decision
+        try {
+          const { default: decisionLogger } = await import('../services/decisionLogger.js');
+          await decisionLogger.logDecision({
+            ...decisionData,
+            action: `${decision.action}_FAILED`,
+            verificationFailure: verificationResult.reason
+          }, io);
+        } catch (logError) {
+          console.error(`[${this.agentName}] Failed decision logging error:`, logError);
         }
         
         return { 
@@ -150,9 +162,23 @@ class BaseAgent {
       console.log(`[${this.agentName}] Action verified successfully`);
       this.successfulActions++;
       
-      // STEP 7: AUDIT - Record successful decision
+      // STEP 7: AUDIT - Record successful decision with explainability
       if (auditorAgent && this.agentName !== 'AuditorAgent') {
         await auditorAgent.auditDecision(decisionData, io);
+      }
+      
+      // Log decision with explainability and blockchain audit
+      try {
+        const { default: decisionLogger } = await import('../services/decisionLogger.js');
+        const logResult = await decisionLogger.logDecision(decisionData, io);
+        
+        if (logResult.success) {
+          console.log(`[${this.agentName}] Decision logged with explanation: ${logResult.decisionId}`);
+        } else {
+          console.warn(`[${this.agentName}] Decision logging failed: ${logResult.error}`);
+        }
+      } catch (logError) {
+        console.error(`[${this.agentName}] Decision logger error:`, logError);
       }
       
       // Send success notification if significant impact
@@ -172,13 +198,25 @@ class BaseAgent {
       console.error(`[${this.agentName}] Lifecycle error:`, error);
       this.failedActions++;
       
-      // Audit the error
+      // Audit the error with explainability
       if (auditorAgent && this.agentName !== 'AuditorAgent' && decisionData) {
         await auditorAgent.auditDecision({
           ...decisionData,
           action: `${decisionData.action}_ERROR`,
           systemError: error.message
         }, io);
+      }
+      
+      // Log error decision
+      try {
+        const { default: decisionLogger } = await import('../services/decisionLogger.js');
+        await decisionLogger.logDecision({
+          ...decisionData,
+          action: `${decisionData.action}_ERROR`,
+          systemError: error.message
+        }, io);
+      } catch (logError) {
+        console.error(`[${this.agentName}] Error decision logging failed:`, logError);
       }
       
       // Escalate system errors

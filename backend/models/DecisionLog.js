@@ -278,6 +278,31 @@ const DecisionLogSchema = new mongoose.Schema({
     type: Date,
     required: false // When the audit was completed
   },
+  // EXPLAINABILITY FIELDS
+  explanation: {
+    type: String,
+    required: false // Human-readable explanation of the decision
+  },
+  explanationGenerated: {
+    type: Boolean,
+    default: false // Whether explanation was successfully generated
+  },
+  explanationError: {
+    type: String,
+    required: false // Error message if explanation generation failed
+  },
+  explanationRegeneratedAt: {
+    type: Date,
+    required: false // When explanation was last regenerated
+  },
+  blockchainHash: {
+    type: String,
+    required: false // Hash used for blockchain audit
+  },
+  transactionHash: {
+    type: String,
+    required: false // Blockchain transaction hash
+  },
   auditMetrics: {
     quality: {
       score: { type: Number, min: 0, max: 1 },
