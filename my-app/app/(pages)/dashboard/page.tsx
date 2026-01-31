@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Download, Plus } from "lucide-react";
 
+import ChatBot from "@/app/components/ChatBot";
 import { DashboardSidebar } from "@/app/components/dashboard-sidebar";
 import { HomeContent } from "@/app/components/dashboard-content";
 import { Button } from "@/components/ui/button";
@@ -120,6 +121,7 @@ export default function Dashboard() {
           </main>
         </SidebarInset>
       </SidebarProvider>
+      <ChatBot />
     </div>
   );
 }
