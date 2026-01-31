@@ -1,6 +1,6 @@
 // API Configuration and Utility Functions for VOLTIX
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5001/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002/api";
 
 interface ApiResponse<T = unknown> {
   success: boolean;
