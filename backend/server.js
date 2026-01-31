@@ -69,7 +69,6 @@ app.use((err, req, res, next) => {
   res.status(status).json({ message });
 });
 
-//routes
 app.use("/api/ml", mlRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/audit", auditRoutes);
@@ -80,6 +79,27 @@ app.use("/api/agents", agentRoutes);
 app.use("/api/blockchain", blockchainRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/system", systemRoutes);
+
+// 404 handler for API routes
+app.use('/api', (req, res) => {
+    res.status(404).json({
+        success: false,
+        message: `API endpoint ${req.originalUrl} not found`
+    });
+});
+
+// Error handling middleware (MUST be after routes)
+app.use((err, req, res, next) => {
+    console.error('❌ Error caught by middleware:', err);
+    const status = typeof err.status === "number" ? err.status : 500;
+    const message = err.message || "Internal Server Error";
+    if (res.headersSent) return next(err);
+    res.status(status).json({ 
+        success: false,
+        message,
+        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+    });
+});
 
 const server = http.createServer(app);
 

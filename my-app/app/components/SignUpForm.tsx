@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -21,18 +21,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { signup, type SignupData } from "@/lib/api";
+import { useAuth } from "../hooks/useAuth";
 
 export function SignUpForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const router = useRouter();
+  const { signup } = useAuth();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -47,6 +47,25 @@ export function SignUpForm({
     registrationNumber: "",
   });
 
+  // Generate unique registration number on component mount
+  useEffect(() => {
+    const generateRegNumber = () => {
+      const states = ['MH', 'DL', 'KA', 'TN', 'WB'];
+      const state = states[Math.floor(Math.random() * states.length)];
+      const district = String(Math.floor(Math.random() * 99) + 1).padStart(2, '0');
+      const series = String.fromCharCode(65 + Math.floor(Math.random() * 26)) + 
+                    String.fromCharCode(65 + Math.floor(Math.random() * 26));
+      // Use timestamp to ensure uniqueness
+      const timestamp = Date.now().toString().slice(-4);
+      return `${state}${district}${series}${timestamp}`;
+    };
+
+    setFormData(prev => ({
+      ...prev,
+      registrationNumber: generateRegNumber()
+    }));
+  }, []);
+
   const handleChange = (field: string, value: string | number) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -59,21 +78,18 @@ export function SignUpForm({
     setError("");
 
     try {
-      const response = await signup(formData as SignupData);
-
+      const response = await signup(formData);
       if (response.success) {
         setSuccess(true);
-        // Redirect to email verification page with email pre-filled
+        // Redirect to email verification page with userId
         setTimeout(() => {
-          router.push(
-            `/verify-email?email=${encodeURIComponent(formData.email)}`,
-          );
+          router.push(`/verify-email?userId=${response.userId}`);
         }, 1500);
       } else {
         setError(response.message || "Registration failed. Please try again.");
       }
-    } catch (err) {
-      setError("Something went wrong. Please try again.");
+    } catch (err: any) {
+      setError(err.message || "Something went wrong. Please try again.");
       console.error("Signup error:", err);
     } finally {
       setLoading(false);
@@ -90,8 +106,8 @@ export function SignUpForm({
             {step === 1
               ? "Personal Info"
               : step === 2
-                ? "Vehicle Details"
-                : "Review & Submit"}
+              ? "Vehicle Details"
+              : "Review & Submit"}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -103,7 +119,7 @@ export function SignUpForm({
           {success && (
             <div className="text-green-600 text-sm mb-4 p-3 bg-green-50 dark:bg-green-900/20 rounded border border-green-200 dark:border-green-800">
               ✅ Account created successfully! Please check your email for
-              verification. Redirecting to login...
+              verification. Redirecting...
             </div>
           )}
 
@@ -201,7 +217,7 @@ export function SignUpForm({
                     max={2025}
                     value={formData.vehicleYear}
                     onChange={(e) =>
-                      handleChange("vehicleYear", e.target.value)
+                      handleChange("vehicleYear", parseInt(e.target.value))
                     }
                   />
                 </div>
@@ -229,18 +245,15 @@ export function SignUpForm({
                 </div>
               </div>
               <div className="grid gap-2">
-                <Label>Registration Number</Label>
+                <Label>Registration Number (Auto-generated)</Label>
                 <Input
-                  placeholder="MH01AB1234"
-                  className="uppercase"
+                  className="uppercase bg-muted"
                   value={formData.registrationNumber}
-                  onChange={(e) =>
-                    handleChange(
-                      "registrationNumber",
-                      e.target.value.toUpperCase(),
-                    )
-                  }
+                  readOnly
                 />
+                <p className="text-xs text-muted-foreground">
+                  Auto-generated unique registration number
+                </p>
               </div>
               <div className="grid gap-2">
                 <Label>Battery Capacity (kWh)</Label>
@@ -250,7 +263,7 @@ export function SignUpForm({
                   max={200}
                   value={formData.batteryCapacity}
                   onChange={(e) =>
-                    handleChange("batteryCapacity", e.target.value)
+                    handleChange("batteryCapacity", parseInt(e.target.value))
                   }
                 />
               </div>
@@ -278,13 +291,9 @@ export function SignUpForm({
                   {formData.vehicleModel}
                 </span>
                 <span className="text-muted-foreground">Registration:</span>
-                <span className="font-medium">
-                  {formData.registrationNumber}
-                </span>
+                <span className="font-medium">{formData.registrationNumber}</span>
                 <span className="text-muted-foreground">Battery:</span>
-                <span className="font-medium">
-                  {formData.batteryCapacity} kWh
-                </span>
+                <span className="font-medium">{formData.batteryCapacity} kWh</span>
               </div>
             </div>
           )}

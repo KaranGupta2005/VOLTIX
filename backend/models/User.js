@@ -6,7 +6,6 @@ const UserSchema = new mongoose.Schema({
   userId: {
     type: String,
     required: true,
-    unique: true,
     match: /^USR_\d{6}$/
   },
   profile: {
@@ -20,14 +19,12 @@ const UserSchema = new mongoose.Schema({
     email: {
       type: String,
       required: true,
-      unique: true,
       lowercase: true,
       match: /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     },
     phone: {
       type: String,
       required: true,
-      unique: true,
       match: /^\+91[6-9]\d{9}$/
     },
     avatar: {
@@ -129,7 +126,6 @@ const UserSchema = new mongoose.Schema({
     registrationNumber: {
       type: String,
       required: true,
-      unique: true,
       uppercase: true
     }
   },
@@ -270,11 +266,12 @@ const UserSchema = new mongoose.Schema({
 });
 
 // Indexes for performance optimization
-UserSchema.index({ 'profile.email': 1 });
-UserSchema.index({ 'profile.phone': 1 });
+UserSchema.index({ userId: 1 }, { unique: true });
+UserSchema.index({ 'profile.email': 1 }, { unique: true });
+UserSchema.index({ 'profile.phone': 1 }, { unique: true });
+UserSchema.index({ 'vehicle.registrationNumber': 1 }, { unique: true });
 UserSchema.index({ 'location.city': 1, 'subscription.plan': 1 });
 UserSchema.index({ 'subscription.isActive': 1, 'subscription.endDate': 1 });
-UserSchema.index({ 'vehicle.registrationNumber': 1 });
 UserSchema.index({ status: 1 });
 
 // Virtual for account lock status
@@ -283,16 +280,11 @@ UserSchema.virtual('isLocked').get(function() {
 });
 
 // Pre-save middleware to hash password
-UserSchema.pre('save', async function(next) {
-  if (!this.isModified('authentication.password')) return next();
+UserSchema.pre('save', async function() {
+  if (!this.isModified('authentication.password')) return;
   
-  try {
-    const salt = await bcrypt.genSalt(12);
-    this.authentication.password = await bcrypt.hash(this.authentication.password, salt);
-    next();
-  } catch (error) {
-    next(error);
-  }
+  const salt = await bcrypt.genSalt(12);
+  this.authentication.password = await bcrypt.hash(this.authentication.password, salt);
 });
 
 // Method to compare password

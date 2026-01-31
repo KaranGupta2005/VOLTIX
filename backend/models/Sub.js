@@ -11,6 +11,7 @@ const subSchema = new Schema({
     type: String,
     required: true,
     unique: true,
+    index: true
   },
   keys: { 
     auth: {
@@ -43,7 +44,6 @@ const subSchema = new Schema({
 
 // Index for efficient queries
 subSchema.index({ userId: 1 });
-subSchema.index({ endpoint: 1 });
 subSchema.index({ isActive: 1 });
 
 const Sub = mongoose.model("Sub", subSchema);
