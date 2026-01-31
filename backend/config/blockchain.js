@@ -10,8 +10,8 @@ class BlockchainConfig {
     this.isConnected = false;
     
     // Contract configuration
-    this.AUDIT_CONTRACT_ADDRESS = process.env.AUDIT_CONTRACT_ADDRESS || "0x5FbDB2315678afecb367f032d93F642f64180aa3";
-    this.PRIVATE_KEY = process.env.BLOCKCHAIN_PRIVATE_KEY || "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+    this.AUDIT_CONTRACT_ADDRESS = process.env.AUDIT_CONTRACT_ADDRESS || "0xcd3b766ccdd6ae721141f452c550ca635964ce71";
+    this.PRIVATE_KEY = process.env.BLOCKCHAIN_PRIVATE_KEY || "0xea6c44ac03bff858b476bba40716402b03e41b8e97e276d1baec7c37d42484a0";
     this.RPC_URL = process.env.BLOCKCHAIN_RPC_URL || "http://127.0.0.1:8545";
     
     // ABI for AuditLog contract
@@ -72,7 +72,7 @@ class BlockchainConfig {
 
   async initialize() {
     try {
-      console.log('Initializing blockchain connection...');
+      console.log('🔗 Initializing blockchain connection...');
       
       // Create provider
       this.provider = new ethers.JsonRpcProvider(this.RPC_URL);
@@ -114,7 +114,7 @@ class BlockchainConfig {
       };
       
     } catch (error) {
-      console.error('Blockchain initialization failed:', error);
+      console.error('❌ Blockchain initialization failed:', error);
       this.isConnected = false;
       
       return {
@@ -193,7 +193,7 @@ class BlockchainConfig {
       };
       
     } catch (error) {
-      console.error('Blockchain read failed:', error);
+      console.error('❌ Blockchain read failed:', error);
       
       return {
         success: false,
@@ -216,7 +216,7 @@ class BlockchainConfig {
       };
       
     } catch (error) {
-      console.error('Get total logs failed:', error);
+      console.error('❌ Get total logs failed:', error);
       
       return {
         success: false,
@@ -245,7 +245,7 @@ class BlockchainConfig {
       };
       
     } catch (error) {
-      console.error('Audit verification failed:', error);
+      console.error('❌ Audit verification failed:', error);
       
       return {
         success: false,
@@ -290,7 +290,7 @@ class BlockchainConfig {
     }
   }
 
-  // Close connection
+  // 🔌 Close connection
   async close() {
     if (this.provider) {
       await this.provider.destroy();

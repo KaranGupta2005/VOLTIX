@@ -14,8 +14,7 @@ const SignalLogSchema = new mongoose.Schema({
   },
   timestamp: {
     type: Date,
-    required: true,
-    index: true
+    required: true
   },
   sensorData: {
     temperature: {

@@ -33,10 +33,6 @@ import ExpressError from '../middlewares/expressError.js';
 
 const router = express.Router();
 
-// =============================================================================
-// AUTHENTICATION ROUTES
-// =============================================================================
-
 // User Registration
 router.post('/signup', validateUserSignUp, wrapAsync(signup));
 

@@ -26,15 +26,21 @@ import ExpressError from "./expressError.js";
 
 // user validations
 export const validateUserSignUp = (req, res, next) => {
+    console.log('🔍 Signup validation - Request body:', JSON.stringify(req.body, null, 2));
+    
     const { error } = userSignUpSchema.validate(req.body, {
         abortEarly: false,
     });
+    
     if (error) {
+        console.log('❌ Signup validation failed:', error.details.map((err) => err.message));
         throw new ExpressError(
             400,
             error.details.map((err) => err.message).join(", ")
         );
     }
+    
+    console.log('✅ Signup validation passed');
     next();
 };
 
@@ -488,15 +494,21 @@ export const validateNotificationId = (req, res, next) => {
 };
 // OTP validation functions
 export const validateOTPVerification = (req, res, next) => {
+    console.log('🔍 OTP Validation - Request body:', req.body);
+    
     const { error } = otpVerificationSchema.validate(req.body, {
         abortEarly: false,
     });
+    
     if (error) {
+        console.log('❌ OTP Validation failed:', error.details.map((err) => err.message));
         throw new ExpressError(
             400,
             error.details.map((err) => err.message).join(", ")
         );
     }
+    
+    console.log('✅ OTP Validation passed');
     next();
 };
 

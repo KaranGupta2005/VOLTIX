@@ -6,7 +6,8 @@ const notificationSchema = new Schema({
     type: String,
     required: true,
     unique: true,
-    match: /^NOT_\d{6}$/
+    match: /^NOT_\d{6}$/,
+    index: true
   },
   userId: {
     type: String,
@@ -133,7 +134,6 @@ const notificationSchema = new Schema({
 
 // Indexes for efficient queries
 notificationSchema.index({ userId: 1, createdAt: -1 });
-notificationSchema.index({ notificationId: 1 });
 notificationSchema.index({ type: 1, priority: 1 });
 notificationSchema.index({ status: 1 });
 notificationSchema.index({ agentType: 1 });
