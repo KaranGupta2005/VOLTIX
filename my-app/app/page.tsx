@@ -32,8 +32,7 @@ import PricingSection from "@/app/components/PricingSection";
 import FooterSection from "@/app/components/FooterSection";
 import ChatBot from "@/app/components/ChatBot";
 
-// CHANGED: Now importing from the correct folder
-import NeuralGrid from "@/components/NeuralGrid";
+
 
 export default function Home() {
   return (
@@ -43,8 +42,7 @@ export default function Home() {
       <Feature1Section />
       <Feature2Section />
 
-      {/* The Neural Grid Section */}
-      <NeuralGrid />
+
 
       <PricingSection />
       <FooterSection />

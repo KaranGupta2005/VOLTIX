@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { motion, useScroll, useTransform, AnimatePresence, useSpring } from "framer-motion";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -177,17 +177,93 @@ export default function MeetTheSquad() {
         restDelta: 0.001,
     });
 
+    // Scroll-triggered video playback
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const scrollTimeout = useRef<NodeJS.Timeout | null>(null);
+    const rewindInterval = useRef<NodeJS.Timeout | null>(null);
+    const lastScrollY = useRef(0);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const currentScrollY = window.scrollY;
+
+            if (videoRef.current) {
+                // Determine Direction
+                const isScrollingDown = currentScrollY > lastScrollY.current;
+
+                if (isScrollingDown) {
+                    // STOP Rewiding
+                    if (rewindInterval.current) {
+                        cancelAnimationFrame(rewindInterval.current as any);
+                        rewindInterval.current = null;
+                    }
+
+                    // PLAY Forward
+                    if (videoRef.current.paused) {
+                        videoRef.current.play().catch(() => { });
+                    }
+                } else {
+                    // STOP Forward Play
+                    if (!videoRef.current.paused) {
+                        videoRef.current.pause();
+                    }
+
+                    // START Rewinding (via RAF)
+                    if (!rewindInterval.current) {
+                        const animateRewind = () => {
+                            if (videoRef.current) {
+                                // Adjusted step for smoother rewind
+                                videoRef.current.currentTime = Math.max(0, videoRef.current.currentTime - 0.035);
+                            }
+                            // Store the RAF ID in the existing ref (cast as any to avoid type errors temporarily if needed, or we just use number if typed)
+                            rewindInterval.current = requestAnimationFrame(animateRewind) as any;
+                        };
+                        animateRewind();
+                    }
+                }
+
+                // COMMON: Reset Stop Timer
+                if (scrollTimeout.current) {
+                    clearTimeout(scrollTimeout.current);
+                }
+
+                // PAUSE/STOP Everything after scrolling stops
+                scrollTimeout.current = setTimeout(() => {
+                    // Stop Forward
+                    if (videoRef.current && !videoRef.current.paused) {
+                        videoRef.current.pause();
+                    }
+                    // Stop Rewind
+                    if (rewindInterval.current) {
+                        cancelAnimationFrame(rewindInterval.current as any);
+                        rewindInterval.current = null;
+                    }
+                }, 150);
+            }
+            lastScrollY.current = currentScrollY;
+        };
+
+        window.addEventListener("scroll", handleScroll);
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+            if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+            if (rewindInterval.current) clearInterval(rewindInterval.current);
+        };
+    }, []);
+
     return (
         <div className="min-h-screen bg-black text-white font-sans selection:bg-emerald-500/30 overflow-x-hidden relative">
             {/* FIXED BACKGROUND LAYER */}
             <div className="fixed inset-0 z-0">
-                <Image
-                    src="/assets/agent_bg.png"
-                    alt="Agent Squad Background"
-                    fill
-                    className="object-cover"
-                    priority
-                />
+                <video
+                    ref={videoRef}
+                    loop
+                    muted
+                    playsInline
+                    className="w-full h-full object-cover"
+                >
+                    <source src="/assets/bg_video_v2.mp4" type="video/mp4" />
+                </video>
                 <div className="absolute inset-0 bg-black/70" /> {/* Dark Overlay */}
             </div>
 
@@ -222,6 +298,8 @@ export default function MeetTheSquad() {
                     </div>
                 </div>
             </div>
+
+            <NeuralGrid />
         </div>
     );
 }
