@@ -31,18 +31,21 @@ class OTPService {
   storeOTP(userId, otp, type, expirationMinutes = 10) {
     const key = `${userId}_${type}`;
     const expiresAt = new Date(Date.now() + expirationMinutes * 60 * 1000);
-    
+
     this.otpStore.set(key, {
       otp,
       expiresAt,
       attempts: 0,
-      maxAttempts: 3
+      maxAttempts: 3,
     });
 
     // Auto cleanup after expiration
-    setTimeout(() => {
-      this.otpStore.delete(key);
-    }, expirationMinutes * 60 * 1000);
+    setTimeout(
+      () => {
+        this.otpStore.delete(key);
+      },
+      expirationMinutes * 60 * 1000,
+    );
   }
 
   // Verify OTP
@@ -80,12 +83,23 @@ class OTPService {
 
   // Generate and send OTP
   async generateAndSendOTP(userId, email, type) {
-    try {
-      const otp = this.generateOTP();
-      this.storeOTP(userId, otp, type);
+    const otp = this.generateOTP();
+    this.storeOTP(userId, otp, type);
 
+    // DEV MODE: Log OTP to console for testing
+    if (process.env.NODE_ENV === "development") {
+      console.log("\n========================================");
+      console.log("🔐 DEV MODE - OTP GENERATED");
+      console.log(`   User ID: ${userId}`);
+      console.log(`   Email: ${email}`);
+      console.log(`   Type: ${type}`);
+      console.log(`   OTP: ${otp}`);
+      console.log("========================================\n");
+    }
+
+    try {
       const emailContent = this.getEmailContent(type, otp);
-      
+
       await this.transporter.sendMail({
         from: `"EV Copilot" <${process.env.EMAIL_USER || "guptakaran.port@gmail.com"}>`,
         to: email,
@@ -93,12 +107,23 @@ class OTPService {
         html: emailContent.html,
       });
 
+      console.log(`✅ OTP email sent to ${email}`);
       return {
         success: true,
-        message: "OTP sent successfully"
+        message: "OTP sent successfully",
       };
     } catch (error) {
-      console.error("OTP send error:", error);
+      console.error("❌ OTP email failed:", error.message);
+
+      // In development, don't throw error - OTP is already stored
+      if (process.env.NODE_ENV === "development") {
+        console.log("⚠️  Email failed but OTP is available in console above");
+        return {
+          success: true,
+          message: "OTP generated (check server console in dev mode)",
+        };
+      }
+
       throw new ExpressError(500, "Failed to send OTP");
     }
   }
@@ -128,7 +153,7 @@ class OTPService {
     `;
 
     switch (type) {
-      case 'email_verification':
+      case "email_verification":
         return {
           subject: "Verify Your EV Copilot Account",
           html: `
@@ -153,10 +178,10 @@ class OTPService {
               <li>Monitor your carbon savings</li>
             </ul>
             ${footerStyle}
-          `
+          `,
         };
 
-      case 'password_reset':
+      case "password_reset":
         return {
           subject: "Reset Your EV Copilot Password",
           html: `
@@ -177,10 +202,10 @@ class OTPService {
               </p>
             </div>
             ${footerStyle}
-          `
+          `,
         };
 
-      case 'phone_verification':
+      case "phone_verification":
         return {
           subject: "Verify Your Phone Number 📱",
           html: `
@@ -196,7 +221,7 @@ class OTPService {
               </div>
             </div>
             ${footerStyle}
-          `
+          `,
         };
 
       default:
@@ -212,7 +237,7 @@ class OTPService {
               <h1 style="color: #16a34a; font-size: 36px; margin: 10px 0; letter-spacing: 5px; font-family: monospace;">${otp}</h1>
             </div>
             ${footerStyle}
-          `
+          `,
         };
     }
   }
@@ -231,7 +256,7 @@ class OTPService {
   getOTPStatus(userId, type) {
     const key = `${userId}_${type}`;
     const otpData = this.otpStore.get(key);
-    
+
     if (!otpData) {
       return { exists: false };
     }
@@ -241,7 +266,7 @@ class OTPService {
       expiresAt: otpData.expiresAt,
       attempts: otpData.attempts,
       maxAttempts: otpData.maxAttempts,
-      isExpired: new Date() > otpData.expiresAt
+      isExpired: new Date() > otpData.expiresAt,
     };
   }
 }
@@ -250,8 +275,11 @@ class OTPService {
 const otpService = new OTPService();
 
 // Clean expired OTPs every 5 minutes
-setInterval(() => {
-  otpService.cleanExpiredOTPs();
-}, 5 * 60 * 1000);
+setInterval(
+  () => {
+    otpService.cleanExpiredOTPs();
+  },
+  5 * 60 * 1000,
+);
 
 export default otpService;
