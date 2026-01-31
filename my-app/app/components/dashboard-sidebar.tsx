@@ -43,19 +43,19 @@ export function DashboardSidebar() {
   };
 
   return (
-    <Sidebar>
+    <Sidebar collapsible="icon">
       <SidebarHeader>
         <div className="flex items-center gap-3 px-2 py-2">
           <div className="flex aspect-square size-6 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <Zap className="size-4" />
           </div>
-          <div>
+          <div className="group-data-[collapsible=icon]:hidden">
             <h2 className="font-semibold">VOLTIX</h2>
             <p className="text-muted-foreground text-xs">AI Control Center</p>
           </div>
         </div>
 
-        <div className="px-2">
+        <div className="px-2 group-data-[collapsible=icon]:hidden">
           <div className="relative">
             <Search className="text-muted-foreground absolute top-3 left-3 h-4 w-4" />
             <Input

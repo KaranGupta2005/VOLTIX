@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Download, Plus } from "lucide-react";
 
 import ChatBot from "@/app/components/ChatBot";
+import NotificationsList from "@/app/components/notifications-list";
 import { DashboardSidebar } from "@/app/components/dashboard-sidebar";
 import { HomeContent } from "@/app/components/dashboard-content";
 import { Button } from "@/components/ui/button";
@@ -35,7 +36,7 @@ export default function Dashboard() {
         }}
       />
 
-      <SidebarProvider>
+      <SidebarProvider defaultOpen={false}>
         <DashboardSidebar />
         <SidebarInset>
           <DashboardHeader />
@@ -60,7 +61,7 @@ export default function Dashboard() {
                   <TabsTrigger value="projects" className="rounded-xl">
                     Decisions
                   </TabsTrigger>
-                  <TabsTrigger value="learn" className="rounded-xl">
+                  <TabsTrigger value="notifications" className="rounded-xl">
                     Notifications
                   </TabsTrigger>
                 </TabsList>
@@ -108,11 +109,12 @@ export default function Dashboard() {
                       </p>
                     </div>
                   </TabsContent>
-                  <TabsContent value="learn" className="mt-0">
-                    <div className="flex h-96 items-center justify-center rounded-3xl border border-dashed">
-                      <p className="text-muted-foreground">
-                        Notifications content will go here
-                      </p>
+                  <TabsContent value="notifications" className="mt-0">
+                    <div className="bg-white/50 backdrop-blur-sm rounded-3xl p-6 border border-gray-100 min-h-[500px]">
+                      <h3 className="text-lg font-semibold mb-4 px-1">
+                        Recent Updates
+                      </h3>
+                      <NotificationsList />
                     </div>
                   </TabsContent>
                 </motion.div>
