@@ -30,29 +30,29 @@ interface Packet {
 
 export default function NeuralGrid() {
     return (
-        <section className="relative min-h-[120vh] bg-[#050505] overflow-hidden flex flex-col items-center justify-center py-24 border-t border-neutral-900">
+        <section className="relative min-h-[120vh] bg-white overflow-hidden flex flex-col items-center justify-center py-24 border-t border-neutral-200">
             {/* AMBIENT BACKGROUND - HEX GRID & GLOW */}
             <div className="absolute inset-0 pointer-events-none opacity-20"
                 style={{
-                    backgroundImage: `radial-gradient(circle at center, transparent 0%, #000 100%), 
+                    backgroundImage: `radial-gradient(circle at center, transparent 0%, #fff 100%), 
                                       linear-gradient(rgba(16, 185, 129, 0.1) 1px, transparent 1px), 
                                       linear-gradient(90deg, rgba(16, 185, 129, 0.1) 1px, transparent 1px)`,
                     backgroundSize: '100% 100%, 40px 40px, 40px 40px'
                 }}
             />
 
-            {/* Dark Gradient Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black pointer-events-none" />
+            {/* Light Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-white via-transparent to-white pointer-events-none" />
 
             <div className="relative z-10 w-full max-w-7xl px-4 flex flex-col items-center">
 
                 {/* HEADER */}
                 <div className="text-center mb-16">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/20 bg-emerald-900/10 text-emerald-400 text-xs font-mono uppercase tracking-widest mb-4">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-emerald-500/20 bg-emerald-900/10 text-emerald-600 text-xs font-mono uppercase tracking-widest mb-4">
                         <Activity className="w-3 h-3" />
                         System Architecture v3.0
                     </div>
-                    <h2 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-neutral-500">
+                    <h2 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-500">
                         Neural <span className="text-emerald-500">Pipeline</span>
                     </h2>
                 </div>

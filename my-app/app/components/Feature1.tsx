@@ -7,7 +7,7 @@ const Feature1Section = () => {
       <div className="max-w-7xl mx-auto px-6 md:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           {/* Left: Scroll Stack (sticky on large screens) */}
-          <div className="lg:col-span-6">
+          <div className="lg:col-span-7">
             <div className="lg:sticky lg:top-16">
               <ScrollStack
                 useWindowScroll
@@ -15,11 +15,11 @@ const Feature1Section = () => {
                 itemDistance={140}
                 itemScale={0.04}
                 itemStackDistance={40}
-                baseScale={0.9}
+                baseScale={1.0}
                 rotationAmount={0}
               >
                 <ScrollStackItem>
-                  <div className="aspect-[16/10] w-full h-full overflow-hidden rounded-3xl">
+                  <div className="aspect-[4/3] w-full h-full overflow-hidden rounded-3xl shadow-2xl">
                     <img
                       src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1600&auto=format&fit=crop"
                       alt="Mountains over clouds"
@@ -28,7 +28,7 @@ const Feature1Section = () => {
                   </div>
                 </ScrollStackItem>
                 <ScrollStackItem>
-                  <div className="aspect-[16/10] w-full h-full overflow-hidden rounded-3xl">
+                  <div className="aspect-[4/3] w-full h-full overflow-hidden rounded-3xl shadow-2xl">
                     <img
                       src="https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1600&auto=format&fit=crop"
                       alt="Laptop workspace"
@@ -37,7 +37,7 @@ const Feature1Section = () => {
                   </div>
                 </ScrollStackItem>
                 <ScrollStackItem>
-                  <div className="aspect-[16/10] w-full h-full overflow-hidden rounded-3xl">
+                  <div className="aspect-[4/3] w-full h-full overflow-hidden rounded-3xl shadow-2xl">
                     <img
                       src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop"
                       alt="City skyline"
@@ -50,50 +50,24 @@ const Feature1Section = () => {
           </div>
 
           {/* Right: Text content aligned with the cards */}
-          <div className="lg:col-span-6 lg:pl-6">
-            <div className="space-y-24 pb-12 lg:pb-16">
+          <div className="lg:col-span-5 lg:pl-6">
+            <div className="space-y-24 pb-12 lg:pb-16 flex flex-col justify-center min-h-[80vh]">
               <div className="max-w-md">
-                <h3 className="text-2xl md:text-3xl font-semibold text-slate-900">Build Quick</h3>
-                <p className="mt-3 text-slate-600">
-                  Get a beautiful site up and running in no time. Just choose a layout you like and
-                  start tweaking it. Smooth scroll keeps your media in view while you read.
+                <h3 className="text-2xl md:text-3xl font-semibold text-slate-900">Zero-Wait Energy</h3>
+                <p className="mt-3 mb-6 text-slate-600 text-lg leading-relaxed">
+                  Forget waiting 45 minutes to charge. Swap your depleted battery for a fully charged one in under <span className="text-emerald-500 font-semibold">180 seconds</span> and get back on the road instantly. Our automated pit-stop mechanism ensures you never queue for power again—it's faster than filling a gas tank.
                 </p>
               </div>
               <div className="max-w-md">
-                <h3 className="text-2xl md:text-3xl font-semibold text-slate-900">A Lot of Blocks</h3>
-                <p className="mt-3 text-slate-600">
-                  Mix and match multiple sections to build your pages. The stack on the left advances
-                  as you progress through the copy, highlighting each point.
+                <h3 className="text-2xl md:text-3xl font-semibold text-slate-900">Agentic Intelligence</h3>
+                <p className="mt-3 mb-6 text-slate-600 text-lg leading-relaxed">
+                  Our 5-Agent Neural Squad monitors every volt. From <span className="text-emerald-500 font-semibold">Self-Healing</span> broken chargers to <span className="text-emerald-500 font-semibold">Bribing</span> drivers to balance traffic, the system solves problems before you see them. It is not just maintenance; it is an autonomous immune system for your infrastructure.
                 </p>
               </div>
               <div className="max-w-md">
-                <h3 className="text-2xl md:text-3xl font-semibold text-slate-900">Fully Responsive</h3>
-                <p className="mt-3 text-slate-600">
-                  Looks great on any device. Images scale and the interaction remains fluid thanks to
-                  Lenis smooth scrolling.
-                </p>
-              </div>
-              {/* Extra content to ensure the section has enough height until the stack finishes */}
-              <div className="max-w-md">
-                <h3 className="text-2xl md:text-3xl font-semibold text-slate-900">Performance Focused</h3>
-                <p className="mt-3 text-slate-600">
-                  Under the hood, the scroll effect uses transform caching and stable measurements to
-                  avoid layout thrash. The result is smooth, jitter-free motion even on lower-end
-                  devices.
-                </p>
-              </div>
-              <div className="max-w-md">
-                <h3 className="text-2xl md:text-3xl font-semibold text-slate-900">Customizable</h3>
-                <p className="mt-3 text-slate-600">
-                  Tune spacing, scaling, and stack depth to match your brand. Swap in your own images
-                  and copy—no extra wiring needed.
-                </p>
-              </div>
-              <div className="max-w-md">
-                <h3 className="text-2xl md:text-3xl font-semibold text-slate-900">Ready to Ship</h3>
-                <p className="mt-3 text-slate-600">
-                  When you reach the end of this text, the image stack also completes—keeping the
-                  layout balanced with no empty gap at the bottom of the section.
+                <h3 className="text-2xl md:text-3xl font-semibold text-slate-900">Grid-Aware Reliability</h3>
+                <p className="mt-3 mb-6 text-slate-600 text-lg leading-relaxed">
+                  We don't just store power; we trade it. Our <span className="text-emerald-500 font-semibold">Energy Broker Agent</span> sells back to the grid during peak hours to lower costs and ensure 99.9% uptime. Transform your station from a liability into a dynamic financial asset that earns revenue while it sleeps.
                 </p>
               </div>
             </div>
