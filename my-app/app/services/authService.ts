@@ -13,7 +13,18 @@ export const signup = (data: {
   vehicleYear: number;
   batteryCapacity: number;
   registrationNumber: string;
-}) => api.post("/api/auth/signup", data).then(r => r.data);
+}) => {
+  console.log('🔍 AuthService - Sending signup request with data:', data);
+  return api.post("/api/auth/signup", data).then(r => {
+    console.log('✅ AuthService - Signup response:', r.data);
+    return r.data;
+  }).catch(err => {
+    console.error('❌ AuthService - Signup error:', err.response?.data || err.message);
+    // Extract error message from response
+    const errorMessage = err.response?.data?.message || err.response?.data || err.message || 'Signup failed';
+    throw new Error(errorMessage);
+  });
+};
 
 // Email Verification
 export const verifyEmail = (data: {

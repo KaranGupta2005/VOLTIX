@@ -1,8 +1,8 @@
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 
-let socket = null;
+let socket: Socket | null = null;
 
-export const connectSocket = () => {
+export const connectSocket = (): Socket => {
     if (!socket) {
         socket = io(process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000", {
             withCredentials: true,
@@ -10,11 +10,19 @@ export const connectSocket = () => {
             autoConnect: false,
         });
     }
+    
+    if (!socket.connected) {
+        socket.connect();
+    }
+    
     return socket;
 };
 
-export const getSocket = () => socket;
+export const getSocket = (): Socket | null => socket;
 
-export const disconnectSocket = () => {
-    if (socket) socket.disconnect();
+export const disconnectSocket = (): void => {
+    if (socket) {
+        socket.disconnect();
+        socket = null;
+    }
 };
