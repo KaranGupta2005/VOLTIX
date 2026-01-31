@@ -5,7 +5,6 @@ import dotenv from "dotenv";
 import http from "http";
 import webpush from "web-push";
 
-import redis from "./config/redis.js";
 import connectDB from "./config/db.js";
 import { initSocket } from "./config/socket.js";
 import eventProcessor from "./services/eventProcessor.js";
@@ -21,6 +20,8 @@ import pushRoutes from "./routes/push.js";
 import dataRoutes from "./routes/data.js";
 import agentRoutes from "./routes/agents.js";
 import blockchainRoutes from "./routes/blockchain.js";
+import chatRoutes from "./routes/chat.js";
+import systemRoutes from "./routes/system.js";
 
 dotenv.config();
 
@@ -70,6 +71,8 @@ app.use("/api/push", pushRoutes);
 app.use("/api/data", dataRoutes);
 app.use("/api/agents", agentRoutes);
 app.use("/api/blockchain", blockchainRoutes);
+app.use("/api/chat", chatRoutes);
+app.use("/api/system", systemRoutes);
 
 const server = http.createServer(app);
 

@@ -129,12 +129,23 @@ class MechanicAgent extends BaseAgent {
       const rootCause = context.rootCause;
       const recoveryPlan = context.recoveryPlan;
       
-      // Use ML service for failure prediction
-      let mlPrediction = null;
+      // Use simple predictors for failure risk assessment
+      let prediction = null;
       try {
-        mlPrediction = await mlService.predictFailure(eventData.stationId, data.sensorData);
-      } catch (mlError) {
-        console.warn(`[MechanicAgent] ML prediction failed:`, mlError.message);
+        const metrics = {
+          temperature: data.sensorData?.temperature,
+          voltage: data.sensorData?.voltage,
+          current: data.sensorData?.current,
+          vibration: data.sensorData?.vibration,
+          errorRate: data.performance?.errorRate,
+          uptime: data.performance?.uptime
+        };
+        
+        const simplePredictors = await import('../services/simplePredictors.js').then(module => module.default);
+        prediction = simplePredictors.estimateFailureRisk(metrics);
+        console.log(`[MechanicAgent] Failure risk: ${(prediction.risk * 100).toFixed(1)}% (${prediction.riskLevel}, confidence: ${prediction.confidence})`);
+      } catch (predictionError) {
+        console.warn(`[MechanicAgent] Simple prediction failed:`, predictionError.message);
       }
       
       // Determine self-healing action based on root cause analysis
@@ -268,23 +279,28 @@ class MechanicAgent extends BaseAgent {
           }
       }
       
-      // Incorporate ML prediction to enhance decision
-      if (mlPrediction?.success) {
-        const mlData = mlPrediction.prediction;
+      // Incorporate simple prediction to enhance decision
+      if (prediction) {
+        const riskLevel = prediction.risk;
         confidence = Math.min(confidence + 0.1, 0.95);
         
-        if (mlData.failure_probability > 0.8) {
+        if (riskLevel > 0.8) {
           action = 'preventive_maintenance_protocol';
           riskScore = 0.7;
           autonomyLevel = 3; // Requires human approval for maintenance
+        } else if (riskLevel > 0.6) {
+          // Enhance existing action with higher priority
+          riskScore = Math.max(riskScore, 0.5);
         }
         
-        // Add ML insights to impact
-        impact.mlInsights = {
-          failureProbability: mlData.failure_probability,
-          predictedFailureTime: mlData.predicted_failure_time,
-          anomalyDetected: mlData.anomaly_detected,
-          recommendedAction: mlData.recommended_action
+        // Add prediction insights to impact
+        impact.predictionInsights = {
+          failureRisk: riskLevel,
+          riskLevel: prediction.riskLevel,
+          riskFactors: prediction.factors,
+          confidence: prediction.confidence,
+          recommendation: prediction.recommendation,
+          metricsAnalyzed: prediction.metricsAnalyzed
         };
       }
       
@@ -296,7 +312,7 @@ class MechanicAgent extends BaseAgent {
         autonomyLevel,
         impact,
         reasoning: `Root cause: ${rootCause.primaryCause}. Recovery plan: ${recoveryPlan.strategy}`,
-        mlPrediction: mlPrediction?.prediction,
+        mlPrediction: prediction,
         priority: severity === 'critical' ? 'urgent' : 'high',
         selfHealingCapable: autonomyLevel === 5,
         recoveryPlan: recoveryPlan,

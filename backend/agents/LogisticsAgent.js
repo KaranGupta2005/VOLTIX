@@ -107,24 +107,15 @@ class LogisticsAgent extends BaseAgent {
       const queueLength = context.queueLength;
       const urgencyLevel = context.urgencyLevel;
       
-      // Use ML service for advanced stockout prediction
-      let mlPrediction = null;
+      // Use simple predictors for stockout prediction
+      let prediction = null;
       try {
-        const logisticsData = {
-          stationId: eventData.stationId,
-          currentInventory,
-          queueLength,
-          demandRate: context.demandRate,
-          inventoryRate: context.inventoryRate,
-          timeOfDay: new Date().getHours(),
-          dayOfWeek: new Date().getDay(),
-          weatherConditions: eventData.data.weatherConditions,
-          nearbyEvents: eventData.data.nearbyEvents || []
-        };
-        
-        mlPrediction = await mlService.predictStockout(eventData.stationId, logisticsData);
-      } catch (mlError) {
-        console.warn(`[LogisticsAgent] ML prediction failed:`, mlError.message);
+        const burnRate = Math.abs(context.inventoryRate) || (queueLength * 0.5); // Estimate burn rate
+        const simplePredictors = await import('../services/simplePredictors.js').then(module => module.default);
+        prediction = simplePredictors.predictStockout(currentInventory, burnRate);
+        console.log(`[LogisticsAgent] Stockout prediction: ${prediction.stockoutSoon ? 'YES' : 'NO'} (${prediction.hoursLeft}h left, confidence: ${prediction.confidence})`);
+      } catch (predictionError) {
+        console.warn(`[LogisticsAgent] Simple prediction failed:`, predictionError.message);
       }
       
       let action = 'monitor';
@@ -159,14 +150,14 @@ class LogisticsAgent extends BaseAgent {
           estimatedArrival: dispatchPlan.eta
         };
       }
-      // Predictive dispatch based on ML stockout probability
-      else if (mlPrediction?.success && mlPrediction.prediction.stockout_probability > this.thresholds.stockoutRisk.high) {
+      // Predictive dispatch based on simple stockout prediction
+      else if (prediction?.stockoutSoon || urgencyLevel === 'high') {
         action = 'execute_predictive_dispatch';
         confidence = 0.9;
         riskScore = 0.4;
         autonomyLevel = 3;
         
-        const predictiveDispatch = this.createPredictiveDispatchPlan(eventData, context, mlPrediction);
+        const predictiveDispatch = this.createPredictiveDispatchPlan(eventData, context, prediction);
         
         impact = {
           costImpact: -predictiveDispatch.totalCost,
@@ -175,9 +166,9 @@ class LogisticsAgent extends BaseAgent {
           userSatisfaction: 0.95, // Users love proactive service
           riskScore: 0.4,
           dispatchPlan: predictiveDispatch,
-          mlDriven: true,
+          simplePredictorDriven: true,
           preventiveAction: true,
-          stockoutProbability: mlPrediction.prediction.stockout_probability
+          stockoutProbability: prediction?.confidence || 0.8
         };
       }
       // Regular dispatch for low inventory
@@ -200,13 +191,13 @@ class LogisticsAgent extends BaseAgent {
         };
       }
       // Optimization dispatch for efficiency
-      else if (mlPrediction?.success && mlPrediction.prediction.optimization_opportunity > 0.6) {
+      else if (prediction?.urgencyLevel === 'medium' && currentInventory > this.thresholds.inventory.critical) {
         action = 'execute_optimization_dispatch';
         confidence = 0.8;
         riskScore = 0.25;
         autonomyLevel = 5; // Can be fully automated for optimization
         
-        const optimizationDispatch = this.createOptimizationDispatchPlan(eventData, context, mlPrediction);
+        const optimizationDispatch = this.createOptimizationDispatchPlan(eventData, context, prediction);
         
         impact = {
           costImpact: -optimizationDispatch.totalCost,
@@ -220,19 +211,17 @@ class LogisticsAgent extends BaseAgent {
         };
       }
       
-      // Enhance decision with ML insights
-      if (mlPrediction?.success) {
-        const mlData = mlPrediction.prediction;
+      // Enhance decision with simple prediction insights
+      if (prediction) {
         confidence = Math.min(confidence + 0.1, 0.95);
         
-        // Add ML insights to impact
-        impact.mlInsights = {
-          stockoutProbability: mlData.stockout_probability,
-          predictedStockoutTime: mlData.predicted_stockout_time,
-          demandForecast: mlData.demand_forecast,
-          optimizationOpportunity: mlData.optimization_opportunity,
-          recommendedAction: mlData.recommended_action,
-          confidenceScore: mlData.confidence_score
+        // Add prediction insights to impact
+        impact.predictionInsights = {
+          stockoutSoon: prediction.stockoutSoon,
+          hoursLeft: prediction.hoursLeft,
+          urgencyLevel: prediction.urgencyLevel,
+          confidence: prediction.confidence,
+          recommendation: prediction.recommendation || 'Monitor inventory levels'
         };
       }
       
@@ -244,7 +233,7 @@ class LogisticsAgent extends BaseAgent {
         autonomyLevel,
         impact,
         reasoning: `Inventory: ${currentInventory}, Queue: ${queueLength}, Urgency: ${urgencyLevel}, ML Stockout Risk: ${mlPrediction?.prediction?.stockout_probability || 'N/A'}`,
-        mlPrediction: mlPrediction?.prediction,
+        mlPrediction: prediction,
         priority: urgencyLevel === 'critical' ? 'urgent' : 'high',
         requiresApproval: autonomyLevel <= 3,
         dispatchStrategy: this.determineDispatchStrategy(currentInventory, urgencyLevel, mlPrediction)

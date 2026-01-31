@@ -91,12 +91,17 @@ class TrafficAgent extends BaseAgent {
       const waitTime = context.waitTime;
       const utilizationRate = context.utilizationRate;
       
-      // Use ML service for traffic prediction
-      let mlPrediction = null;
+      // Use simple predictors for traffic demand
+      let prediction = null;
       try {
-        mlPrediction = await mlService.predictTrafficDemand(eventData.stationId, data);
-      } catch (mlError) {
-        console.warn(`[TrafficAgent] ML prediction failed:`, mlError.message);
+        // Collect recent queue history (simulate with current data)
+        const queueHistory = this.getQueueHistory(eventData.stationId, queueLength);
+        prediction = await import('../services/simplePredictors.js').then(module => 
+          module.default.predictQueue(queueHistory)
+        );
+        console.log(`[TrafficAgent] Queue prediction: ${prediction.predicted} (confidence: ${prediction.confidence})`);
+      } catch (predictionError) {
+        console.warn(`[TrafficAgent] Simple prediction failed:`, predictionError.message);
       }
       
       let action = 'monitor';
@@ -178,22 +183,31 @@ class TrafficAgent extends BaseAgent {
         };
       }
       
-      // Incorporate ML prediction for proactive management
-      if (mlPrediction?.success) {
-        const mlData = mlPrediction.prediction;
+      // Incorporate simple prediction to enhance decision
+      if (prediction?.predicted) {
+        const predictedQueue = prediction.predicted;
         confidence = Math.min(confidence + 0.1, 0.95);
         
-        if (mlData.predicted_demand > mlData.current_capacity * 1.3) {
+        if (predictedQueue > this.thresholds.queueLength.critical) {
           action = 'preemptive_demand_shaping';
           riskScore = 0.4;
           autonomyLevel = 5;
           
           impact.preemptiveAction = {
-            predictedSurge: mlData.predicted_demand,
-            timeToSurge: mlData.time_to_peak,
-            proactiveIncentives: this.calculatePreemptiveIncentives(mlData)
+            predictedQueue,
+            currentQueue: queueLength,
+            confidence: prediction.confidence,
+            proactiveIncentives: this.calculatePreemptiveIncentives({ predicted_demand: predictedQueue })
           };
         }
+        
+        // Add prediction insights to impact
+        impact.predictionInsights = {
+          predictedQueue,
+          confidence: prediction.confidence,
+          trend: prediction.trend,
+          dataPoints: prediction.dataPoints
+        };
       }
       
       return {
@@ -204,7 +218,7 @@ class TrafficAgent extends BaseAgent {
         autonomyLevel,
         impact,
         reasoning: `Queue: ${queueLength}, Wait: ${waitTime}min, Utilization: ${(utilizationRate * 100).toFixed(1)}%`,
-        mlPrediction: mlPrediction?.prediction,
+        mlPrediction: prediction,
         priority: queueLength >= this.thresholds.queueLength.critical ? 'high' : 'medium',
         targetUsers: this.identifyTargetUsers(eventData, context),
         incentiveStrategy: this.determineIncentiveStrategy(queueLength, utilizationRate, context.isPeakHour)
@@ -644,6 +658,24 @@ class TrafficAgent extends BaseAgent {
       position: i + 1,
       estimatedWaitTime: (i + 1) * 5
     }));
+  }
+
+  // Helper method to get queue history for predictions
+  getQueueHistory(stationId, currentQueue) {
+    // In a real system, this would query Redis/MongoDB for historical data
+    // For MVP, simulate with recent values based on current queue
+    const baseQueue = currentQueue || 0;
+    const history = [];
+    
+    // Generate last 10 data points with some realistic variation
+    for (let i = 9; i >= 0; i--) {
+      const variation = (Math.random() - 0.5) * 4; // ±2 variation
+      const timeDecay = i * 0.1; // Slight trend over time
+      const value = Math.max(0, Math.round(baseQueue + variation - timeDecay));
+      history.push(value);
+    }
+    
+    return history;
   }
 
   async simulateDelay(ms) {
