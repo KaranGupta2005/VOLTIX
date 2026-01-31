@@ -13,13 +13,14 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { login } from "@/lib/api";
+import { useAuth } from "../hooks/useAuth";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const router = useRouter();
+  const { login } = useAuth();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
@@ -38,15 +39,14 @@ export function LoginForm({
 
     try {
       const response = await login(formData);
-
       if (response.success) {
         // Redirect to dashboard on successful login
         router.push("/dashboard");
       } else {
         setError(response.message || "Invalid email or password");
       }
-    } catch (err) {
-      setError("Something went wrong. Please try again.");
+    } catch (err: any) {
+      setError(err.message || "Something went wrong. Please try again.");
       console.error("Login error:", err);
     } finally {
       setLoading(false);
