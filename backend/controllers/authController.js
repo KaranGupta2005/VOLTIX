@@ -52,14 +52,11 @@ export const signup = async (req, res) => {
   const userCount = await User.countDocuments();
   const userId = `USR_${(userCount + 1).toString().padStart(6, '0')}`;
 
-  // Hash password
-  const hashedPassword = await bcrypt.hash(password, 12);
-
   // Calculate subscription end date
   const subscriptionEndDate = new Date();
   subscriptionEndDate.setFullYear(subscriptionEndDate.getFullYear() + 1);
 
-  // Create new user
+  // Create new user (password will be hashed by pre-save middleware)
   const newUser = await User.create({
     userId,
     profile: {
@@ -68,7 +65,7 @@ export const signup = async (req, res) => {
       phone
     },
     authentication: {
-      password: hashedPassword
+      password: password // Don't hash here - let the pre-save middleware handle it
     },
     location: {
       city

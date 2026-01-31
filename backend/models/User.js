@@ -283,8 +283,11 @@ UserSchema.virtual('isLocked').get(function() {
 UserSchema.pre('save', async function() {
   if (!this.isModified('authentication.password')) return;
   
-  const salt = await bcrypt.genSalt(12);
-  this.authentication.password = await bcrypt.hash(this.authentication.password, salt);
+  // Only hash if password is not already hashed (doesn't start with $2b$)
+  if (!this.authentication.password.startsWith('$2b$')) {
+    const salt = await bcrypt.genSalt(12);
+    this.authentication.password = await bcrypt.hash(this.authentication.password, salt);
+  }
 });
 
 // Method to compare password
