@@ -34,6 +34,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DecisionStatsCards } from "./decision-stats-cards";
 
 interface Decision {
   decisionId: string;
@@ -361,21 +362,35 @@ export function DashboardDecisions() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <RefreshCw className="h-8 w-8 animate-spin" />
-        <span className="ml-2">Loading decisions...</span>
+      <div className="container mx-auto p-6 min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+        <Card>
+          <CardContent className="flex items-center justify-center py-24">
+            <div className="text-center space-y-4">
+              <div className="relative">
+                <RefreshCw className="h-12 w-12 animate-spin text-blue-500 mx-auto" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold">Loading Decision Analytics</h3>
+                <p className="text-gray-600 dark:text-gray-400">Fetching real-time data from AI agents...</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto p-6 space-y-8 min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       {/* Notification */}
       {notification && (
-        <div className="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative">
-          <span className="block sm:inline">{notification}</span>
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200 px-6 py-4 rounded-xl relative backdrop-blur-sm">
+          <div className="flex items-center gap-3">
+            <CheckCircle className="h-5 w-5 text-blue-600" />
+            <span className="font-medium">{notification}</span>
+          </div>
           <button
-            className="absolute top-0 bottom-0 right-0 px-4 py-3"
+            className="absolute top-4 right-4 text-blue-600 hover:text-blue-800 transition-colors"
             onClick={() => setNotification(null)}
           >
             <span className="sr-only">Dismiss</span>
@@ -384,90 +399,87 @@ export function DashboardDecisions() {
         </div>
       )}
 
-      {/* Stats Overview */}
-      {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <Activity className="h-5 w-5 text-blue-500" />
-                <div>
-                  <div className="text-2xl font-bold">{stats.totalDecisions}</div>
-                  <div className="text-sm text-muted-foreground">Total Decisions</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <Brain className="h-5 w-5 text-purple-500" />
-                <div>
-                  <div className="text-2xl font-bold">{stats.explanationRate}%</div>
-                  <div className="text-sm text-muted-foreground">Explained</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-green-500" />
-                <div>
-                  <div className="text-2xl font-bold">{stats.blockchainRate}%</div>
-                  <div className="text-sm text-muted-foreground">Blockchain Verified</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <Gauge className="h-5 w-5 text-orange-500" />
-                <div>
-                  <div className="text-2xl font-bold">{Math.round(stats.avgConfidence * 100)}%</div>
-                  <div className="text-sm text-muted-foreground">Avg Confidence</div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+      {/* Header Section */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold">AI Decision Analytics</h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-2">
+            Real-time monitoring of autonomous agent decisions with blockchain verification
+          </p>
         </div>
-      )}
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            fetchDecisions();
+            fetchStats();
+            showNotification('Data refreshed successfully!');
+          }}
+          className="flex items-center gap-2"
+        >
+          <RefreshCw className="h-4 w-4" />
+          Refresh
+        </Button>
+      </div>
 
-      {/* Tabs for Live vs History */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="flex items-center justify-between">
-          <TabsList>
-            <TabsTrigger value="live">Live Decisions</TabsTrigger>
-            <TabsTrigger value="blockchain">Blockchain Audit</TabsTrigger>
-          </TabsList>
-          
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              fetchDecisions();
-              fetchStats();
-              showNotification('Data refreshed successfully!');
-            }}
-          >
-            <RefreshCw className="h-4 w-4" />
-          </Button>
-        </div>
+      {/* Enhanced Stats Overview */}
+      <Card className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+        <CardHeader>
+          <CardTitle>Decision Overview</CardTitle>
+          <CardDescription>
+            Key metrics and performance indicators for AI decision making
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <DecisionStatsCards 
+            stats={stats} 
+            loading={loading}
+            disableAnimations={false}
+          />
+        </CardContent>
+      </Card>
 
-        <TabsContent value="live" className="space-y-4">
-          {/* Filters */}
-          <Card>
-            <CardContent className="p-4">
+      {/* Enhanced Tabs for Live vs History */}
+      <Card className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5" />
+            Decision Monitoring
+          </CardTitle>
+          <CardDescription>
+            Live decision tracking and blockchain audit trail
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="live" className="flex items-center gap-2">
+                <Activity className="h-4 w-4" />
+                Live Decisions
+              </TabsTrigger>
+              <TabsTrigger value="blockchain" className="flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                Blockchain Audit
+              </TabsTrigger>
+            </TabsList>
+
+        <TabsContent value="live" className="space-y-6 mt-6">
+          {/* Enhanced Filters */}
+          <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Filter className="h-5 w-5" />
+                Filters & Search
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
               <div className="flex flex-wrap gap-4">
                 <div className="flex-1 min-w-64">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <Input
-                      placeholder="Search decisions..."
+                      placeholder="Search decisions, agents, stations..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       className="pl-10"
@@ -481,11 +493,11 @@ export function DashboardDecisions() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Agents</SelectItem>
-                    <SelectItem value="MechanicAgent">Mechanic Agent</SelectItem>
-                    <SelectItem value="TrafficAgent">Traffic Agent</SelectItem>
-                    <SelectItem value="LogisticsAgent">Logistics Agent</SelectItem>
-                    <SelectItem value="EnergyAgent">Energy Agent</SelectItem>
-                    <SelectItem value="AuditorAgent">Auditor Agent</SelectItem>
+                    <SelectItem value="MechanicAgent">🔧 Mechanic Agent</SelectItem>
+                    <SelectItem value="TrafficAgent">🚦 Traffic Agent</SelectItem>
+                    <SelectItem value="LogisticsAgent">📦 Logistics Agent</SelectItem>
+                    <SelectItem value="EnergyAgent">⚡ Energy Agent</SelectItem>
+                    <SelectItem value="AuditorAgent">🛡️ Auditor Agent</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -495,10 +507,10 @@ export function DashboardDecisions() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="in_progress">In Progress</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="failed">Failed</SelectItem>
+                    <SelectItem value="pending">⏳ Pending</SelectItem>
+                    <SelectItem value="in_progress">🔄 In Progress</SelectItem>
+                    <SelectItem value="completed">✅ Completed</SelectItem>
+                    <SelectItem value="failed">❌ Failed</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -506,24 +518,40 @@ export function DashboardDecisions() {
           </Card>
 
           {/* Decisions List */}
-          <div className="space-y-4">
-            {filteredDecisions.length === 0 ? (
-              <Card>
-                <CardContent className="flex items-center justify-center py-12">
-                  <div className="text-center">
-                    <Activity className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-                    <h3 className="text-lg font-semibold mb-2">No decisions found</h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      {searchTerm || filterAgent !== "all" || filterStatus !== "all" 
-                        ? "Try adjusting your filters" 
-                        : "Waiting for agent decisions..."}
-                    </p>
+          <Card className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Recent Decisions</span>
+                <span className="text-sm font-normal text-gray-500">
+                  {filteredDecisions.length} of {decisions.length}
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {filteredDecisions.length === 0 ? (
+                  <div className="text-center py-12">
+                    {searchTerm || filterAgent !== "all" || filterStatus !== "all" ? (
+                      <>
+                        <Filter className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                        <h3 className="text-lg font-semibold mb-2">No decisions match your filters</h3>
+                        <p className="text-gray-600 dark:text-gray-400">
+                          Try adjusting your filter settings
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <Activity className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+                        <h3 className="text-lg font-semibold mb-2">No decisions found</h3>
+                        <p className="text-gray-600 dark:text-gray-400">
+                          Waiting for agent decisions...
+                        </p>
+                      </>
+                    )}
                   </div>
-                </CardContent>
-              </Card>
-            ) : (
-              filteredDecisions.map((decision) => (
-                <Card key={decision.decisionId} className="overflow-hidden">
+                ) : (
+                  filteredDecisions.map((decision) => (
+                <Card key={decision.decisionId} className="overflow-hidden bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm border-gray-200 dark:border-gray-700">
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-3">
@@ -732,12 +760,14 @@ export function DashboardDecisions() {
                     )}
                   </CardContent>
                 </Card>
-              ))
-            )}
-          </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
-        <TabsContent value="blockchain" className="space-y-4">
+        <TabsContent value="blockchain" className="space-y-6 mt-6">
           {/* Blockchain Verification Progress */}
           {stats && (
             <Card>
@@ -811,7 +841,9 @@ export function DashboardDecisions() {
             </CardContent>
           </Card>
         </TabsContent>
-      </Tabs>
+        </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 }
