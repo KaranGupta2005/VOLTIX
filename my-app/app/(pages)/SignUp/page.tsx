@@ -19,20 +19,11 @@ export default function SignUp() {
           </Link>
 
           <a href="/" aria-label="home" className="flex gap-2 items-center">
-            <img
-              src="/ai-logo-white.png"
-              alt="Logo"
-              height={50}
-              width={50}
-              className="h-10 z-10 w-full hidden dark:block object-contain"
-            />
-            <img
-              src="/ai-logo-black.png"
-              alt="Logo"
-              height={50}
-              width={50}
-              className="h-10 z-10 w-full dark:hidden block object-contain"
-            />
+            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
           </a>
         </div>
 

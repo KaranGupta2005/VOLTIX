@@ -53,18 +53,35 @@ class OTPService {
     const key = `${userId}_${type}`;
     const otpData = this.otpStore.get(key);
 
+    console.log('🔍 OTP Verification Debug:', {
+      userId,
+      inputOTP,
+      type,
+      key,
+      otpExists: !!otpData,
+      storedOTP: otpData?.otp,
+      attempts: otpData?.attempts,
+      maxAttempts: otpData?.maxAttempts,
+      expiresAt: otpData?.expiresAt,
+      currentTime: new Date(),
+      isExpired: otpData ? new Date() > otpData.expiresAt : 'N/A'
+    });
+
     if (!otpData) {
+      console.log('❌ OTP not found for key:', key);
       return false; // OTP not found or expired
     }
 
     // Check if expired
     if (new Date() > otpData.expiresAt) {
+      console.log('❌ OTP expired for key:', key);
       this.otpStore.delete(key);
       return false;
     }
 
     // Check attempts
     if (otpData.attempts >= otpData.maxAttempts) {
+      console.log('❌ Too many attempts for key:', key);
       this.otpStore.delete(key);
       return false;
     }
@@ -74,10 +91,12 @@ class OTPService {
 
     // Check OTP
     if (otpData.otp === inputOTP) {
+      console.log('✅ OTP verified successfully for key:', key);
       this.otpStore.delete(key); // Remove OTP after successful verification
       return true;
     }
 
+    console.log('❌ OTP mismatch for key:', key, 'Expected:', otpData.otp, 'Got:', inputOTP);
     return false;
   }
 

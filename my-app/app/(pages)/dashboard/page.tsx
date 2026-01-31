@@ -5,37 +5,40 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Download, Plus } from "lucide-react";
 
 import ChatBot from "@/app/components/ChatBot";
+import NotificationsList from "@/app/components/notifications-list";
 import { DashboardSidebar } from "@/app/components/dashboard-sidebar";
 import { HomeContent } from "@/app/components/dashboard-content";
 import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardHeader } from "@/app/components/dashboard-header";
+import ProtectedRoute from "@/app/components/ProtectedRoute";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("home");
 
   return (
-    <div className="bg-background relative min-h-screen overflow-hidden">
-      {/* Animated gradient background */}
-      <motion.div
-        className="absolute inset-0 -z-10 opacity-20"
-        animate={{
-          background: [
-            "radial-gradient(circle at 50% 50%, rgba(120, 41, 190, 0.5) 0%, rgba(53, 71, 125, 0.5) 50%, rgba(0, 0, 0, 0) 100%)",
-            "radial-gradient(circle at 30% 70%, rgba(233, 30, 99, 0.5) 0%, rgba(81, 45, 168, 0.5) 50%, rgba(0, 0, 0, 0) 100%)",
-            "radial-gradient(circle at 70% 30%, rgba(76, 175, 80, 0.5) 0%, rgba(32, 119, 188, 0.5) 50%, rgba(0, 0, 0, 0) 100%)",
-            "radial-gradient(circle at 50% 50%, rgba(120, 41, 190, 0.5) 0%, rgba(53, 71, 125, 0.5) 50%, rgba(0, 0, 0, 0) 100%)",
-          ],
-        }}
-        transition={{
-          duration: 30,
-          repeat: Number.POSITIVE_INFINITY,
-          ease: "linear",
-        }}
-      />
+    <ProtectedRoute>
+      <div className="bg-background relative min-h-screen overflow-hidden">
+        {/* Animated gradient background */}
+        <motion.div
+          className="absolute inset-0 -z-10 opacity-20"
+          animate={{
+            background: [
+              "radial-gradient(circle at 50% 50%, rgba(120, 41, 190, 0.5) 0%, rgba(53, 71, 125, 0.5) 50%, rgba(0, 0, 0, 0) 100%)",
+              "radial-gradient(circle at 30% 70%, rgba(233, 30, 99, 0.5) 0%, rgba(81, 45, 168, 0.5) 50%, rgba(0, 0, 0, 0) 100%)",
+              "radial-gradient(circle at 70% 30%, rgba(76, 175, 80, 0.5) 0%, rgba(32, 119, 188, 0.5) 50%, rgba(0, 0, 0, 0) 100%)",
+              "radial-gradient(circle at 50% 50%, rgba(120, 41, 190, 0.5) 0%, rgba(53, 71, 125, 0.5) 50%, rgba(0, 0, 0, 0) 100%)",
+            ],
+          }}
+          transition={{
+            duration: 30,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "linear",
+          }}
+        />
 
-      <SidebarProvider>
+      <SidebarProvider defaultOpen={false}>
         <DashboardSidebar />
         <SidebarInset>
           <DashboardHeader />
@@ -60,7 +63,7 @@ export default function Dashboard() {
                   <TabsTrigger value="projects" className="rounded-xl">
                     Decisions
                   </TabsTrigger>
-                  <TabsTrigger value="learn" className="rounded-xl">
+                  <TabsTrigger value="notifications" className="rounded-xl">
                     Notifications
                   </TabsTrigger>
                 </TabsList>
@@ -74,7 +77,6 @@ export default function Dashboard() {
                     New Project
                   </Button>
                 </div>
-              </div>
 
               <AnimatePresence mode="wait">
                 <motion.div
@@ -108,11 +110,12 @@ export default function Dashboard() {
                       </p>
                     </div>
                   </TabsContent>
-                  <TabsContent value="learn" className="mt-0">
-                    <div className="flex h-96 items-center justify-center rounded-3xl border border-dashed">
-                      <p className="text-muted-foreground">
-                        Notifications content will go here
-                      </p>
+                  <TabsContent value="notifications" className="mt-0">
+                    <div className="bg-white/50 backdrop-blur-sm rounded-3xl p-6 border border-gray-100 min-h-[500px]">
+                      <h3 className="text-lg font-semibold mb-4 px-1">
+                        Recent Updates
+                      </h3>
+                      <NotificationsList />
                     </div>
                   </TabsContent>
                 </motion.div>

@@ -10,6 +10,8 @@ import ExpressError from "../middlewares/expressError.js";
 import otpService from "../services/otpService.js";
 
 export const signup = async (req, res) => {
+  console.log('🔍 Signup controller - Request body:', JSON.stringify(req.body, null, 2));
+  
   const {
     name,
     email,
@@ -89,9 +91,16 @@ export const signup = async (req, res) => {
   // Generate OTP and send email
   await otpService.generateAndSendOTP(newUser.userId, email, 'email_verification');
 
+  console.log('✅ User created successfully:', {
+    userId: newUser.userId,
+    email: newUser.profile.email,
+    name: newUser.profile.name
+  });
+
   res.status(201).json({
     success: true,
     message: "User registered successfully. Please verify your email with the OTP sent.",
+    userId: newUser.userId, // Make sure userId is returned
     user: {
       userId: newUser.userId,
       name: newUser.profile.name,
@@ -105,14 +114,19 @@ export const signup = async (req, res) => {
 export const verifyEmail = async (req, res) => {
   const { userId, otp } = req.body;
 
+  console.log('🔍 Email verification attempt:', { userId, otp, body: req.body });
+
   if (!userId || !otp) {
+    console.log('❌ Missing userId or otp:', { userId: !!userId, otp: !!otp });
     throw new ExpressError(400, "User ID and OTP are required");
   }
 
   // Verify OTP
   const isValid = await otpService.verifyOTP(userId, otp, 'email_verification');
+  console.log('🔍 OTP verification result:', { userId, otp, isValid });
   
   if (!isValid) {
+    console.log('❌ Invalid OTP for user:', userId);
     throw new ExpressError(400, "Invalid or expired OTP");
   }
 
@@ -129,8 +143,11 @@ export const verifyEmail = async (req, res) => {
   );
 
   if (!user) {
+    console.log('❌ User not found:', userId);
     throw new ExpressError(404, "User not found");
   }
+
+  console.log('✅ Email verified successfully for user:', userId);
 
   // Generate tokens
   const accessToken = generateAccessToken(user.userId);
@@ -154,7 +171,9 @@ export const verifyEmail = async (req, res) => {
       phone: user.profile.phone,
       isEmailVerified: user.authentication.isEmailVerified,
       subscription: user.subscription
-    }
+    },
+    accessToken,
+    refreshToken
   });
 };
 
