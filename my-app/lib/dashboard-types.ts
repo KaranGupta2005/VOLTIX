@@ -53,6 +53,7 @@ export interface SidebarItem {
   icon: React.ReactNode;
   isActive?: boolean;
   badge?: string;
+  url?: string;
   items?: {
     title: string;
     url: string;

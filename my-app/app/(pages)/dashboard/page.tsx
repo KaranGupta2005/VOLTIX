@@ -51,16 +51,16 @@ export default function Dashboard() {
                     Home
                   </TabsTrigger>
                   <TabsTrigger value="apps" className="rounded-xl">
-                    Apps
+                    Stations
                   </TabsTrigger>
                   <TabsTrigger value="files" className="rounded-xl">
-                    Files
+                    Agents
                   </TabsTrigger>
                   <TabsTrigger value="projects" className="rounded-xl">
-                    Projects
+                    Decisions
                   </TabsTrigger>
                   <TabsTrigger value="learn" className="rounded-xl">
-                    Learn
+                    Notifications
                   </TabsTrigger>
                 </TabsList>
                 <div className="hidden gap-2 md:flex">
@@ -89,28 +89,28 @@ export default function Dashboard() {
                   <TabsContent value="apps" className="mt-0">
                     <div className="flex h-96 items-center justify-center rounded-3xl border border-dashed">
                       <p className="text-muted-foreground">
-                        Apps content will go here
+                        Stations content will go here
                       </p>
                     </div>
                   </TabsContent>
                   <TabsContent value="files" className="mt-0">
                     <div className="flex h-96 items-center justify-center rounded-3xl border border-dashed">
                       <p className="text-muted-foreground">
-                        Files content will go here
+                        Agents content will go here
                       </p>
                     </div>
                   </TabsContent>
                   <TabsContent value="projects" className="mt-0">
                     <div className="flex h-96 items-center justify-center rounded-3xl border border-dashed">
                       <p className="text-muted-foreground">
-                        Projects content will go here
+                        Decisions content will go here
                       </p>
                     </div>
                   </TabsContent>
                   <TabsContent value="learn" className="mt-0">
                     <div className="flex h-96 items-center justify-center rounded-3xl border border-dashed">
                       <p className="text-muted-foreground">
-                        Learn content will go here
+                        Notifications content will go here
                       </p>
                     </div>
                   </TabsContent>

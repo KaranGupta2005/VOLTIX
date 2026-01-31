@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
-import { ChevronDown, Search, Settings } from "lucide-react";
+import { ChevronDown, Search, Settings, Zap } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -45,12 +46,12 @@ export function DashboardSidebar() {
     <Sidebar>
       <SidebarHeader>
         <div className="flex items-center gap-3 px-2 py-2">
-          <div className="flex aspect-square size-6 items-center justify-center">
-            Logo
+          <div className="flex aspect-square size-6 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <Zap className="size-4" />
           </div>
           <div>
-            <h2 className="font-semibold">Dalim</h2>
-            <p className="text-muted-foreground text-xs">UI Blocks</p>
+            <h2 className="font-semibold">VOLTIX</h2>
+            <p className="text-muted-foreground text-xs">AI Control Center</p>
           </div>
         </div>
 
@@ -114,7 +115,7 @@ export function DashboardSidebar() {
                                 asChild
                                 className="rounded-2xl"
                               >
-                                <a
+                                <Link
                                   href={subItem.url}
                                   className="flex items-center justify-between"
                                 >
@@ -127,7 +128,7 @@ export function DashboardSidebar() {
                                       {subItem.badge}
                                     </Badge>
                                   )}
-                                </a>
+                                </Link>
                               </SidebarMenuSubButton>
                             </SidebarMenuSubItem>
                           ))}
@@ -140,7 +141,10 @@ export function DashboardSidebar() {
                       isActive={item.isActive}
                       className="rounded-2xl"
                     >
-                      <a href="#" className="flex items-center justify-between">
+                      <Link
+                        href={item.url || "#"}
+                        className="flex items-center justify-between"
+                      >
                         <div className="flex items-center gap-3">
                           {item.icon}
                           <span>{item.title}</span>
@@ -153,7 +157,7 @@ export function DashboardSidebar() {
                             {item.badge}
                           </Badge>
                         )}
-                      </a>
+                      </Link>
                     </SidebarMenuButton>
                   )}
                 </SidebarMenuItem>

@@ -179,69 +179,49 @@ export const communityPosts: CommunityPost[] = [
 
 export const sidebarItems: SidebarItem[] = [
   {
-    title: "Home",
+    title: "Overview",
     icon: <Home className="h-4 w-4" />,
+    url: "/dashboard",
     isActive: true,
   },
   {
-    title: "Apps",
+    title: "Stations",
     icon: <Grid className="h-4 w-4" />,
-    badge: "2",
-    items: [
-      { title: "All Apps", url: "#" },
-      { title: "Recent", url: "#" },
-      { title: "Updates", url: "#", badge: "2" },
-      { title: "Installed", url: "#" },
-    ],
+    url: "/dashboard/stations",
   },
   {
-    title: "Files",
-    icon: <FileText className="h-4 w-4" />,
-    items: [
-      { title: "Recent", url: "#" },
-      { title: "Shared with me", url: "#", badge: "3" },
-      { title: "Favorites", url: "#" },
-      { title: "Trash", url: "#" },
-    ],
-  },
-  {
-    title: "Projects",
-    icon: <Layers className="h-4 w-4" />,
-    badge: "4",
-    items: [
-      { title: "Active Projects", url: "#", badge: "4" },
-      { title: "Archived", url: "#" },
-      { title: "Templates", url: "#" },
-    ],
-  },
-  {
-    title: "Learn",
-    icon: <BookOpen className="h-4 w-4" />,
-    items: [
-      { title: "Tutorials", url: "#" },
-      { title: "Courses", url: "#" },
-      { title: "Webinars", url: "#" },
-      { title: "Resources", url: "#" },
-    ],
-  },
-  {
-    title: "Community",
+    title: "Agents",
     icon: <Users className="h-4 w-4" />,
     items: [
-      { title: "Explore", url: "#" },
-      { title: "Following", url: "#" },
-      { title: "Challenges", url: "#" },
-      { title: "Events", url: "#" },
+      { title: "Mechanic", url: "/dashboard/agents/mechanic" },
+      { title: "Traffic", url: "/dashboard/agents/traffic" },
+      { title: "Logistics", url: "/dashboard/agents/logistics" },
+      { title: "Energy", url: "/dashboard/agents/energy" },
+      { title: "Supervisor", url: "/dashboard/agents/supervisor" },
     ],
   },
   {
-    title: "Resources",
-    icon: <Bookmark className="h-4 w-4" />,
+    title: "Decisions",
+    icon: <Layers className="h-4 w-4" />,
     items: [
-      { title: "Stock Photos", url: "#" },
-      { title: "Fonts", url: "#" },
-      { title: "Icons", url: "#" },
-      { title: "Templates", url: "#" },
+      { title: "Live Feed", url: "/dashboard/decisions/live" },
+      { title: "History", url: "/dashboard/decisions/history" },
     ],
+  },
+  {
+    title: "Audit",
+    icon: <FileText className="h-4 w-4" />,
+    items: [{ title: "Blockchain", url: "/dashboard/audit/blockchain" }],
+  },
+  {
+    title: "Notifications",
+    icon: <BookOpen className="h-4 w-4" />,
+    url: "/dashboard/notifications",
+    badge: "3",
+  },
+  {
+    title: "Settings",
+    icon: <Bookmark className="h-4 w-4" />,
+    url: "/dashboard/settings",
   },
 ];
