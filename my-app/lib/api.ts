@@ -1,11 +1,6 @@
 import * as authService from "../app/services/authService";
 
-// Re-export auth functions
-export const login = authService.login;
-export const signup = authService.signup;
-export const verifyEmail = authService.verifyEmail;
-export const logout = authService.logout;
-export const getMe = authService.getMe;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002/api";
 
 // Export types
 export type SignupData = {

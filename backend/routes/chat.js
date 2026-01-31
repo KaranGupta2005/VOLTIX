@@ -6,9 +6,7 @@ import fs from "fs";
 
 const chatrouter = express.Router();
 
-const groq = new Groq({
-  apiKey: process.env.GROQ_API_KEY,
-});
+console.log("Chat route initialized");
 
 function saveChatLog(userMessage, botReply) {
   const log = {
@@ -30,6 +28,19 @@ chatrouter.post("/", async (req, res) => {
   }
 
   try {
+    const apiKey = process.env.GROQ_API_KEY;
+    console.log(
+      "API Key loaded:",
+      apiKey ? apiKey.substring(0, 10) + "..." : "UNDEFINED",
+    );
+    console.log("Groq key length:", apiKey?.length);
+
+    if (!apiKey) {
+      throw new Error("GROQ_API_KEY is missing in environment variables.");
+    }
+
+    const groq = new Groq({ apiKey });
+
     // Build comprehensive system prompt with complete project context
     let systemPrompt = `EV Charging Station AI Assistant - Intelligent Infrastructure Management
 
