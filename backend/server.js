@@ -22,6 +22,9 @@ import agentRoutes from "./routes/agents.js";
 import blockchainRoutes from "./routes/blockchain.js";
 import chatRoutes from "./routes/chat.js";
 import systemRoutes from "./routes/system.js";
+import testRoutes from "./routes/test.js";
+import decisionsRoutes from "./routes/decisions.js";
+import stationsRoutes from "./routes/stations.js";
 
 dotenv.config();
 
@@ -79,6 +82,9 @@ app.use("/api/agents", agentRoutes);
 app.use("/api/blockchain", blockchainRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/system", systemRoutes);
+app.use("/api/test", testRoutes);
+app.use("/api/decisions", decisionsRoutes);
+app.use("/api/stations", stationsRoutes);
 
 // 404 handler for API routes
 app.use('/api', (req, res) => {

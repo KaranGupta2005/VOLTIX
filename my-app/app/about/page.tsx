@@ -5,6 +5,7 @@ import { motion, useScroll, useTransform, AnimatePresence, useSpring } from "fra
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import NeuralGrid from "@/components/NeuralGrid";
+import { NavbarDemo } from "@/app/components/Navbar";
 import {
     Wrench,
     TrafficCone,
@@ -253,6 +254,9 @@ export default function MeetTheSquad() {
 
     return (
         <div className="min-h-screen bg-black text-white font-sans selection:bg-emerald-500/30 overflow-x-hidden relative">
+            <div className="relative z-50">
+                <NavbarDemo />
+            </div>
             {/* FIXED BACKGROUND LAYER */}
             <div className="fixed inset-0 z-0">
                 <video
@@ -287,7 +291,7 @@ export default function MeetTheSquad() {
                     />
 
                     {/* SQUAD NODES */}
-                    <div className="flex flex-col gap-48 relative">
+                    <div className="flex flex-col gap-16 relative">
                         {AGENTS.map((agent, index) => (
                             <AgentNode
                                 key={agent.id}
