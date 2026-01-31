@@ -60,17 +60,17 @@ const getIcon = (type: NotificationType) => {
 const getIconBg = (type: NotificationType) => {
   switch (type) {
     case "system":
-      return "bg-blue-100 dark:bg-blue-500/20";
+      return "bg-blue-50/80 dark:bg-blue-500/10";
     case "alert":
-      return "bg-red-100 dark:bg-red-500/20";
+      return "bg-red-50/80 dark:bg-red-500/10";
     case "payment":
-      return "bg-purple-100 dark:bg-purple-500/20";
+      return "bg-purple-50/80 dark:bg-purple-500/10";
     case "energy":
-      return "bg-yellow-100 dark:bg-yellow-500/20";
+      return "bg-yellow-50/80 dark:bg-yellow-500/10";
     case "success":
-      return "bg-green-100 dark:bg-green-500/20";
+      return "bg-green-50/80 dark:bg-green-500/10";
     default:
-      return "bg-gray-100 dark:bg-gray-700/50";
+      return "bg-gray-50/80 dark:bg-gray-700/30";
   }
 };
 
@@ -90,8 +90,8 @@ export default function NotificationItem({
       whileHover={{ scale: 1.01 }}
       className={`relative p-4 mb-3 backdrop-blur-sm rounded-2xl flex gap-4 transition-all hover:shadow-lg cursor-pointer ${
         isUnread
-          ? "bg-green-50 dark:bg-slate-700/90 border border-green-200 dark:border-green-600/50"
-          : "bg-gray-100 dark:bg-slate-700/70 border border-gray-200 dark:border-slate-600/50 hover:border-gray-300 dark:hover:border-slate-500"
+          ? "bg-green-50/30 border border-green-100 dark:bg-slate-800/60 dark:border-green-800/30"
+          : "bg-white/50 border border-transparent dark:bg-slate-800/40 hover:bg-white/80 dark:hover:bg-slate-800/60"
       }`}
     >
       {/* Icon */}
@@ -107,18 +107,18 @@ export default function NotificationItem({
           <h4
             className={`font-semibold text-sm truncate pr-2 ${
               isUnread
-                ? "text-gray-900 dark:text-white"
-                : "text-gray-800 dark:text-gray-100"
+                ? "text-black dark:text-white"
+                : "text-gray-900 dark:text-gray-100"
             }`}
           >
             {title}
           </h4>
-          <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap font-medium">
+          <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap font-medium">
             {time}
           </span>
         </div>
 
-        <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-2">
+        <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed line-clamp-2">
           {description}
         </p>
       </div>

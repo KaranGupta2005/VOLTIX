@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Download } from "lucide-react";
+import { Download, Plus } from "lucide-react";
 import Link from "next/link";
 
 import ChatBot from "@/app/components/ChatBot";
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardHeader } from "@/app/components/dashboard-header";
+import { DashboardDecisions } from "@/app/components/dashboard-decisions";
 import BatteryBay from "@/app/components/dashboard/BatteryBay";
 import ProtectedRoute from "@/app/components/ProtectedRoute";
 
@@ -20,25 +21,25 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("home");
 
   return (
-    // <ProtectedRoute>
-    <div className="bg-background relative min-h-screen overflow-hidden">
-      {/* Animated gradient background */}
-      <motion.div
-        className="absolute inset-0 -z-10 opacity-20"
-        animate={{
-          background: [
-            "radial-gradient(circle at 50% 50%, rgba(120, 41, 190, 0.5) 0%, rgba(53, 71, 125, 0.5) 50%, rgba(0, 0, 0, 0) 100%)",
-            "radial-gradient(circle at 30% 70%, rgba(233, 30, 99, 0.5) 0%, rgba(81, 45, 168, 0.5) 50%, rgba(0, 0, 0, 0) 100%)",
-            "radial-gradient(circle at 70% 30%, rgba(76, 175, 80, 0.5) 0%, rgba(32, 119, 188, 0.5) 50%, rgba(0, 0, 0, 0) 100%)",
-            "radial-gradient(circle at 50% 50%, rgba(120, 41, 190, 0.5) 0%, rgba(53, 71, 125, 0.5) 50%, rgba(0, 0, 0, 0) 100%)",
-          ],
-        }}
-        transition={{
-          duration: 30,
-          repeat: Number.POSITIVE_INFINITY,
-          ease: "linear",
-        }}
-      />
+    <ProtectedRoute>
+      <div className="bg-background relative min-h-screen overflow-hidden">
+        {/* Animated gradient background */}
+        <motion.div
+          className="absolute inset-0 -z-10 opacity-20"
+          animate={{
+            background: [
+              "radial-gradient(circle at 50% 50%, rgba(120, 41, 190, 0.5) 0%, rgba(53, 71, 125, 0.5) 50%, rgba(0, 0, 0, 0) 100%)",
+              "radial-gradient(circle at 30% 70%, rgba(233, 30, 99, 0.5) 0%, rgba(81, 45, 168, 0.5) 50%, rgba(0, 0, 0, 0) 100%)",
+              "radial-gradient(circle at 70% 30%, rgba(76, 175, 80, 0.5) 0%, rgba(32, 119, 188, 0.5) 50%, rgba(0, 0, 0, 0) 100%)",
+              "radial-gradient(circle at 50% 50%, rgba(120, 41, 190, 0.5) 0%, rgba(53, 71, 125, 0.5) 50%, rgba(0, 0, 0, 0) 100%)",
+            ],
+          }}
+          transition={{
+            duration: 30,
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "linear",
+          }}
+        />
 
         <SidebarProvider defaultOpen={false}>
           <DashboardSidebar />
@@ -71,14 +72,13 @@ export default function Dashboard() {
                   </TabsList>
                   <div className="hidden gap-2 md:flex">
                     <Link href="/download">
-                      <Button className="rounded-2xl">
+                      <Button className="rounded-2xl bg-green-500 hover:bg-green-600 text-white">
                         <Download className="mr-2 h-4 w-4" />
-                        Install App
+                        Download App
                       </Button>
                     </Link>
                   </div>
                 </div>
-              </div>
 
                 <AnimatePresence mode="wait">
                   <motion.div
@@ -92,11 +92,7 @@ export default function Dashboard() {
                       <HomeContent />
                     </TabsContent>
                     <TabsContent value="apps" className="mt-0">
-                      <div className="flex h-96 items-center justify-center rounded-3xl border border-dashed">
-                        <p className="text-muted-foreground">
-                          Stations content will go here
-                        </p>
-                      </div>
+                      <BatteryBay />
                     </TabsContent>
                     <TabsContent value="files" className="mt-0">
                       <div className="flex h-96 items-center justify-center rounded-3xl border border-dashed">
@@ -106,14 +102,12 @@ export default function Dashboard() {
                       </div>
                     </TabsContent>
                     <TabsContent value="projects" className="mt-0">
-                      <div className="flex h-96 items-center justify-center rounded-3xl border border-dashed">
-                        <p className="text-muted-foreground">
-                          Decisions content will go here
-                        </p>
+                      <div className="bg-white/50 backdrop-blur-sm rounded-3xl p-6 border border-gray-100 min-h-[500px]">
+                        <DashboardDecisions />
                       </div>
                     </TabsContent>
                     <TabsContent value="notifications" className="mt-0">
-                      <div className="bg-gray-100/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-3xl p-6 border border-gray-200 dark:border-slate-700 min-h-[500px]">
+                      <div className="bg-gradient-to-br from-green-50/50 to-emerald-50/50 dark:from-green-950/20 dark:to-emerald-950/20 backdrop-blur-md rounded-3xl p-6 border border-green-100/50 dark:border-green-900/30 min-h-[500px]">
                         <h3 className="text-lg font-semibold mb-4 px-1">
                           Recent Updates
                         </h3>
