@@ -11,6 +11,7 @@ import {
   ImageIcon,
   Layers,
   LayoutGrid,
+  LifeBuoy,
   Users,
   Video,
 } from "lucide-react";
@@ -219,7 +220,11 @@ export const sidebarItems: SidebarItem[] = [
     icon: <FileText className="h-4 w-4" />,
     items: [{ title: "Blockchain", url: "/dashboard/audit/blockchain" }],
   },
-
+  {
+    title: "Support",
+    icon: <LifeBuoy className="h-4 w-4" />,
+    url: "/contact",
+  },
   {
     title: "Settings",
     icon: <Bookmark className="h-4 w-4" />,
