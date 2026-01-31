@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardHeader } from "@/app/components/dashboard-header";
+import { DashboardDecisions } from "@/app/components/dashboard-decisions";
 import ProtectedRoute from "@/app/components/ProtectedRoute";
 
 export default function Dashboard() {
@@ -105,10 +106,8 @@ export default function Dashboard() {
                       </div>
                     </TabsContent>
                     <TabsContent value="projects" className="mt-0">
-                      <div className="flex h-96 items-center justify-center rounded-3xl border border-dashed">
-                        <p className="text-muted-foreground">
-                          Decisions content will go here
-                        </p>
+                      <div className="bg-white/50 backdrop-blur-sm rounded-3xl p-6 border border-gray-100 min-h-[500px]">
+                        <DashboardDecisions />
                       </div>
                     </TabsContent>
                     <TabsContent value="notifications" className="mt-0">
