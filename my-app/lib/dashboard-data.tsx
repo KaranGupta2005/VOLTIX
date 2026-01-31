@@ -1,4 +1,5 @@
 import {
+  Bell,
   Bookmark,
   BookOpen,
   Brush,
@@ -188,6 +189,11 @@ export const sidebarItems: SidebarItem[] = [
     title: "Stations",
     icon: <Grid className="h-4 w-4" />,
     url: "/dashboard/stations",
+  },
+  {
+    title: "Notifications",
+    icon: <Bell className="h-4 w-4" />,
+    url: "/dashboard/notifications",
   },
   {
     title: "Agents",
