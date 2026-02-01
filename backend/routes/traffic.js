@@ -4,12 +4,16 @@ import stationDataService from '../services/stationDataService.js';
 import mlClient from '../scripts/mlClient.js';
 import wrapAsync from '../middlewares/wrapAsync.js';
 import ExpressError from '../middlewares/expressError.js';
-import { userAuth } from '../middlewares/authMiddleware.js';
+import { optionalAuth, userAuth } from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
 // Get optimal route with traffic optimization
-router.post('/optimize-route', userAuth, wrapAsync(async (req, res) => {
+router.post('/optimize-route', optionalAuth, wrapAsync(async (req, res) => {
+  console.log('[Traffic Route] Optimize route request received');
+  console.log('[Traffic Route] Body:', JSON.stringify(req.body, null, 2));
+  console.log('[Traffic Route] User:', req.user ? req.user.userId : 'anonymous');
+  
   const { 
     userLocation, 
     destinationStationId, 
@@ -18,23 +22,33 @@ router.post('/optimize-route', userAuth, wrapAsync(async (req, res) => {
   } = req.body;
 
   if (!userLocation || !Array.isArray(userLocation) || userLocation.length !== 2) {
+    console.error('[Traffic Route] Invalid user location:', userLocation);
     throw new ExpressError(400, 'Valid user location [latitude, longitude] is required');
   }
 
   if (!destinationStationId) {
+    console.error('[Traffic Route] Missing destination station ID');
     throw new ExpressError(400, 'Destination station ID is required');
   }
 
   try {
+    console.log(`[Traffic Route] Finding destination station: ${destinationStationId}`);
+    
     // Get destination station
     const destinationStation = stationDataService.getStationById(destinationStationId);
     
     if (!destinationStation) {
+      console.error(`[Traffic Route] Station not found: ${destinationStationId}`);
       throw new ExpressError(404, 'Destination station not found');
     }
 
+    console.log(`[Traffic Route] Found station: ${destinationStation.name}`);
+    console.log(`[Traffic Route] Station coords: [${destinationStation.latitude}, ${destinationStation.longitude}]`);
+
     // Get all nearby stations for alternatives
     const allStations = stationDataService.getAllStations();
+    console.log(`[Traffic Route] Total stations available: ${allStations.length}`);
+    
     const nearbyStations = allStations
       .filter(s => s.id !== destinationStationId && s.status === 'operational')
       .map(s => ({
@@ -48,15 +62,41 @@ router.post('/optimize-route', userAuth, wrapAsync(async (req, res) => {
       .sort((a, b) => a.distance - b.distance)
       .slice(0, 5);
 
+    console.log(`[Traffic Route] Found ${nearbyStations.length} nearby stations`);
+
     // Calculate route to destination
     const destinationCoords = [destinationStation.latitude, destinationStation.longitude];
-    const primaryRoute = await mlClient.calculateRoute(userLocation, destinationCoords);
+    console.log(`[Traffic Route] Calculating route from [${userLocation}] to [${destinationCoords}]`);
+    
+    let primaryRoute;
+    try {
+      primaryRoute = await mlClient.calculateRoute(userLocation, destinationCoords);
+      console.log('[Traffic Route] Primary route calculated successfully');
+    } catch (routeError) {
+      console.error('[Traffic Route] ML route calculation failed:', routeError.message);
+      // Fallback to simple route
+      primaryRoute = {
+        success: true,
+        distance_km: calculateDistance(userLocation[0], userLocation[1], destinationCoords[0], destinationCoords[1]),
+        duration_minutes: 15,
+        geometry: {
+          coordinates: [[userLocation[1], userLocation[0]], [destinationCoords[1], destinationCoords[0]]]
+        },
+        steps: [
+          { instruction: 'Head towards destination', distance: 0, duration: 0 },
+          { instruction: `Arrive at ${destinationStation.name}`, distance: 0, duration: 0 }
+        ]
+      };
+      console.log('[Traffic Route] Using fallback route');
+    }
 
     // Check if traffic agent should suggest alternatives
     const shouldSuggestAlternative = 
       destinationStation.demand?.queueLength >= 5 ||
       destinationStation.demand?.avgWaitTime >= 10 ||
       destinationStation.status !== 'operational';
+
+    console.log(`[Traffic Route] Should suggest alternative: ${shouldSuggestAlternative}`);
 
     let optimization = {
       primaryRoute: {
@@ -72,45 +112,71 @@ router.post('/optimize-route', userAuth, wrapAsync(async (req, res) => {
     };
 
     if (shouldSuggestAlternative && nearbyStations.length > 0) {
+      console.log('[Traffic Route] Calculating alternatives...');
+      
       // Calculate routes and incentives for alternatives
       const alternativePromises = nearbyStations.map(async (station) => {
         const stationCoords = [station.latitude, station.longitude];
-        const route = await mlClient.calculateRoute(userLocation, stationCoords);
+        let route;
+        
+        try {
+          route = await mlClient.calculateRoute(userLocation, stationCoords);
+        } catch (error) {
+          console.warn(`[Traffic Route] Failed to calculate route to ${station.id}, using fallback`);
+          route = {
+            success: true,
+            distance_km: station.distance,
+            duration_minutes: Math.ceil(station.distance / 0.5), // Assume 30 km/h average
+            geometry: {
+              coordinates: [[userLocation[1], userLocation[0]], [stationCoords[1], stationCoords[0]]]
+            },
+            steps: []
+          };
+        }
         
         // Calculate incentive using traffic agent
-        const incentive = await mlClient.calculateIncentive(
-          {
-            ...destinationStation,
-            weather: 'sunny',
-            temperature: 28,
-            station_capacity: destinationStation.capacity,
-            station_type: destinationStation.type,
-            is_highway: destinationStation.isHighway ? 1 : 0,
-            is_mall: destinationStation.isMall ? 1 : 0,
-            is_office: destinationStation.isOffice ? 1 : 0,
-            is_holiday: 0,
-            nearby_event: 0
-          },
-          {
-            ...station,
-            weather: 'sunny',
-            temperature: 28,
-            station_capacity: station.capacity,
-            station_type: station.type,
-            is_highway: station.isHighway ? 1 : 0,
-            is_mall: station.isMall ? 1 : 0,
-            is_office: station.isOffice ? 1 : 0,
-            is_holiday: 0,
-            nearby_event: 0,
-            distance_km: station.distance
-          },
-          {
-            ...userProfile,
-            time_value_per_minute: userProfile.timeValuePerMinute || 2,
-            cost_per_km: userProfile.costPerKm || 5,
-            price_sensitivity: userProfile.priceSensitivity || 0.5
-          }
-        );
+        let incentive;
+        try {
+          incentive = await mlClient.calculateIncentive(
+            {
+              ...destinationStation,
+              weather: 'sunny',
+              temperature: 28,
+              station_capacity: destinationStation.capacity,
+              station_type: destinationStation.type,
+              is_highway: destinationStation.isHighway ? 1 : 0,
+              is_mall: destinationStation.isMall ? 1 : 0,
+              is_office: destinationStation.isOffice ? 1 : 0,
+              is_holiday: 0,
+              nearby_event: 0
+            },
+            {
+              ...station,
+              weather: 'sunny',
+              temperature: 28,
+              station_capacity: station.capacity,
+              station_type: station.type,
+              is_highway: station.isHighway ? 1 : 0,
+              is_mall: station.isMall ? 1 : 0,
+              is_office: station.isOffice ? 1 : 0,
+              is_holiday: 0,
+              nearby_event: 0,
+              distance_km: station.distance
+            },
+            {
+              ...userProfile,
+              time_value_per_minute: userProfile.timeValuePerMinute || 2,
+              cost_per_km: userProfile.costPerKm || 5,
+              price_sensitivity: userProfile.priceSensitivity || 0.5
+            }
+          );
+        } catch (error) {
+          console.warn(`[Traffic Route] Failed to calculate incentive for ${station.id}`);
+          incentive = {
+            recommended_incentive: 25,
+            acceptance_probability: 0.5
+          };
+        }
 
         return {
           station,
@@ -124,6 +190,7 @@ router.post('/optimize-route', userAuth, wrapAsync(async (req, res) => {
       });
 
       const alternatives = await Promise.all(alternativePromises);
+      console.log(`[Traffic Route] Calculated ${alternatives.length} alternatives`);
       
       // Filter alternatives that actually save time or have good incentives
       optimization.alternatives = alternatives
@@ -132,6 +199,8 @@ router.post('/optimize-route', userAuth, wrapAsync(async (req, res) => {
           (alt.incentive && alt.incentive.acceptance_probability > 0.5)
         )
         .sort((a, b) => b.timeSaved - a.timeSaved);
+
+      console.log(`[Traffic Route] ${optimization.alternatives.length} viable alternatives found`);
 
       // Determine best recommendation
       if (optimization.alternatives.length > 0) {
@@ -147,6 +216,8 @@ router.post('/optimize-route', userAuth, wrapAsync(async (req, res) => {
             money: bestAlternative.incentive?.recommended_incentive || 0
           }
         };
+        
+        console.log(`[Traffic Route] Recommending ${bestAlternative.station.id} - saves ${Math.round(bestAlternative.timeSaved)} min`);
       }
     }
 
@@ -172,7 +243,10 @@ router.post('/optimize-route', userAuth, wrapAsync(async (req, res) => {
         confidence: decision.confidence,
         impact: decision.impact
       };
+      console.log(`[Traffic Route] Traffic analysis: ${decision.action}`);
     }
+
+    console.log('[Traffic Route] Optimization complete, sending response');
 
     res.json({
       success: true,
@@ -182,6 +256,7 @@ router.post('/optimize-route', userAuth, wrapAsync(async (req, res) => {
 
   } catch (error) {
     console.error('[Traffic Route] Optimization error:', error);
+    console.error('[Traffic Route] Error stack:', error.stack);
     throw new ExpressError(500, error.message);
   }
 }));
