@@ -1,158 +1,214 @@
-# 🚀 AWS Deployment Roadmap for VOLTIX
+# VOLTIX Deployment Guide (AWS Burner Account)
 
-This guide lays out the steps to deploy your full-stack application (Next.js + Node.js + Redis + MongoDB) to AWS EC2 using Docker.
+This guide provides a "safe" and reliable route to deploy the complete VOLTIX stack (Frontend, Backend, ML, Databases, and Blockhchain) to a single AWS EC2 instance. This approach is ideal for a "burner" account as it minimizes infrastructure complexity and costs while ensuring all components work together seamlessly.
 
-## 📋 Prerequisites
+## 🏗️ Architecture Overview
 
-- An AWS Account
-- A domain name (optional but recommended for SSL)
-- SSH access to your terminal
+We will deploy a containerized stack using **Docker Compose**:
+
+1.  **Frontend**: Next.js App (Port 3000)
+2.  **Backend**: Node.js/Express App (Port 5000)
+3.  **ML Service**: Python/FastAPI (Port 8000)
+4.  **Blockchain**: Local Hardhat Node (Port 8545)
+5.  **Redis**: Caching Layer (Port 6379, internal)
+6.  **MongoDB**: External (Atlas) or Internal Container (configured below)
 
 ---
 
-## 🏗️ Phase 1: Prepare Your Code (Local)
+## 🚀 Step 1: Prepare the "Master" Docker Compose
 
-We have already created `Dockerfile` for both frontend and backend. Now create a `docker-compose.prod.yml` in the root of your project:
+Create a file named `docker-compose.yml` in the **root** of your project (same level as `my-app`, `backend`, `ml`).
 
 ```yaml
 version: "3.8"
 
 services:
-  # Frontend (Next.js)
+  # ------------------------------------
+  # 1. FRONTEND (Next.js)
+  # ------------------------------------
   frontend:
-    build: ./my-app
+    build:
+      context: ./my-app
+      dockerfile: Dockerfile
+    container_name: voltix-frontend
     restart: always
     ports:
-      - "3000:3000"
+      - "80:3000" # Expose on standard HTTP port
     environment:
-      - NEXT_PUBLIC_API_URL=https://api.yourdomain.com
+      - NEXT_PUBLIC_API_URL=http://<YOUR_EC2_IP>:5000
+      - NEXT_PUBLIC_ML_API_URL=http://<YOUR_EC2_IP>:8000
     depends_on:
       - backend
 
-  # Backend (Node.js)
+  # ------------------------------------
+  # 2. BACKEND (Node.js)
+  # ------------------------------------
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: voltix-backend
     restart: always
     ports:
-      - "5001:5001"
+      - "5000:5000"
     environment:
-      - PORT=5001
-      - MONGO_URL=${MONGO_URL} # We will set this on the server
+      - PORT=5000
+      - MONGO_URI=${MONGO_URI} # Provide this in .env
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - CLIENT_URL=https://yourdomain.com
-      # Add other env vars here
+      - JWT_SECRET=supersecretburnerkey
+      - ML_SERVICE_URL=http://ml-service:8000
+      - BLOCKCHAIN_RPC_URL=http://blockchain:8545
+      # Contract address will be read from deployment.json if mounted, or you can set:
+      # AUDIT_CONTRACT_ADDRESS=<Deploy first and set this>
+    volumes:
+      # Mount the deployment file so backend sees the deployed address
+      - ./backend/deployment.json:/app/deployment.json
+    depends_on:
+      - redis
+      - ml-service
+      - blockchain
+      - deployer # Wait for deployment to finish
+
+  # ------------------------------------
+  # 3. ML SERVICE (FastAPI)
+  # ------------------------------------
+  ml-service:
+    build:
+      context: ./ml
+      dockerfile: docker/Dockerfile
+    container_name: voltix-ml
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - ML_HOST=0.0.0.0
+      - ML_PORT=8000
+    volumes:
+      - ./ml/saved_models:/app/saved_models
     depends_on:
       - redis
 
-  # Redis
-  redis:
-    image: redis:alpine
-    restart: always
+  # ------------------------------------
+  # 4. BLOCKCHAIN (Local Hardhat Node)
+  # ------------------------------------
+  blockchain:
+    image: ghcr.io/nomicfoundation/hardhat:latest
+    container_name: voltix-blockchain
+    command: ["npx", "hardhat", "node", "--hostname", "0.0.0.0"]
+    expose:
+      - "8545"
     ports:
-      - "6379:6379"
+      - "8545:8545"
 
-  # Nginx (Reverse Proxy)
-  nginx:
-    image: nginx:alpine
-    restart: always
-    ports:
-      - "80:80"
-      - "443:443"
+  # ------------------------------------
+  # 5. DEPLOYER (Runs once to deploy contracts)
+  # ------------------------------------
+  deployer:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: voltix-deployer
+    # Overwrite the default command to run the deployment script
+    command: ["node", "scripts/deploy-simple.js"]
+    environment:
+      - BLOCKCHAIN_RPC_URL=http://blockchain:8545
     volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d
-      - ./certbot/conf:/etc/letsencrypt
-      - ./certbot/www:/var/www/certbot
+      # Write the result to the host so backend can read it
+      - ./backend/deployment.json:/app/deployment.json
     depends_on:
-      - frontend
-      - backend
+      - blockchain
+    restart: on-failure:5 # Retry if blockchain isn't ready yet
+
+  # ------------------------------------
+  # 6. REDIS (Cache)
+  # ------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: voltix-redis
+    restart: always
+    expose:
+      - "6379"
+    volumes:
+      - redis_data:/data
+
+  # Optional: MongoDB
+  # mongodb:
+  #   image: mongo:latest
+  #   ports:
+  #     - "27017:27017"
+  #   volumes:
+  #     - mongo_data:/data/db
+
+volumes:
+  redis_data:
 ```
 
 ---
 
-## ☁️ Phase 2: Launch AWS EC2 Instance
+## 🛠️ Step 2: AWS Setup (The "Burner" Way)
 
-1.  **Login to AWS Console** → Go to **EC2**.
-2.  **Launch Instance**:
-    - **Name**: `Voltix-Server`
-    - **OS**: Ubuntu Server 22.04 LTS
-    - **Instance Type**: `t3.small` (Recommended min for Node+Next) or `t2.micro` (Free tier, might struggle with build).
-    - **Key Pair**: Create new (download `.pem` file).
-3.  **Security Group** (Firewall):
-    - Allow SSH (Port 22) from Anywhere (or My IP).
-    - Allow HTTP (Port 80) from Anywhere.
-    - Allow HTTPS (Port 443) from Anywhere.
-4.  **Launch**!
+1.  **Launch an EC2 Instance**:
+    - **OS**: Ubuntu Server 22.04 LTS (Recommended: **t3.medium** or **t3.large**).
+    - **Disk**: 20GB+ gp3.
+    - **Security Group**: Allow Inbound Traffic for:
+      - **SSH (22)**: Your IP
+      - **HTTP (80)**: Anywhere (Frontend)
+      - **Custom TCP (5000)**: Anywhere (Backend API)
+      - **Custom TCP (8000)**: Anywhere (ML API)
+      - **Custom TCP (8545)**: Anywhere (Blockchain RPC - Optional)
 
----
-
-## 🔧 Phase 3: Server Setup
-
-1.  **SSH into your server**:
-
+2.  **Connect to Instance**:
     ```bash
-    chmod 400 your-key.pem
-    ssh -i "your-key.pem" ubuntu@<YOUR_EC2_IP>
+    ssh -i "your-key.pem" ubuntu@<EC2_PUBLIC_IP>
     ```
 
-2.  **Install Docker & Git**:
+## 📦 Step 3: Deployment Script
 
-    ```bash
-    # Update system
-    sudo apt update && sudo apt upgrade -y
+Run these commands on your EC2 instance.
 
-    # Install Docker
-    sudo apt install docker.io docker-compose -y
+```bash
+# 1. Update and Install Docker
+sudo apt-get update
+sudo apt-get install -y ca-certificates curl gnupg
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-    # Enable Docker to run without sudo
-    sudo usermod -aG docker $USER
-    # (Log out and log back in for this to take effect)
-    exit
-    ssh -i "your-key.pem" ubuntu@<YOUR_EC2_IP>
-    ```
+# 2. Clone Your Repository
+git clone https://github.com/KaranGupta2005/VOLTIX.git
+cd VOLTIX
+# Switch to the correct branch
+git checkout varun-branch
 
-3.  **Details Setup**:
-    ```bash
-    # Clone your repo
-    git clone https://github.com/KaranGupta2005/VOLTIX.git
-    cd VOLTIX
-    ```
+# 3. Create Environment File (.env)
+nano .env
+# PASTE:
+# MONGO_URI=mongodb+srv://... (Your Atlas URI)
 
----
+# 4. Create the Master docker-compose.yml
+# (Copy the content from Step 1 above into this file)
+nano docker-compose.yml
 
-## 🚀 Phase 4: Deploy
+# 5. Build and Launch
+sudo docker compose up --build -d
+```
 
-1.  **Create Production Env File**:
+## ✅ Everything Runs Automatically!
 
-    ```bash
-    nano .env
-    ```
+With this setup:
 
-    Paste your backend `.env` content here. Make sure to use the **Atlas MongoDB URL** (cloud), not localhost.
+1.  **Blockchain** starts first.
+2.  **Deployer** waits for blockchain, then deploys your smart contracts.
+3.  **Backend** reads the new contract address from the shared `deployment.json` file.
+4.  **Frontend** and **ML** start in parallel.
 
-2.  **Run with Docker Compose**:
-    ```bash
-    docker-compose -f docker-compose.prod.yml up -d --build
-    ```
+You can verify the blockchain deployment by checking the logs:
 
----
-
-## 🔒 Phase 5: Domain & SSL (HTTPS)
-
-1.  **Point Domain**: Go to GoDaddy/Namecheap and point `A Record` to your EC2 IP.
-2.  **Nginx Config**: You will need to configure Nginx to route traffic:
-    - `yourdomain.com` → `frontend:3000`
-    - `api.yourdomain.com` → `backend:5001`
-3.  **Certbot**: Run Certbot to get free SSL certificates.
-
----
-
-## Alternative: The "Easy Way" (Vercel + Render)
-
-If EC2 feels too manual, do this:
-
-1.  **Frontend**: Deploy `my-app` folder to **Vercel** (connect GitHub, done in 2 mins).
-2.  **Backend**: Deploy `backend` folder to **Render.com** or **Railway.app** (connect GitHub, add Env Vars).
-3.  **Database**: Continue using MongoDB Atlas.
-
-This setup costs $0/mo (Free tiers) and requires zero server maintenance.
+```bash
+sudo docker logs voltix-deployer
+```

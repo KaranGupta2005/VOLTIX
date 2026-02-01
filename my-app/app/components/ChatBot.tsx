@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import { X, Send, MessageCircle, Mic, Zap } from "lucide-react";
+import api from "@/app/config/api";
 
 export default function ChatBot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -104,16 +105,8 @@ export default function ChatBot() {
     setIsTyping(true);
 
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5002/api"}/chat`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: userMessage }),
-        },
-      );
-
-      const data = await res.json();
+      const res = await api.post("/chat", { message: userMessage });
+      const data = res.data; // Axios returns data in .data
       const botReply = data.reply || "No reply from EV Station Assistant.";
 
       setTimeout(() => {
