@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ChevronDown, Search, Settings, Zap } from "lucide-react";
+import { ChevronDown, Search, Settings, Zap, Home, Info, Phone, Download, LogOut } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -28,9 +29,8 @@ import {
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 
-import { sidebarItems } from "@/lib/dashboard-data";
-
 export function DashboardSidebar() {
+  const router = useRouter();
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>(
     {},
   );
@@ -41,6 +41,55 @@ export function DashboardSidebar() {
       [title]: !prev[title],
     }));
   };
+
+  const handleLogout = async () => {
+    try {
+      const tokenRow = document.cookie
+        .split('; ')
+        .find((row) => row.startsWith('accessToken='));
+      const token = tokenRow ? tokenRow.split('=')[1] : null;
+
+      if (token) {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        await fetch(`${apiUrl}/api/auth/logout`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+    } catch (error) {
+      console.error("Logout failed", error);
+    } finally {
+      // Clear the cookie
+      document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+      router.push('/');
+    }
+  };
+
+  const sidebarItems = [
+    {
+      title: "Home",
+      icon: <Home className="h-4 w-4" />,
+      url: "/",
+    },
+    {
+      title: "About Us",
+      icon: <Info className="h-4 w-4" />,
+      url: "/about",
+    },
+    {
+      title: "Contact Us",
+      icon: <Phone className="h-4 w-4" />,
+      url: "/contact",
+    },
+    {
+      title: "Download App",
+      icon: <Download className="h-4 w-4" />,
+      url: "/download",
+    },
+  ];
 
   return (
     <Sidebar collapsible="icon">
@@ -73,93 +122,20 @@ export function DashboardSidebar() {
             <SidebarMenu>
               {sidebarItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  {item.items ? (
-                    <Collapsible
-                      open={expandedItems[item.title]}
-                      onOpenChange={() => toggleExpanded(item.title)}
+                  <SidebarMenuButton
+                    asChild
+                    className="rounded-2xl"
+                  >
+                    <Link
+                      href={item.url}
+                      className="flex items-center justify-between"
                     >
-                      <CollapsibleTrigger asChild>
-                        <SidebarMenuButton
-                          className={cn(
-                            "w-full justify-between rounded-2xl",
-                            item.isActive && "bg-primary/10 text-primary",
-                          )}
-                        >
-                          <div className="flex items-center gap-3">
-                            {item.icon}
-                            <span>{item.title}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            {item.badge && (
-                              <Badge
-                                variant="outline"
-                                className="rounded-full px-2 py-0.5 text-xs"
-                              >
-                                {item.badge}
-                              </Badge>
-                            )}
-                            <ChevronDown
-                              className={cn(
-                                "h-4 w-4 transition-transform",
-                                expandedItems[item.title] ? "rotate-180" : "",
-                              )}
-                            />
-                          </div>
-                        </SidebarMenuButton>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <SidebarMenuSub>
-                          {item.items.map((subItem) => (
-                            <SidebarMenuSubItem key={subItem.title}>
-                              <SidebarMenuSubButton
-                                asChild
-                                className="rounded-2xl"
-                              >
-                                <Link
-                                  href={subItem.url}
-                                  className="flex items-center justify-between"
-                                >
-                                  {subItem.title}
-                                  {subItem.badge && (
-                                    <Badge
-                                      variant="outline"
-                                      className="rounded-full px-2 py-0.5 text-xs"
-                                    >
-                                      {subItem.badge}
-                                    </Badge>
-                                  )}
-                                </Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          ))}
-                        </SidebarMenuSub>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  ) : (
-                    <SidebarMenuButton
-                      asChild
-                      isActive={item.isActive}
-                      className="rounded-2xl"
-                    >
-                      <Link
-                        href={item.url || "#"}
-                        className="flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-3">
-                          {item.icon}
-                          <span>{item.title}</span>
-                        </div>
-                        {item.badge && (
-                          <Badge
-                            variant="outline"
-                            className="rounded-full px-2 py-0.5 text-xs"
-                          >
-                            {item.badge}
-                          </Badge>
-                        )}
-                      </Link>
-                    </SidebarMenuButton>
-                  )}
+                      <div className="flex items-center gap-3">
+                        {item.icon}
+                        <span>{item.title}</span>
+                      </div>
+                    </Link>
+                  </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
@@ -170,9 +146,9 @@ export function DashboardSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton className="rounded-2xl">
-              <Settings className="h-5 w-5" />
-              <span>Settings</span>
+            <SidebarMenuButton className="rounded-2xl text-red-500 hover:text-red-600 hover:bg-red-50" onClick={handleLogout}>
+              <LogOut className="h-5 w-5" />
+              <span>Logout</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>

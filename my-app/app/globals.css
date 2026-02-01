@@ -182,3 +182,60 @@
 .animate-marquee-reverse {
   animation: marquee-reverse var(--duration, 40s) linear infinite;
 }
+/* Decision Stats Cards - Clean Style */
+.decision-stats-card {
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.decision-particle {
+  animation: particle-float 3s ease-in-out infinite;
+}
+
+@keyframes particle-float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+    opacity: 0.4;
+  }
+  50% {
+    transform: translateY(-15px) rotate(180deg);
+    opacity: 1;
+  }
+}
+
+/* Subtle hover effects */
+.decision-stats-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.dark .decision-stats-card:hover {
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Smooth transitions */
+.decision-stats-card * {
+  transition: all 0.3s ease;
+}
+
+/* Enhanced backdrop blur for dark mode */
+.dark .decision-stats-card {
+  backdrop-filter: blur(12px);
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .decision-stats-card {
+    transform: none !important;
+  }
+  
+  .decision-particle {
+    display: none;
+  }
+  
+  .decision-stats-card:hover {
+    transform: translateY(-1px) !important;
+  }
+}

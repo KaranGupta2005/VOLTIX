@@ -15,14 +15,15 @@ const HeroSection = () => {
 
       {/* 2. Background Image */}
       <div className="absolute inset-0 z-0">
-        <Image
-          src="/background.jpg"
-          alt="Background"
-          fill
-          style={{ objectFit: "cover" }}
-          className="opacity-70"
-          priority
-        />
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover opacity-70"
+        >
+          <source src="/assets/bg_video_v2.mp4" type="video/mp4" />
+        </video>
         {/* Top/side soft wash */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/10 via-black/5 to-black/30" />
         {/* Bottom dark gradient for readability */}

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Download, Plus } from "lucide-react";
+import { Download } from "lucide-react";
 import Link from "next/link";
 
 import ChatBot from "@/app/components/ChatBot";
@@ -13,8 +13,10 @@ import { Button } from "@/components/ui/button";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DashboardHeader } from "@/app/components/dashboard-header";
+import { DashboardDecisions } from "@/app/components/dashboard-decisions";
 import BatteryBay from "@/app/components/dashboard/BatteryBay";
 import ProtectedRoute from "@/app/components/ProtectedRoute";
+import TrafficNotificationToast from "@/app/components/TrafficNotificationToast";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("home");
@@ -40,89 +42,89 @@ export default function Dashboard() {
         }}
       />
 
-      <SidebarProvider defaultOpen={false}>
-        <DashboardSidebar />
-        <SidebarInset>
-          <DashboardHeader />
-          <main className="flex-1 p-4 md:p-6">
-            <Tabs
-              defaultValue="home"
-              value={activeTab}
-              onValueChange={setActiveTab}
-              className="w-full"
-            >
-              <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                <TabsList className="grid w-full max-w-[600px] grid-cols-5 rounded-2xl p-1">
-                  <TabsTrigger value="home" className="rounded-xl">
-                    Home
-                  </TabsTrigger>
-                  <TabsTrigger value="apps" className="rounded-xl">
-                    Stations
-                  </TabsTrigger>
-                  <TabsTrigger value="files" className="rounded-xl">
-                    Agents
-                  </TabsTrigger>
-                  <TabsTrigger value="projects" className="rounded-xl">
-                    Decisions
-                  </TabsTrigger>
-                  <TabsTrigger value="notifications" className="rounded-xl">
-                    Notifications
-                  </TabsTrigger>
-                </TabsList>
-                <div className="hidden gap-2 md:flex">
-                  <Link href="/download">
-                    <Button className="rounded-2xl bg-green-500 hover:bg-green-600 text-white">
-                      <Download className="mr-2 h-4 w-4" />
-                      Download App
-                    </Button>
-                  </Link>
+        <SidebarProvider defaultOpen={false}>
+          <DashboardSidebar />
+          <SidebarInset>
+            <DashboardHeader />
+            <main className="flex-1 p-4 md:p-6">
+              <Tabs
+                defaultValue="home"
+                value={activeTab}
+                onValueChange={setActiveTab}
+                className="w-full"
+              >
+                <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                  <TabsList className="grid w-full max-w-[600px] grid-cols-5 rounded-2xl p-1">
+                    <TabsTrigger value="home" className="rounded-xl">
+                      Home
+                    </TabsTrigger>
+                    <TabsTrigger value="apps" className="rounded-xl">
+                      Stations
+                    </TabsTrigger>
+                    <TabsTrigger value="files" className="rounded-xl">
+                      Agents
+                    </TabsTrigger>
+                    <TabsTrigger value="projects" className="rounded-xl">
+                      Decisions
+                    </TabsTrigger>
+                    <TabsTrigger value="notifications" className="rounded-xl">
+                      Notifications
+                    </TabsTrigger>
+                  </TabsList>
+                  <div className="hidden gap-2 md:flex">
+                    <Link href="/download">
+                      <Button className="rounded-2xl bg-green-500 hover:bg-green-600 text-white">
+                        <Download className="mr-2 h-4 w-4" />
+                        Download App
+                      </Button>
+                    </Link>
+                  </div>
                 </div>
               </div>
 
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeTab}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <TabsContent value="home" className="mt-0">
-                    <HomeContent />
-                  </TabsContent>
-                  <TabsContent value="apps" className="mt-0">
-                    <BatteryBay />
-                  </TabsContent>
-                  <TabsContent value="files" className="mt-0">
-                    <div className="flex h-96 items-center justify-center rounded-3xl border border-dashed">
-                      <p className="text-muted-foreground">
-                        Agents content will go here
-                      </p>
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="projects" className="mt-0">
-                    <div className="flex h-96 items-center justify-center rounded-3xl border border-dashed">
-                      <p className="text-muted-foreground">
-                        Decisions content will go here
-                      </p>
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="notifications" className="mt-0">
-                    <div className="bg-gradient-to-br from-green-50/50 to-emerald-50/50 dark:from-green-950/20 dark:to-emerald-950/20 backdrop-blur-md rounded-3xl p-6 border border-green-100/50 dark:border-green-900/30 min-h-[500px]">
-                      <h3 className="text-lg font-semibold mb-4 px-1">
-                        Recent Updates
-                      </h3>
-                      <NotificationsList />
-                    </div>
-                  </TabsContent>
-                </motion.div>
-              </AnimatePresence>
-            </Tabs>
-          </main>
-        </SidebarInset>
-      </SidebarProvider>
-      <ChatBot />
-    </div>
-    // </ProtectedRoute>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={activeTab}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <TabsContent value="home" className="mt-0">
+                      <HomeContent />
+                    </TabsContent>
+                    <TabsContent value="apps" className="mt-0">
+                      <BatteryBay />
+                    </TabsContent>
+                    <TabsContent value="files" className="mt-0">
+                      <div className="flex h-96 items-center justify-center rounded-3xl border border-dashed">
+                        <p className="text-muted-foreground">
+                          Agents content will go here
+                        </p>
+                      </div>
+                    </TabsContent>
+                    <TabsContent value="projects" className="mt-0">
+                      <div className="bg-white/50 backdrop-blur-sm rounded-3xl p-6 border border-gray-100 min-h-[500px]">
+                        <DashboardDecisions />
+                      </div>
+                    </TabsContent>
+                    <TabsContent value="notifications" className="mt-0">
+                      <div className="bg-gradient-to-br from-green-50/50 to-emerald-50/50 dark:from-green-950/20 dark:to-emerald-950/20 backdrop-blur-md rounded-3xl p-6 border border-green-100/50 dark:border-green-900/30 min-h-[500px]">
+                        <h3 className="text-lg font-semibold mb-4 px-1">
+                          Recent Updates
+                        </h3>
+                        <NotificationsList />
+                      </div>
+                    </TabsContent>
+                  </motion.div>
+                </AnimatePresence>
+              </Tabs>
+            </main>
+          </SidebarInset>
+        </SidebarProvider>
+        <ChatBot />
+        <TrafficNotificationToast />
+      </div>
+    </ProtectedRoute>
   );
 }
