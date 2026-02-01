@@ -25,6 +25,7 @@ import systemRoutes from "./routes/system.js";
 import testRoutes from "./routes/test.js";
 import decisionsRoutes from "./routes/decisions.js";
 import stationsRoutes from "./routes/stations.js";
+import trafficRoutes from "./routes/traffic.js";
 
 dotenv.config();
 
@@ -85,6 +86,7 @@ app.use("/api/system", systemRoutes);
 app.use("/api/test", testRoutes);
 app.use("/api/decisions", decisionsRoutes);
 app.use("/api/stations", stationsRoutes);
+app.use("/api/traffic", trafficRoutes);
 
 // 404 handler for API routes
 app.use('/api', (req, res) => {
