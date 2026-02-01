@@ -105,7 +105,7 @@ export default function ChatBot() {
     setIsTyping(true);
 
     try {
-      const res = await api.post("/chat", { message: userMessage });
+      const res = await api.post("/api/chat", { message: userMessage });
       const data = res.data; // Axios returns data in .data
       const botReply = data.reply || "No reply from EV Station Assistant.";
 

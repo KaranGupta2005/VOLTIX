@@ -6,7 +6,7 @@ class GroqClient {
   constructor() {
     this.apiKey = process.env.GROQ_API_KEY;
     this.baseURL = "https://api.groq.com/openai/v1/chat/completions";
-    
+
     if (!this.apiKey) {
       console.warn("GROQ_API_KEY not found in environment variables");
     }
@@ -21,22 +21,22 @@ class GroqClient {
       model = "llama3-70b-8192",
       temperature = 0.3,
       max_tokens = 500,
-      system_prompt = null
+      system_prompt = null,
     } = options;
 
     try {
       const messages = [];
-      
+
       if (system_prompt) {
         messages.push({
           role: "system",
-          content: system_prompt
+          content: system_prompt,
         });
       }
-      
+
       messages.push({
         role: "user",
-        content: prompt
+        content: prompt,
       });
 
       const response = await axios.post(
@@ -46,15 +46,15 @@ class GroqClient {
           messages,
           temperature,
           max_tokens,
-          stream: false
+          stream: false,
         },
         {
           headers: {
-            "Authorization": `Bearer ${this.apiKey}`,
-            "Content-Type": "application/json"
+            Authorization: `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
           },
-          timeout: 30000 // 30 second timeout
-        }
+          timeout: 30000, // 30 second timeout
+        },
       );
 
       if (response.data?.choices?.[0]?.message?.content) {
@@ -62,12 +62,12 @@ class GroqClient {
       } else {
         throw new Error("Invalid response format from Groq API");
       }
-
     } catch (error) {
       if (error.response) {
         // API error response
         const status = error.response.status;
-        const message = error.response.data?.error?.message || error.response.statusText;
+        const message =
+          error.response.data?.error?.message || error.response.statusText;
         throw new Error(`Groq API error (${status}): ${message}`);
       } else if (error.request) {
         // Network error
@@ -93,11 +93,11 @@ Focus on:
 Keep explanations concise, practical, and actionable.`;
 
     const prompt = this.buildDecisionPrompt(decisionData);
-    
+
     return await this.askGroq(prompt, {
       system_prompt: systemPrompt,
       temperature: 0.2,
-      max_tokens: 400
+      max_tokens: 400,
     });
   }
 
@@ -115,11 +115,11 @@ Focus on:
 Be concise and focus on actionable insights.`;
 
     const prompt = this.buildStatusPrompt(statusData);
-    
+
     return await this.askGroq(prompt, {
       system_prompt: systemPrompt,
       temperature: 0.2,
-      max_tokens: 350
+      max_tokens: 350,
     });
   }
 
@@ -133,7 +133,7 @@ Be concise and focus on actionable insights.`;
       impact,
       confidence,
       riskScore,
-      predictionInsights
+      predictionInsights,
     } = decisionData;
 
     return `AGENT DECISION ANALYSIS:
@@ -153,7 +153,11 @@ EXPECTED IMPACT:
 - Success Rate: ${((impact?.successRate || 0) * 100).toFixed(1)}%
 
 PREDICTION INSIGHTS:
-${predictionInsights ? JSON.stringify(predictionInsights, null, 2) : 'No prediction data available'}
+${
+  predictionInsights
+    ? JSON.stringify(predictionInsights, null, 2)
+    : "No prediction data available"
+}
 
 Explain this decision in 2-3 sentences focusing on the business rationale and user benefit.`;
   }
@@ -177,9 +181,12 @@ Keep it concise and actionable.`;
   // Test connection to Groq API
   async testConnection() {
     try {
-      const response = await this.askGroq("Test connection - respond with 'OK'", {
-        max_tokens: 10
-      });
+      const response = await this.askGroq(
+        "Test connection - respond with 'OK'",
+        {
+          max_tokens: 10,
+        },
+      );
       return { success: true, response };
     } catch (error) {
       return { success: false, error: error.message };
@@ -189,12 +196,15 @@ Keep it concise and actionable.`;
   // Get available models (if supported by API)
   async getModels() {
     try {
-      const response = await axios.get("https://api.groq.com/openai/v1/models", {
-        headers: {
-          "Authorization": `Bearer ${this.apiKey}`,
-          "Content-Type": "application/json"
-        }
-      });
+      const response = await axios.get(
+        "https://api.groq.com/openai/v1/models",
+        {
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
       return response.data;
     } catch (error) {
       throw new Error(`Failed to get models: ${error.message}`);

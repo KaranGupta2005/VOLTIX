@@ -100,7 +100,7 @@ export default function Dashboard() {
                     <LiveAgentConsole />
                   </TabsContent>
                   <TabsContent value="projects" className="mt-0">
-                    <div className="bg-white/50 backdrop-blur-sm rounded-3xl p-6 border border-gray-100 min-h-[500px]">
+                    <div className="bg-gradient-to-br from-green-50/50 to-emerald-50/50 dark:from-green-950/20 dark:to-emerald-950/20 backdrop-blur-md rounded-3xl p-6 border border-green-100/50 dark:border-green-900/30 min-h-[500px]">
                       <DashboardDecisions />
                     </div>
                   </TabsContent>

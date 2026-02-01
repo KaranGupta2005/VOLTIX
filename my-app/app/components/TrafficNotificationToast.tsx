@@ -2,7 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, AlertTriangle, DollarSign, CheckCircle, TrendingUp } from "lucide-react";
+import {
+  X,
+  AlertTriangle,
+  DollarSign,
+  CheckCircle,
+  TrendingUp,
+  Zap,
+} from "lucide-react";
 import { connectSocket } from "@/app/config/socket";
 
 interface TrafficNotification {
@@ -25,6 +32,70 @@ export default function TrafficNotificationToast() {
   useEffect(() => {
     const socket = connectSocket();
 
+    // Color palettes for coupons
+    const couponColors = [
+      "from-amber-500 to-orange-500",
+      "from-emerald-500 to-green-600",
+      "from-violet-500 to-purple-600",
+      "from-blue-500 to-cyan-500",
+      "from-rose-500 to-pink-600",
+    ];
+
+    const getRandomColor = () =>
+      couponColors[Math.floor(Math.random() * couponColors.length)];
+
+    // Generate mock coupons on mount
+    const generateMockCoupons = () => {
+      const mockCoupons: TrafficNotification[] = [
+        {
+          id: `mock-1-${Date.now()}`,
+          type: "incentive",
+          title: "⚡ Flash Deal: 50% Off",
+          message:
+            "Charge at Station ST005 in the next 30 mins and save ₹120. Low traffic detected!",
+          icon: DollarSign,
+          color: getRandomColor(),
+          timestamp: Date.now(),
+          action: {
+            label: "Claim Offer",
+            onClick: () => console.log("Claimed mock offer 1"),
+          },
+        },
+        {
+          id: `mock-2-${Date.now()}`,
+          type: "incentive",
+          title: "🔋 Green Energy Bonus",
+          message:
+            "Excess solar power at Station ST008. Get 20% cashback for charging now.",
+          icon: Zap,
+          color: getRandomColor(),
+          timestamp: Date.now() - 1000 * 60 * 5, // 5 mins ago
+          action: {
+            label: "View Details",
+            onClick: () => console.log("Viewed mock offer 2"),
+          },
+        },
+        {
+          id: `mock-3-${Date.now()}`,
+          type: "incentive",
+          title: "🛣️ Route Optimization Reward",
+          message:
+            "Avoid downtown congestion. Reroute to ST002 for a ₹50 credit instantly.",
+          icon: TrendingUp,
+          color: getRandomColor(),
+          timestamp: Date.now() - 1000 * 60 * 12,
+          action: {
+            label: "Reroute & Save",
+            onClick: () => console.log("Rerouted for savings"),
+          },
+        },
+      ];
+
+      setNotifications((prev) => [...prev, ...mockCoupons]);
+    };
+
+    generateMockCoupons();
+
     // Listen for traffic incentives
     socket.on("traffic-incentive", (data: any) => {
       const notification: TrafficNotification = {
@@ -33,7 +104,7 @@ export default function TrafficNotificationToast() {
         title: "💰 Better Option Available!",
         message: `Save ${data.incentive?.timeSavedMinutes || 0}min and get ₹${data.incentive?.totalCost || 0} off at ${data.stationName}`,
         icon: DollarSign,
-        color: "from-amber-500 to-orange-500",
+        color: getRandomColor(),
         action: {
           label: "View Details",
           onClick: () => {
@@ -42,12 +113,14 @@ export default function TrafficNotificationToast() {
         },
         timestamp: Date.now(),
       };
-      
+
       setNotifications((prev) => [...prev, notification]);
-      
+
       setTimeout(() => {
-        setNotifications((prev) => prev.filter((n) => n.id !== notification.id));
-      }, 10000);
+        setNotifications((prev) =>
+          prev.filter((n) => n.id !== notification.id),
+        );
+      }, 15000); // Increased timeout for visibility
     });
 
     // Listen for traffic alerts
@@ -61,11 +134,13 @@ export default function TrafficNotificationToast() {
         color: "from-blue-500 to-cyan-500",
         timestamp: Date.now(),
       };
-      
+
       setNotifications((prev) => [...prev, notification]);
-      
+
       setTimeout(() => {
-        setNotifications((prev) => prev.filter((n) => n.id !== notification.id));
+        setNotifications((prev) =>
+          prev.filter((n) => n.id !== notification.id),
+        );
       }, 8000);
     });
 
@@ -81,11 +156,13 @@ export default function TrafficNotificationToast() {
           color: "from-green-500 to-emerald-500",
           timestamp: Date.now(),
         };
-        
+
         setNotifications((prev) => [...prev, notification]);
-        
+
         setTimeout(() => {
-          setNotifications((prev) => prev.filter((n) => n.id !== notification.id));
+          setNotifications((prev) =>
+            prev.filter((n) => n.id !== notification.id),
+          );
         }, 6000);
       }
     });
@@ -106,7 +183,7 @@ export default function TrafficNotificationToast() {
       <AnimatePresence>
         {notifications.map((notification) => {
           const Icon = notification.icon;
-          
+
           return (
             <motion.div
               key={notification.id}
@@ -119,13 +196,15 @@ export default function TrafficNotificationToast() {
                 <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
                   <Icon className="w-6 h-6" />
                 </div>
-                
+
                 <div className="flex-1 min-w-0">
-                  <h4 className="font-bold text-sm mb-1">{notification.title}</h4>
+                  <h4 className="font-bold text-sm mb-1">
+                    {notification.title}
+                  </h4>
                   <p className="text-sm opacity-90 leading-relaxed">
                     {notification.message}
                   </p>
-                  
+
                   {notification.action && (
                     <button
                       onClick={notification.action.onClick}
@@ -135,7 +214,7 @@ export default function TrafficNotificationToast() {
                     </button>
                   )}
                 </div>
-                
+
                 <button
                   onClick={() => removeNotification(notification.id)}
                   className="text-white/80 hover:text-white transition-colors"

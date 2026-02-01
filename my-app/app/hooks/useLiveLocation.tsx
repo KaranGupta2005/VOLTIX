@@ -1,4 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
 
 interface LocationCoordinates {
   latitude: number;
@@ -34,8 +36,8 @@ interface UseLiveLocationReturn {
 
 const LOCATION_OPTIONS: PositionOptions = {
   enableHighAccuracy: true,
-  timeout: 10000,
-  maximumAge: 300000, // 5 minutes
+  timeout: 15000,
+  maximumAge: 10000,
 };
 
 export const useLiveLocation = (): UseLiveLocationReturn => {
@@ -45,56 +47,66 @@ export const useLiveLocation = (): UseLiveLocationReturn => {
   const [watchId, setWatchId] = useState<number | null>(null);
 
   // Check if geolocation is supported
-  const isSupported = typeof navigator !== 'undefined' && 'geolocation' in navigator;
+  const isSupported =
+    typeof navigator !== "undefined" && "geolocation" in navigator;
 
   // Get address from coordinates using reverse geocoding
-  const getAddressFromCoordinates = async (lat: number, lng: number): Promise<string> => {
+  const getAddressFromCoordinates = async (
+    lat: number,
+    lng: number,
+  ): Promise<string> => {
     try {
       // Using a free geocoding service (you can replace with your preferred service)
       const response = await fetch(
-        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`
+        `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=en`,
       );
-      
+
       if (response.ok) {
         const data = await response.json();
         return data.display_name || `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
       }
     } catch (error) {
-      console.warn('Failed to get address:', error);
+      console.warn("Failed to get address:", error);
     }
-    
+
     return `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
   };
 
   // Handle successful location retrieval
-  const handleLocationSuccess = useCallback(async (position: GeolocationPosition) => {
-    const { coords, timestamp } = position;
-    
-    const locationData: LocationData = {
-      coordinates: {
-        latitude: coords.latitude,
-        longitude: coords.longitude,
-        accuracy: coords.accuracy,
-        altitude: coords.altitude,
-        altitudeAccuracy: coords.altitudeAccuracy,
-        heading: coords.heading,
-        speed: coords.speed,
-      },
-      timestamp,
-    };
+  const handleLocationSuccess = useCallback(
+    async (position: GeolocationPosition) => {
+      const { coords, timestamp } = position;
 
-    // Get address in background
-    try {
-      const address = await getAddressFromCoordinates(coords.latitude, coords.longitude);
-      locationData.address = address;
-    } catch (error) {
-      console.warn('Failed to get address:', error);
-    }
+      const locationData: LocationData = {
+        coordinates: {
+          latitude: coords.latitude,
+          longitude: coords.longitude,
+          accuracy: coords.accuracy,
+          altitude: coords.altitude,
+          altitudeAccuracy: coords.altitudeAccuracy,
+          heading: coords.heading,
+          speed: coords.speed,
+        },
+        timestamp,
+      };
 
-    setLocation(locationData);
-    setError(null);
-    setLoading(false);
-  }, []);
+      // Get address in background
+      try {
+        const address = await getAddressFromCoordinates(
+          coords.latitude,
+          coords.longitude,
+        );
+        locationData.address = address;
+      } catch (error) {
+        console.warn("Failed to get address:", error);
+      }
+
+      setLocation(locationData);
+      setError(null);
+      setLoading(false);
+    },
+    [],
+  );
 
   // Handle location errors
   const handleLocationError = useCallback((error: GeolocationPositionError) => {
@@ -112,13 +124,13 @@ export const useLiveLocation = (): UseLiveLocationReturn => {
   const getErrorMessage = (code: number): string => {
     switch (code) {
       case 1:
-        return 'Location access denied by user';
+        return "Location access denied by user";
       case 2:
-        return 'Location information unavailable';
+        return "Location information unavailable";
       case 3:
-        return 'Location request timed out';
+        return "Location request timed out";
       default:
-        return 'An unknown error occurred while retrieving location';
+        return "An unknown error occurred while retrieving location";
     }
   };
 
@@ -127,7 +139,7 @@ export const useLiveLocation = (): UseLiveLocationReturn => {
     if (!isSupported) {
       setError({
         code: -1,
-        message: 'Geolocation is not supported by this browser',
+        message: "Geolocation is not supported by this browser",
       });
       return;
     }
@@ -138,7 +150,7 @@ export const useLiveLocation = (): UseLiveLocationReturn => {
     navigator.geolocation.getCurrentPosition(
       handleLocationSuccess,
       handleLocationError,
-      LOCATION_OPTIONS
+      LOCATION_OPTIONS,
     );
   }, [isSupported, handleLocationSuccess, handleLocationError]);
 
@@ -147,7 +159,7 @@ export const useLiveLocation = (): UseLiveLocationReturn => {
     if (!isSupported) {
       setError({
         code: -1,
-        message: 'Geolocation is not supported by this browser',
+        message: "Geolocation is not supported by this browser",
       });
       return;
     }
@@ -162,7 +174,7 @@ export const useLiveLocation = (): UseLiveLocationReturn => {
     const id = navigator.geolocation.watchPosition(
       handleLocationSuccess,
       handleLocationError,
-      LOCATION_OPTIONS
+      LOCATION_OPTIONS,
     );
 
     setWatchId(id);

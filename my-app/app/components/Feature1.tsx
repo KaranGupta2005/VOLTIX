@@ -21,8 +21,8 @@ const Feature1Section = () => {
                 <ScrollStackItem>
                   <div className="aspect-[4/3] w-full h-full overflow-hidden rounded-3xl shadow-2xl">
                     <img
-                      src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1600&auto=format&fit=crop"
-                      alt="Mountains over clouds"
+                      src="/images/stack/stack-1.jpg"
+                      alt="Zero-Wait Energy"
                       className="w-full h-full object-cover rounded-3xl"
                     />
                   </div>
@@ -30,8 +30,8 @@ const Feature1Section = () => {
                 <ScrollStackItem>
                   <div className="aspect-[4/3] w-full h-full overflow-hidden rounded-3xl shadow-2xl">
                     <img
-                      src="https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1600&auto=format&fit=crop"
-                      alt="Laptop workspace"
+                      src="/images/stack/stack-2.jpg"
+                      alt="Agentic Intelligence"
                       className="w-full h-full object-cover rounded-3xl"
                     />
                   </div>
@@ -39,8 +39,8 @@ const Feature1Section = () => {
                 <ScrollStackItem>
                   <div className="aspect-[4/3] w-full h-full overflow-hidden rounded-3xl shadow-2xl">
                     <img
-                      src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop"
-                      alt="City skyline"
+                      src="/images/stack/stack-3.png"
+                      alt="Grid-Aware Reliability"
                       className="w-full h-full object-cover rounded-3xl"
                     />
                   </div>
@@ -53,21 +53,51 @@ const Feature1Section = () => {
           <div className="lg:col-span-5 lg:pl-6">
             <div className="space-y-24 pb-12 lg:pb-16 flex flex-col justify-center min-h-[80vh]">
               <div className="max-w-md">
-                <h3 className="text-2xl md:text-3xl font-semibold text-slate-900">Zero-Wait Energy</h3>
+                <h3 className="text-2xl md:text-3xl font-semibold text-slate-900">
+                  Zero-Wait Energy
+                </h3>
                 <p className="mt-3 mb-6 text-slate-600 text-lg leading-relaxed">
-                  Forget waiting 45 minutes to charge. Swap your depleted battery for a fully charged one in under <span className="text-emerald-500 font-semibold">180 seconds</span> and get back on the road instantly. Our automated pit-stop mechanism ensures you never queue for power again—it's faster than filling a gas tank.
+                  Forget waiting 45 minutes to charge. Swap your depleted
+                  battery for a fully charged one in under{" "}
+                  <span className="text-emerald-500 font-semibold">
+                    180 seconds
+                  </span>{" "}
+                  and get back on the road instantly. Our automated pit-stop
+                  mechanism ensures you never queue for power again—it's faster
+                  than filling a gas tank.
                 </p>
               </div>
               <div className="max-w-md">
-                <h3 className="text-2xl md:text-3xl font-semibold text-slate-900">Agentic Intelligence</h3>
+                <h3 className="text-2xl md:text-3xl font-semibold text-slate-900">
+                  Agentic Intelligence
+                </h3>
                 <p className="mt-3 mb-6 text-slate-600 text-lg leading-relaxed">
-                  Our 5-Agent Neural Squad monitors every volt. From <span className="text-emerald-500 font-semibold">Self-Healing</span> broken chargers to <span className="text-emerald-500 font-semibold">Bribing</span> drivers to balance traffic, the system solves problems before you see them. It is not just maintenance; it is an autonomous immune system for your infrastructure.
+                  Our 5-Agent Neural Squad monitors every volt. From{" "}
+                  <span className="text-emerald-500 font-semibold">
+                    Self-Healing
+                  </span>{" "}
+                  broken chargers to{" "}
+                  <span className="text-emerald-500 font-semibold">
+                    Bribing
+                  </span>{" "}
+                  drivers to balance traffic, the system solves problems before
+                  you see them. It is not just maintenance; it is an autonomous
+                  immune system for your infrastructure.
                 </p>
               </div>
               <div className="max-w-md">
-                <h3 className="text-2xl md:text-3xl font-semibold text-slate-900">Grid-Aware Reliability</h3>
+                <h3 className="text-2xl md:text-3xl font-semibold text-slate-900">
+                  Grid-Aware Reliability
+                </h3>
                 <p className="mt-3 mb-6 text-slate-600 text-lg leading-relaxed">
-                  We don't just store power; we trade it. Our <span className="text-emerald-500 font-semibold">Energy Broker Agent</span> sells back to the grid during peak hours to lower costs and ensure 99.9% uptime. Transform your station from a liability into a dynamic financial asset that earns revenue while it sleeps.
+                  We don't just store power; we trade it. Our{" "}
+                  <span className="text-emerald-500 font-semibold">
+                    Energy Broker Agent
+                  </span>{" "}
+                  sells back to the grid during peak hours to lower costs and
+                  ensure 99.9% uptime. Transform your station from a liability
+                  into a dynamic financial asset that earns revenue while it
+                  sleeps.
                 </p>
               </div>
             </div>

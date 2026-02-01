@@ -12,25 +12,10 @@ import {
   Zap,
 } from "lucide-react";
 import { useTheme } from "next-themes";
-
-import { UserProfileView } from "@/app/components/user-profile-view";
 import NotificationBell from "@/app/components/NotificationBell";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
   Tooltip,
@@ -93,28 +78,10 @@ export function DashboardHeader({ notifications = 5 }: DashboardHeaderProps) {
             </Tooltip>
           </TooltipProvider>
 
-          <Sheet>
-            <SheetTrigger asChild>
-              <Avatar className="border-primary h-9 w-9 border-2 cursor-pointer transition-transform hover:scale-105">
-                <AvatarImage
-                  src="/placeholder.svg?height=40&width=40"
-                  alt="User"
-                />
-                <AvatarFallback>JD</AvatarFallback>
-              </Avatar>
-            </SheetTrigger>
-            <SheetContent
-              side="right"
-              className="w-[400px] sm:w-[540px] overflow-y-auto"
-            >
-              <SheetHeader>
-                <SheetTitle>User Profile</SheetTitle>
-              </SheetHeader>
-              <div className="mt-6">
-                <UserProfileView />
-              </div>
-            </SheetContent>
-          </Sheet>
+          <Avatar className="border-primary h-9 w-9 border-2 cursor-pointer transition-transform hover:scale-105">
+            <AvatarImage src="/placeholder.svg?height=40&width=40" alt="User" />
+            <AvatarFallback>JD</AvatarFallback>
+          </Avatar>
         </div>
       </div>
     </header>
