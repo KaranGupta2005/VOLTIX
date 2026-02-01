@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Download, Plus } from "lucide-react";
+import { Download } from "lucide-react";
 import Link from "next/link";
 
 import ChatBot from "@/app/components/ChatBot";

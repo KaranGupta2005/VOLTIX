@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -10,6 +10,11 @@ import {
   ChevronLeft,
   PanelLeftOpen,
   User,
+  Navigation,
+  X,
+  MapPin,
+  Clock,
+  Zap,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -17,142 +22,485 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import DashboardMap from "./DashboardMap";
+import { connectSocket } from "@/app/config/socket";
 
-// Mock data for stations
-const stationsData = [
-  {
-    id: "ST-4012",
-    from: "Mumbai Central",
-    to: "Andheri West",
-    status: "active",
-    statusLabel: "Charging",
-    power: "150 kW",
-    vehicle: "Tesla Model 3",
-    owner: "Rahul Sharma",
-    ownerAvatar: "RS",
-    address: "Plot 12, MIDC Industrial Area, Andheri East, Mumbai 400093",
-    timeRemaining: "45 min",
-    batteryLevel: 65,
-  },
-  {
-    id: "ST-4015",
-    from: "Bandra Station",
-    to: "Powai Hub",
-    status: "active",
-    statusLabel: "Charging",
-    power: "50 kW",
-    vehicle: "MG ZS EV",
-    owner: "Priya Patel",
-    ownerAvatar: "PP",
-    address: "Hiranandani Gardens, Powai, Mumbai 400076",
-    timeRemaining: "1h 20min",
-    batteryLevel: 32,
-  },
-  {
-    id: "ST-4018",
-    from: "Thane West",
-    to: "Navi Mumbai",
-    status: "queued",
-    statusLabel: "Queued",
-    power: "22 kW",
-    vehicle: "Tata Nexon EV",
-    owner: "Amit Kumar",
-    ownerAvatar: "AK",
-    address: "Sector 15, CBD Belapur, Navi Mumbai 400614",
-    timeRemaining: "2h 10min",
-    batteryLevel: 18,
-  },
-  {
-    id: "ST-4021",
-    from: "Juhu Beach",
-    to: "Santacruz",
-    status: "maintenance",
-    statusLabel: "Maintenance",
-    power: "0 kW",
-    vehicle: "—",
-    owner: "Tech Team",
-    ownerAvatar: "TT",
-    address: "Juhu Tara Road, Santacruz West, Mumbai 400049",
-    timeRemaining: "—",
-    batteryLevel: 0,
-  },
-  {
-    id: "ST-4025",
-    from: "Dadar TT",
-    to: "Lower Parel",
-    status: "active",
-    statusLabel: "Charging",
-    power: "120 kW",
-    vehicle: "Hyundai Ioniq 5",
-    owner: "Sneha Reddy",
-    ownerAvatar: "SR",
-    address: "Phoenix Mills Compound, Lower Parel, Mumbai 400013",
-    timeRemaining: "25 min",
-    batteryLevel: 82,
-  },
-];
+// Leaflet imports (dynamic)
+let L: any = null;
+let MapContainer: any = null;
+let TileLayer: any = null;
+let Marker: any = null;
+let Polyline: any = null;
+let Circle: any = null;
+let useMap: any = null;
+
+interface Station {
+  id: string;
+  name: string;
+  city: string;
+  type: string;
+  capacity: number;
+  maxInventory: number;
+  latitude: number;
+  longitude: number;
+  status: string;
+  health: any;
+  demand: any;
+  inventory: any;
+  errors: any;
+}
+
+interface RouteData {
+  coordinates: [number, number][];
+  distance: number;
+  duration: number;
+  instructions: Array<{
+    text: string;
+    distance: number;
+    time: number;
+  }>;
+}
+
+// Custom marker icon creator with better styling
+const createCustomIcon = (status: string) => {
+  if (!L) return null;
+  
+  const iconMap: Record<string, { emoji: string; bg: string; border: string }> = {
+    operational: { 
+      emoji: "⚡", 
+      bg: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+      border: "#10b981"
+    },
+    busy: { 
+      emoji: "🔋", 
+      bg: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+      border: "#f59e0b"
+    },
+    maintenance: { 
+      emoji: "🔧", 
+      bg: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+      border: "#3b82f6"
+    },
+    error: { 
+      emoji: "⚠️", 
+      bg: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+      border: "#ef4444"
+    },
+    offline: { 
+      emoji: "❌", 
+      bg: "linear-gradient(135deg, #6b7280 0%, #4b5563 100%)",
+      border: "#6b7280"
+    },
+  };
+
+  const config = iconMap[status] || iconMap.operational;
+
+  return L.divIcon({
+    html: `
+      <div style="position: relative; width: 48px; height: 48px;">
+        <div style="
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 40px;
+          height: 40px;
+          background: ${config.bg};
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 20px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.3), 0 0 0 3px white, 0 0 0 4px ${config.border};
+          border: 2px solid white;
+          animation: pulse 2s ease-in-out infinite;
+        ">
+          ${config.emoji}
+        </div>
+        <style>
+          @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.05); }
+          }
+        </style>
+      </div>
+    `,
+    className: "custom-marker-icon",
+    iconSize: [48, 48],
+    iconAnchor: [24, 24],
+  });
+};
+
+// Map controller component
+function MapController({ center }: { center: [number, number] }) {
+  const map = useMap?.();
+  
+  useEffect(() => {
+    if (map && center && center[0] && center[1]) {
+      map.setView(center, 12, { animate: true });
+    }
+  }, [center, map]);
+  
+  return null;
+}
 
 export function HomeContent() {
-  const [selectedStation, setSelectedStation] = useState(stationsData[0]);
-  const [activeFilter, setActiveFilter] = useState("active");
-  const [isPanelCollapsed, setIsPanelCollapsed] = useState(true);
+  const [stations, setStations] = useState<Station[]>([]);
+  const [selectedStation, setSelectedStation] = useState<Station | null>(null);
+  const [activeFilter, setActiveFilter] = useState("operational");
+  const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
+  const [showRoutePanel, setShowRoutePanel] = useState(false);
+  const [routeData, setRouteData] = useState<RouteData | null>(null);
+  const [isLoadingRoute, setIsLoadingRoute] = useState(false);
+  const [mapReady, setMapReady] = useState(false);
+  const [userLocation, setUserLocation] = useState<[number, number]>([19.0760, 72.8777]); // Default: Mumbai
+  const mapRef = useRef<any>(null);
 
-  const filteredStations = stationsData.filter((station) => {
-    if (activeFilter === "active")
-      return station.status === "active" || station.status === "queued";
-    return station.status === "maintenance";
+  // Load Leaflet dynamically
+  useEffect(() => {
+    const loadLeaflet = async () => {
+      try {
+        L = (await import("leaflet")).default;
+        const reactLeaflet = await import("react-leaflet");
+        MapContainer = reactLeaflet.MapContainer;
+        TileLayer = reactLeaflet.TileLayer;
+        Marker = reactLeaflet.Marker;
+        Polyline = reactLeaflet.Polyline;
+        Circle = reactLeaflet.Circle;
+        useMap = reactLeaflet.useMap;
+        
+        // Import Leaflet CSS
+        await import("leaflet/dist/leaflet.css");
+        
+        setMapReady(true);
+      } catch (error) {
+        console.error("Failed to load Leaflet:", error);
+      }
+    };
+    
+    loadLeaflet();
+  }, []);
+
+  // Get user location
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation([position.coords.latitude, position.coords.longitude]);
+        },
+        (error) => {
+          console.log("Using default location (Mumbai)");
+        }
+      );
+    }
+  }, []);
+
+  // Fetch stations from API
+  useEffect(() => {
+    const fetchStations = async () => {
+      try {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/stations`
+        );
+        const data = await response.json();
+        
+        if (data.success && data.data.stations) {
+          setStations(data.data.stations);
+          if (data.data.stations.length > 0) {
+            setSelectedStation(data.data.stations[0]);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch stations:", error);
+      }
+    };
+
+    fetchStations();
+  }, []);
+
+  // Socket connection for real-time updates
+  useEffect(() => {
+    const socket = connectSocket();
+
+    socket.on("connect", () => {
+      console.log("Socket connected for station updates");
+    });
+
+    // Listen for stations list updates
+    socket.on("stations-list-update", (data: { stations: Station[]; timestamp: string }) => {
+      if (data.stations) {
+        setStations(data.stations);
+      }
+    });
+
+    // Listen for individual station metric updates
+    socket.on("station-metrics-update", (data: any) => {
+      setStations((prev) =>
+        prev.map((s) => {
+          if (s.id === data.stationId) {
+            return {
+              ...s,
+              status: data.status,
+              health: data.health,
+              demand: data.demand,
+              inventory: data.inventory,
+              errors: data.errors,
+            };
+          }
+          return s;
+        })
+      );
+      
+      if (selectedStation?.id === data.stationId) {
+        setSelectedStation((prev) => prev ? {
+          ...prev,
+          status: data.status,
+          health: data.health,
+          demand: data.demand,
+          inventory: data.inventory,
+          errors: data.errors,
+        } : null);
+      }
+    });
+
+    return () => {
+      socket.off("stations-list-update");
+      socket.off("station-metrics-update");
+    };
+  }, [selectedStation]);
+
+  // Fetch route from OpenRouteService
+  const fetchRoute = async (destination: Station) => {
+    setIsLoadingRoute(true);
+    try {
+      // TODO: Replace with your OpenRouteService API key
+      // Get free API key from: https://openrouteservice.org/dev/#/signup
+      const apiKey = "YOUR_OPENROUTESERVICE_API_KEY";
+      
+      if (apiKey === "YOUR_OPENROUTESERVICE_API_KEY") {
+        console.warn("OpenRouteService API key not configured. Using fallback route.");
+        // Fallback: create simple straight line
+        setRouteData({
+          coordinates: [userLocation, [destination.latitude, destination.longitude]],
+          distance: calculateDistance(userLocation, [destination.latitude, destination.longitude]),
+          duration: 1800, // 30 minutes estimate
+          instructions: [
+            { text: "Head towards destination", distance: 0, time: 0 },
+            { text: `Arrive at ${destination.name}`, distance: 0, time: 0 }
+          ],
+        });
+        setIsLoadingRoute(false);
+        return;
+      }
+      
+      const url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${userLocation[1]},${userLocation[0]}&end=${destination.longitude},${destination.latitude}`;
+      
+      const response = await fetch(url);
+      const data = await response.json();
+      
+      if (data.features && data.features[0]) {
+        const route = data.features[0];
+        const coordinates = route.geometry.coordinates.map((coord: number[]) => [
+          coord[1],
+          coord[0],
+        ]);
+        
+        const instructions = route.properties.segments[0].steps.map((step: any) => ({
+          text: step.instruction,
+          distance: step.distance,
+          time: step.duration,
+        }));
+        
+        setRouteData({
+          coordinates,
+          distance: route.properties.segments[0].distance,
+          duration: route.properties.segments[0].duration,
+          instructions,
+        });
+      }
+    } catch (error) {
+      console.error("Failed to fetch route:", error);
+      // Fallback: create simple straight line
+      setRouteData({
+        coordinates: [userLocation, [destination.latitude, destination.longitude]],
+        distance: calculateDistance(userLocation, [destination.latitude, destination.longitude]),
+        duration: 1800,
+        instructions: [
+          { text: "Head towards destination", distance: 0, time: 0 },
+          { text: `Arrive at ${destination.name}`, distance: 0, time: 0 }
+        ],
+      });
+    } finally {
+      setIsLoadingRoute(false);
+    }
+  };
+
+  // Calculate distance between two coordinates (Haversine formula)
+  const calculateDistance = (from: [number, number], to: [number, number]) => {
+    const R = 6371e3; // Earth radius in meters
+    const φ1 = (from[0] * Math.PI) / 180;
+    const φ2 = (to[0] * Math.PI) / 180;
+    const Δφ = ((to[0] - from[0]) * Math.PI) / 180;
+    const Δλ = ((to[1] - from[1]) * Math.PI) / 180;
+
+    const a =
+      Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+      Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c; // Distance in meters
+  };
+
+  // Handle station marker click
+  const handleStationClick = (station: Station) => {
+    setSelectedStation(station);
+    setIsPanelCollapsed(true);
+    setShowRoutePanel(true);
+    fetchRoute(station);
+  };
+
+  const filteredStations = stations.filter((station) => {
+    if (activeFilter === "operational")
+      return station.status === "operational" || station.status === "busy";
+    return station.status === "maintenance" || station.status === "error" || station.status === "offline";
   });
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "active":
+      case "operational":
         return "bg-green-500";
-      case "queued":
+      case "busy":
         return "bg-amber-500";
       case "maintenance":
+        return "bg-blue-500";
+      case "error":
         return "bg-red-500";
+      case "offline":
+        return "bg-gray-500";
       default:
         return "bg-gray-500";
     }
   };
 
-  const getStatusBadge = (status: string, label: string) => {
-    const colors: Record<string, string> = {
-      active:
-        "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-      queued:
-        "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-      maintenance:
-        "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+  const getStatusBadge = (status: string) => {
+    const configs: Record<string, { color: string; label: string }> = {
+      operational: {
+        color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+        label: "Operational",
+      },
+      busy: {
+        color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+        label: "Busy",
+      },
+      maintenance: {
+        color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+        label: "Maintenance",
+      },
+      error: {
+        color: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+        label: "Error",
+      },
+      offline: {
+        color: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
+        label: "Offline",
+      },
     };
+    
+    const config = configs[status] || configs.operational;
+    
     return (
       <Badge
-        className={`${colors[status] || colors.active} rounded-full text-xs font-medium px-2 py-0.5`}
+        className={`${config.color} rounded-full text-xs font-medium px-2 py-0.5`}
       >
         <span
           className={`w-1.5 h-1.5 rounded-full ${getStatusColor(status)} mr-1.5 inline-block`}
         ></span>
-        {label}
+        {config.label}
       </Badge>
     );
+  };
+
+  const formatDistance = (meters: number) => {
+    if (meters < 1000) return `${Math.round(meters)}m`;
+    return `${(meters / 1000).toFixed(1)}km`;
+  };
+
+  const formatDuration = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}min`;
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return `${hours}h ${remainingMinutes}min`;
   };
 
   return (
     <div className="relative h-[calc(100vh-140px)] rounded-3xl overflow-hidden border border-border/50 shadow-sm">
       {/* Full-Screen Map Background */}
       <div className="absolute inset-0 z-0 bg-slate-100 dark:bg-slate-900">
-        <DashboardMap
-          stations={stationsData}
-          selectedStation={selectedStation}
-          onStationSelect={setSelectedStation}
-          className="w-full h-full"
-        />
+        {mapReady && MapContainer ? (
+          <MapContainer
+            center={userLocation}
+            zoom={12}
+            style={{ height: "100%", width: "100%" }}
+            zoomControl={false}
+            ref={mapRef}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            
+            {selectedStation && selectedStation.latitude && selectedStation.longitude && (
+              <MapController center={[selectedStation.latitude, selectedStation.longitude]} />
+            )}
+            
+            {/* Station markers */}
+            {stations
+              .filter((station) => station.latitude && station.longitude)
+              .map((station) => (
+                <Marker
+                  key={station.id}
+                  position={[station.latitude, station.longitude]}
+                  icon={createCustomIcon(station.status)}
+                  eventHandlers={{
+                    click: () => handleStationClick(station),
+                  }}
+                />
+              ))}
+            
+            {/* Route polyline */}
+            {routeData && selectedStation && selectedStation.latitude && selectedStation.longitude && (
+              <>
+                <Polyline
+                  positions={routeData.coordinates}
+                  color="#06b6d4"
+                  weight={4}
+                  opacity={0.8}
+                />
+                <Circle
+                  center={[selectedStation.latitude, selectedStation.longitude]}
+                  radius={500}
+                  pathOptions={{
+                    color: "#06b6d4",
+                    fillColor: "#06b6d4",
+                    fillOpacity: 0.1,
+                  }}
+                />
+              </>
+            )}
+          </MapContainer>
+        ) : (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center">
+              <MapPin className="h-12 w-12 mx-auto mb-4 text-blue-500 animate-pulse" />
+              <p className="text-muted-foreground">Loading map...</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Floating Station Panel (Glassmorphism Overlay) - Collapsible */}
       <AnimatePresence mode="wait">
-        {isPanelCollapsed ? (
+        {!showRoutePanel && isPanelCollapsed ? (
           <motion.button
             key="collapsed"
             initial={{ opacity: 0, x: -20 }}
@@ -163,7 +511,7 @@ export function HomeContent() {
           >
             <PanelLeftOpen className="w-6 h-6" />
           </motion.button>
-        ) : (
+        ) : !showRoutePanel ? (
           <motion.div
             key="expanded"
             initial={{ opacity: 0, x: -100 }}
@@ -198,10 +546,10 @@ export function HomeContent() {
               >
                 <TabsList className="grid w-full grid-cols-2 rounded-full bg-muted/50 p-1">
                   <TabsTrigger
-                    value="active"
+                    value="operational"
                     className="rounded-full data-[state=active]:bg-foreground data-[state=active]:text-background"
                   >
-                    On the way
+                    Active
                   </TabsTrigger>
                   <TabsTrigger
                     value="maintenance"
@@ -228,114 +576,220 @@ export function HomeContent() {
                         ? "border-primary ring-2 ring-primary/20 bg-white dark:bg-slate-800"
                         : "border-border/30 hover:border-border/50"
                     }`}
-                    onClick={() => setSelectedStation(station)}
+                    onClick={() => {
+                      setSelectedStation(station);
+                      handleStationClick(station);
+                    }}
                   >
                     {/* Station Header */}
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-sm">
-                          {station.from}
-                        </span>
-                        <ChevronRight className="w-4 h-4 text-muted-foreground" />
-                        <span className="font-semibold text-sm">
-                          {station.to}
+                          {station.name}
                         </span>
                       </div>
-                      {getStatusBadge(station.status, station.statusLabel)}
+                      {getStatusBadge(station.status)}
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      Station {station.id}
+                    <p className="text-xs text-muted-foreground mb-1">
+                      {station.id} • {station.city}
                     </p>
-
-                    {/* Expanded Details (for selected) */}
-                    <AnimatePresence>
-                      {selectedStation?.id === station.id && (
-                        <motion.div
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.2 }}
-                          className="overflow-hidden"
-                        >
-                          <div className="pt-3 mt-3 border-t border-border/30 space-y-3">
-                            {/* From Location */}
-                            <div className="flex items-start gap-3">
-                              <div className="flex flex-col items-center">
-                                <div className="w-3 h-3 rounded-full border-2 border-muted-foreground"></div>
-                                <div className="w-0.5 h-8 bg-muted-foreground/30 my-1"></div>
-                                <div className="w-3 h-3 rounded-full bg-foreground"></div>
-                              </div>
-                              <div className="flex-1 space-y-4">
-                                <div>
-                                  <p className="text-xs font-semibold text-muted-foreground">
-                                    From
-                                  </p>
-                                  <p className="text-sm">{station.from}</p>
-                                </div>
-                                <div>
-                                  <p className="text-xs font-semibold text-muted-foreground">
-                                    Delivery Address
-                                  </p>
-                                  <p className="text-sm">{station.address}</p>
-                                </div>
-                              </div>
-                            </div>
-
-                            {/* Owner/Driver Info */}
-                            <div className="flex items-center justify-between bg-muted/20 rounded-xl p-3">
-                              <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
-                                  {station.ownerAvatar}
-                                </div>
-                                <div>
-                                  <p className="font-medium text-sm">
-                                    {station.owner}
-                                  </p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {station.vehicle}
-                                  </p>
-                                </div>
-                              </div>
-                              <div className="flex gap-2">
-                                <Button
-                                  size="icon"
-                                  variant="outline"
-                                  className="rounded-full h-9 w-9 bg-white/50 dark:bg-slate-800/50"
-                                >
-                                  <Phone className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                  size="icon"
-                                  variant="outline"
-                                  className="rounded-full h-9 w-9 bg-white/50 dark:bg-slate-800/50"
-                                >
-                                  <MessageCircle className="w-4 h-4" />
-                                </Button>
-                              </div>
-                            </div>
-
-                            {/* View Details Button */}
-                            <Button className="w-full rounded-xl bg-foreground text-background hover:bg-foreground/90">
-                              View details
-                            </Button>
-                          </div>
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Zap className="w-3 h-3" />
+                        {station.inventory?.chargedBatteries || 0}/{station.maxInventory}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" />
+                        {station.demand?.queueLength || 0} in queue
+                      </span>
+                    </div>
                   </Card>
                 </motion.div>
               ))}
+            </div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+
+      {/* Route Panel (Glassmorphism Style - Matching Station Panel) */}
+      <AnimatePresence>
+        {showRoutePanel && selectedStation && (
+          <motion.div
+            initial={{ opacity: 0, x: -100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -100 }}
+            className="absolute top-4 left-4 bottom-4 w-96 z-10 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-3xl border border-white/50 dark:border-slate-700/50 shadow-2xl flex flex-col overflow-hidden"
+          >
+            {/* Route Header */}
+            <div className="p-5 border-b border-border/30">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Navigation className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold">Route to Station</h2>
+                    <p className="text-xs text-muted-foreground">{selectedStation.name}</p>
+                  </div>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="rounded-full hover:bg-muted/50"
+                  onClick={() => {
+                    setShowRoutePanel(false);
+                    setRouteData(null);
+                    setIsPanelCollapsed(false);
+                  }}
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+
+              {/* Route Summary Cards */}
+              {routeData && !isLoadingRoute && (
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl p-3 border border-primary/20">
+                    <div className="flex items-center gap-2 mb-1">
+                      <MapPin className="w-4 h-4 text-primary" />
+                      <p className="text-xs font-medium text-muted-foreground">Distance</p>
+                    </div>
+                    <p className="text-xl font-bold text-foreground">
+                      {formatDistance(routeData.distance)}
+                    </p>
+                  </div>
+                  <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl p-3 border border-primary/20">
+                    <div className="flex items-center gap-2 mb-1">
+                      <Clock className="w-4 h-4 text-primary" />
+                      <p className="text-xs font-medium text-muted-foreground">ETA</p>
+                    </div>
+                    <p className="text-xl font-bold text-foreground">
+                      {formatDuration(routeData.duration)}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {isLoadingRoute && (
+                <div className="flex items-center justify-center py-6">
+                  <div className="relative">
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+                    <Navigation className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5 h-5 text-primary" />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Turn-by-Turn Instructions */}
+            <div className="flex-1 overflow-y-auto p-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-foreground uppercase tracking-wide">
+                  Turn-by-Turn Navigation
+                </h3>
+                <Badge variant="outline" className="rounded-full">
+                  {routeData?.instructions.length || 0} steps
+                </Badge>
+              </div>
+              
+              {routeData && routeData.instructions.length > 0 ? (
+                <div className="space-y-2">
+                  {routeData.instructions.map((instruction, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.05 }}
+                      className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-2xl p-3 border border-border/30 hover:border-primary/30 hover:shadow-md transition-all duration-200"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5 border border-primary/20">
+                          <span className="text-primary font-bold text-sm">
+                            {index + 1}
+                          </span>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm text-foreground mb-1 leading-relaxed">
+                            {instruction.text}
+                          </p>
+                          {(instruction.distance > 0 || instruction.time > 0) && (
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                              {instruction.distance > 0 && (
+                                <span className="flex items-center gap-1">
+                                  <MapPin className="w-3 h-3" />
+                                  {formatDistance(instruction.distance)}
+                                </span>
+                              )}
+                              {instruction.time > 0 && (
+                                <span className="flex items-center gap-1">
+                                  <Clock className="w-3 h-3" />
+                                  {formatDuration(instruction.time)}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : !isLoadingRoute ? (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 rounded-full bg-muted/50 flex items-center justify-center mx-auto mb-4">
+                    <MapPin className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Calculating route...
+                  </p>
+                </div>
+              ) : null}
+            </div>
+
+            {/* Station Info Footer */}
+            <div className="p-4 border-t border-border/30 bg-muted/20">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-medium text-muted-foreground">Station Status</span>
+                {getStatusBadge(selectedStation.status)}
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl p-2 border border-border/30">
+                  <div className="flex items-center gap-1 mb-1">
+                    <Zap className="w-3 h-3 text-green-500" />
+                    <p className="text-xs text-muted-foreground">Charged</p>
+                  </div>
+                  <p className="text-sm font-bold text-foreground">
+                    {selectedStation.inventory?.chargedBatteries || 0}
+                  </p>
+                </div>
+                <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl p-2 border border-border/30">
+                  <div className="flex items-center gap-1 mb-1">
+                    <User className="w-3 h-3 text-amber-500" />
+                    <p className="text-xs text-muted-foreground">Queue</p>
+                  </div>
+                  <p className="text-sm font-bold text-foreground">
+                    {selectedStation.demand?.queueLength || 0}
+                  </p>
+                </div>
+                <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-sm rounded-xl p-2 border border-border/30">
+                  <div className="flex items-center gap-1 mb-1">
+                    <Clock className="w-3 h-3 text-blue-500" />
+                    <p className="text-xs text-muted-foreground">Wait</p>
+                  </div>
+                  <p className="text-sm font-bold text-foreground">
+                    {selectedStation.demand?.avgWaitTime?.toFixed(0) || 0}m
+                  </p>
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Bottom Details Bar */}
-      {selectedStation && (
+      {selectedStation && !showRoutePanel && (
         <motion.div
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          className={`absolute bottom-4 right-4 z-10 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 shadow-xl p-4 ${isPanelCollapsed ? "left-4" : "left-[420px]"}`}
+          className={`absolute bottom-4 right-4 z-10 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 shadow-xl p-4 ${isPanelCollapsed ? "left-20" : "left-[420px]"}`}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-6">
@@ -343,44 +797,38 @@ export function HomeContent() {
                 <p className="text-xs text-muted-foreground">Station</p>
                 <p className="font-bold text-lg">{selectedStation.id}</p>
               </div>
-              {getStatusBadge(
-                selectedStation.status,
-                selectedStation.statusLabel,
-              )}
+              {getStatusBadge(selectedStation.status)}
             </div>
 
             <div className="flex items-center gap-8">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                  <User className="w-5 h-5 text-muted-foreground" />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground">Driver</p>
-                  <p className="font-medium text-sm">{selectedStation.owner}</p>
-                </div>
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground">City</p>
+                <p className="font-medium text-sm">{selectedStation.city}</p>
               </div>
 
               <div className="text-center">
-                <p className="text-xs text-muted-foreground">From</p>
-                <p className="font-medium text-sm">{selectedStation.from}</p>
+                <p className="text-xs text-muted-foreground">Type</p>
+                <p className="font-medium text-sm capitalize">{selectedStation.type}</p>
               </div>
 
               <div className="text-center">
-                <p className="text-xs text-muted-foreground">To</p>
-                <p className="font-medium text-sm">{selectedStation.to}</p>
-              </div>
-
-              <div className="text-center">
-                <p className="text-xs text-muted-foreground">Time Remaining</p>
+                <p className="text-xs text-muted-foreground">Charged</p>
                 <p className="font-medium text-sm">
-                  {selectedStation.timeRemaining}
+                  {selectedStation.inventory?.chargedBatteries || 0}/{selectedStation.maxInventory}
                 </p>
               </div>
 
               <div className="text-center">
-                <p className="text-xs text-muted-foreground">Battery</p>
+                <p className="text-xs text-muted-foreground">Queue</p>
                 <p className="font-medium text-sm">
-                  {selectedStation.batteryLevel}%
+                  {selectedStation.demand?.queueLength || 0}
+                </p>
+              </div>
+
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground">Uptime</p>
+                <p className="font-medium text-sm">
+                  {selectedStation.health?.uptime?.toFixed(1) || 0}%
                 </p>
               </div>
             </div>
