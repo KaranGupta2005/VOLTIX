@@ -78,34 +78,35 @@ interface TrafficOptimization {
 // Custom marker icon creator with better styling
 const createCustomIcon = (status: string) => {
   if (!L) return null;
-  
-  const iconMap: Record<string, { emoji: string; bg: string; border: string }> = {
-    operational: { 
-      emoji: "⚡", 
-      bg: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
-      border: "#10b981"
-    },
-    busy: { 
-      emoji: "🔋", 
-      bg: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
-      border: "#f59e0b"
-    },
-    maintenance: { 
-      emoji: "🔧", 
-      bg: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
-      border: "#3b82f6"
-    },
-    error: { 
-      emoji: "⚠️", 
-      bg: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
-      border: "#ef4444"
-    },
-    offline: { 
-      emoji: "❌", 
-      bg: "linear-gradient(135deg, #6b7280 0%, #4b5563 100%)",
-      border: "#6b7280"
-    },
-  };
+
+  const iconMap: Record<string, { emoji: string; bg: string; border: string }> =
+    {
+      operational: {
+        emoji: "⚡",
+        bg: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
+        border: "#10b981",
+      },
+      busy: {
+        emoji: "🔋",
+        bg: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
+        border: "#f59e0b",
+      },
+      maintenance: {
+        emoji: "🔧",
+        bg: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)",
+        border: "#3b82f6",
+      },
+      error: {
+        emoji: "⚠️",
+        bg: "linear-gradient(135deg, #ef4444 0%, #dc2626 100%)",
+        border: "#ef4444",
+      },
+      offline: {
+        emoji: "❌",
+        bg: "linear-gradient(135deg, #6b7280 0%, #4b5563 100%)",
+        border: "#6b7280",
+      },
+    };
 
   const config = iconMap[status] || iconMap.operational;
 
@@ -148,13 +149,13 @@ const createCustomIcon = (status: string) => {
 // Map controller component
 function MapController({ center }: { center: [number, number] }) {
   const map = useMap?.();
-  
+
   useEffect(() => {
     if (map && center && center[0] && center[1]) {
       map.setView(center, 12, { animate: true });
     }
   }, [center, map]);
-  
+
   return null;
 }
 
@@ -167,8 +168,11 @@ export function HomeContent() {
   const [routeData, setRouteData] = useState<RouteData | null>(null);
   const [isLoadingRoute, setIsLoadingRoute] = useState(false);
   const [mapReady, setMapReady] = useState(false);
-  const [userLocation, setUserLocation] = useState<[number, number]>([19.0760, 72.8777]); // Default: Mumbai
-  const [trafficOptimization, setTrafficOptimization] = useState<TrafficOptimization | null>(null);
+  const [userLocation, setUserLocation] = useState<[number, number]>([
+    19.076, 72.8777,
+  ]); // Default: Mumbai
+  const [trafficOptimization, setTrafficOptimization] =
+    useState<TrafficOptimization | null>(null);
   const [showIncentive, setShowIncentive] = useState(false);
   const mapRef = useRef<any>(null);
 
@@ -193,23 +197,23 @@ export function HomeContent() {
         Polyline = reactLeaflet.Polyline;
         Circle = reactLeaflet.Circle;
         useMap = reactLeaflet.useMap;
-        
+
         // Import Leaflet CSS
         await import("leaflet/dist/leaflet.css");
-        
+
         setMapReady(true);
       } catch (error) {
         console.error("Failed to load Leaflet:", error);
       }
     };
-    
+
     loadLeaflet();
   }, []);
 
   // Start live location tracking
   useEffect(() => {
     watchLocation();
-    
+
     return () => {
       stopWatching();
     };
@@ -229,17 +233,19 @@ export function HomeContent() {
       const updateBackend = async () => {
         try {
           const data = await trafficService.updateLocation(
-            newLocation, 
-            liveLocation.coordinates.accuracy
+            newLocation,
+            liveLocation.coordinates.accuracy,
           );
           console.log("Location updated:", data);
-          
+
           // Update nearby stations with traffic info
           if (data.nearbyStations) {
             setStations((prev) => {
               const updatedStations = [...prev];
               data.nearbyStations.forEach((nearbyStation: any) => {
-                const index = updatedStations.findIndex((s) => s.id === nearbyStation.id);
+                const index = updatedStations.findIndex(
+                  (s) => s.id === nearbyStation.id,
+                );
                 if (index !== -1) {
                   updatedStations[index] = {
                     ...updatedStations[index],
@@ -265,10 +271,10 @@ export function HomeContent() {
     const fetchStations = async () => {
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/stations`
+          `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"}/api/stations`,
         );
         const data = await response.json();
-        
+
         if (data.success && data.data.stations) {
           setStations(data.data.stations);
           if (data.data.stations.length > 0) {
@@ -292,11 +298,14 @@ export function HomeContent() {
     });
 
     // Listen for stations list updates
-    socket.on("stations-list-update", (data: { stations: Station[]; timestamp: string }) => {
-      if (data.stations) {
-        setStations(data.stations);
-      }
-    });
+    socket.on(
+      "stations-list-update",
+      (data: { stations: Station[]; timestamp: string }) => {
+        if (data.stations) {
+          setStations(data.stations);
+        }
+      },
+    );
 
     // Listen for individual station metric updates
     socket.on("station-metrics-update", (data: any) => {
@@ -313,18 +322,22 @@ export function HomeContent() {
             };
           }
           return s;
-        })
+        }),
       );
-      
+
       if (selectedStation?.id === data.stationId) {
-        setSelectedStation((prev) => prev ? {
-          ...prev,
-          status: data.status,
-          health: data.health,
-          demand: data.demand,
-          inventory: data.inventory,
-          errors: data.errors,
-        } : null);
+        setSelectedStation((prev) =>
+          prev
+            ? {
+                ...prev,
+                status: data.status,
+                health: data.health,
+                demand: data.demand,
+                inventory: data.inventory,
+                errors: data.errors,
+              }
+            : null,
+        );
       }
     });
 
@@ -339,7 +352,7 @@ export function HomeContent() {
     setIsLoadingRoute(true);
     setTrafficOptimization(null);
     setShowIncentive(false);
-    
+
     try {
       // Get traffic-optimized route
       const optimization = await trafficService.optimizeRoute(
@@ -356,18 +369,18 @@ export function HomeContent() {
           timeValuePerMinute: 2,
           costPerKm: 5,
           priceSensitivity: 0.5,
-        }
+        },
       );
 
       setTrafficOptimization(optimization);
 
       // Use primary route
       const route = optimization.primaryRoute.route;
-      
+
       if (route && route.success) {
         // Convert route geometry to coordinates
         let coordinates: [number, number][] = [];
-        
+
         if (route.geometry && route.geometry.coordinates) {
           coordinates = route.geometry.coordinates.map((coord: number[]) => [
             coord[1],
@@ -375,7 +388,10 @@ export function HomeContent() {
           ]);
         } else {
           // Fallback to straight line
-          coordinates = [userLocation, [destination.latitude, destination.longitude]];
+          coordinates = [
+            userLocation,
+            [destination.latitude, destination.longitude],
+          ];
         }
 
         // Extract instructions
@@ -390,23 +406,38 @@ export function HomeContent() {
 
         setRouteData({
           coordinates,
-          distance: route.distance_km * 1000 || calculateDistance(userLocation, [destination.latitude, destination.longitude]) * 1000,
+          distance:
+            route.distance_km * 1000 ||
+            calculateDistance(userLocation, [
+              destination.latitude,
+              destination.longitude,
+            ]) * 1000,
           duration: route.duration_minutes * 60 || 1800,
           instructions,
         });
 
         // Show incentive if there's a better alternative
-        if (optimization.recommendation && optimization.recommendation.type === 'alternative_station') {
+        if (
+          optimization.recommendation &&
+          optimization.recommendation.type === "alternative_station"
+        ) {
           setShowIncentive(true);
         }
       }
     } catch (error) {
       console.error("Failed to fetch optimized route:", error);
-      
+
       // Fallback: create simple straight line
       setRouteData({
-        coordinates: [userLocation, [destination.latitude, destination.longitude]],
-        distance: calculateDistance(userLocation, [destination.latitude, destination.longitude]) * 1000,
+        coordinates: [
+          userLocation,
+          [destination.latitude, destination.longitude],
+        ],
+        distance:
+          calculateDistance(userLocation, [
+            destination.latitude,
+            destination.longitude,
+          ]) * 1000,
         duration: 1800,
         instructions: [
           { text: "Head towards destination", distance: 0, time: 0 },
@@ -445,7 +476,11 @@ export function HomeContent() {
   const filteredStations = stations.filter((station) => {
     if (activeFilter === "operational")
       return station.status === "operational" || station.status === "busy";
-    return station.status === "maintenance" || station.status === "error" || station.status === "offline";
+    return (
+      station.status === "maintenance" ||
+      station.status === "error" ||
+      station.status === "offline"
+    );
   });
 
   const getStatusColor = (status: string) => {
@@ -468,15 +503,18 @@ export function HomeContent() {
   const getStatusBadge = (status: string) => {
     const configs: Record<string, { color: string; label: string }> = {
       operational: {
-        color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
+        color:
+          "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
         label: "Operational",
       },
       busy: {
-        color: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+        color:
+          "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
         label: "Busy",
       },
       maintenance: {
-        color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+        color:
+          "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
         label: "Maintenance",
       },
       error: {
@@ -484,13 +522,14 @@ export function HomeContent() {
         label: "Error",
       },
       offline: {
-        color: "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
+        color:
+          "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400",
         label: "Offline",
       },
     };
-    
+
     const config = configs[status] || configs.operational;
-    
+
     return (
       <Badge
         className={`${config.color} rounded-full text-xs font-medium px-2 py-0.5`}
@@ -532,11 +571,15 @@ export function HomeContent() {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            
-            {selectedStation && selectedStation.latitude && selectedStation.longitude && (
-              <MapController center={[selectedStation.latitude, selectedStation.longitude]} />
-            )}
-            
+
+            {selectedStation &&
+              selectedStation.latitude &&
+              selectedStation.longitude && (
+                <MapController
+                  center={[selectedStation.latitude, selectedStation.longitude]}
+                />
+              )}
+
             {/* Station markers */}
             {stations
               .filter((station) => station.latitude && station.longitude)
@@ -550,27 +593,33 @@ export function HomeContent() {
                   }}
                 />
               ))}
-            
+
             {/* Route polyline */}
-            {routeData && selectedStation && selectedStation.latitude && selectedStation.longitude && (
-              <>
-                <Polyline
-                  positions={routeData.coordinates}
-                  color="#06b6d4"
-                  weight={4}
-                  opacity={0.8}
-                />
-                <Circle
-                  center={[selectedStation.latitude, selectedStation.longitude]}
-                  radius={500}
-                  pathOptions={{
-                    color: "#06b6d4",
-                    fillColor: "#06b6d4",
-                    fillOpacity: 0.1,
-                  }}
-                />
-              </>
-            )}
+            {routeData &&
+              selectedStation &&
+              selectedStation.latitude &&
+              selectedStation.longitude && (
+                <>
+                  <Polyline
+                    positions={routeData.coordinates}
+                    color="#06b6d4"
+                    weight={4}
+                    opacity={0.8}
+                  />
+                  <Circle
+                    center={[
+                      selectedStation.latitude,
+                      selectedStation.longitude,
+                    ]}
+                    radius={500}
+                    pathOptions={{
+                      color: "#06b6d4",
+                      fillColor: "#06b6d4",
+                      fillOpacity: 0.1,
+                    }}
+                  />
+                </>
+              )}
           </MapContainer>
         ) : (
           <div className="flex items-center justify-center h-full">
@@ -680,7 +729,8 @@ export function HomeContent() {
                     <div className="flex items-center gap-3 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Zap className="w-3 h-3" />
-                        {station.inventory?.chargedBatteries || 0}/{station.maxInventory}
+                        {station.inventory?.chargedBatteries || 0}/
+                        {station.maxInventory}
                       </span>
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
@@ -713,7 +763,9 @@ export function HomeContent() {
                   </div>
                   <div>
                     <h2 className="text-lg font-semibold">Route to Station</h2>
-                    <p className="text-xs text-muted-foreground">{selectedStation.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {selectedStation.name}
+                    </p>
                   </div>
                 </div>
                 <Button
@@ -736,7 +788,9 @@ export function HomeContent() {
                   <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl p-3 border border-primary/20">
                     <div className="flex items-center gap-2 mb-1">
                       <MapPin className="w-4 h-4 text-primary" />
-                      <p className="text-xs font-medium text-muted-foreground">Distance</p>
+                      <p className="text-xs font-medium text-muted-foreground">
+                        Distance
+                      </p>
                     </div>
                     <p className="text-xl font-bold text-foreground">
                       {formatDistance(routeData.distance)}
@@ -745,7 +799,9 @@ export function HomeContent() {
                   <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl p-3 border border-primary/20">
                     <div className="flex items-center gap-2 mb-1">
                       <Clock className="w-4 h-4 text-primary" />
-                      <p className="text-xs font-medium text-muted-foreground">ETA</p>
+                      <p className="text-xs font-medium text-muted-foreground">
+                        ETA
+                      </p>
                     </div>
                     <p className="text-xl font-bold text-foreground">
                       {formatDuration(routeData.duration)}
@@ -774,7 +830,7 @@ export function HomeContent() {
                   {routeData?.instructions.length || 0} steps
                 </Badge>
               </div>
-              
+
               {routeData && routeData.instructions.length > 0 ? (
                 <div className="space-y-2">
                   {routeData.instructions.map((instruction, index) => (
@@ -795,7 +851,8 @@ export function HomeContent() {
                           <p className="text-sm text-foreground mb-1 leading-relaxed">
                             {instruction.text}
                           </p>
-                          {(instruction.distance > 0 || instruction.time > 0) && (
+                          {(instruction.distance > 0 ||
+                            instruction.time > 0) && (
                             <div className="flex items-center gap-3 text-xs text-muted-foreground">
                               {instruction.distance > 0 && (
                                 <span className="flex items-center gap-1">
@@ -831,7 +888,9 @@ export function HomeContent() {
             {/* Station Info Footer */}
             <div className="p-4 border-t border-border/30 bg-muted/20">
               <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-medium text-muted-foreground">Station Status</span>
+                <span className="text-xs font-medium text-muted-foreground">
+                  Station Status
+                </span>
                 {getStatusBadge(selectedStation.status)}
               </div>
               <div className="grid grid-cols-3 gap-3">
@@ -892,13 +951,16 @@ export function HomeContent() {
 
               <div className="text-center">
                 <p className="text-xs text-muted-foreground">Type</p>
-                <p className="font-medium text-sm capitalize">{selectedStation.type}</p>
+                <p className="font-medium text-sm capitalize">
+                  {selectedStation.type}
+                </p>
               </div>
 
               <div className="text-center">
                 <p className="text-xs text-muted-foreground">Charged</p>
                 <p className="font-medium text-sm">
-                  {selectedStation.inventory?.chargedBatteries || 0}/{selectedStation.maxInventory}
+                  {selectedStation.inventory?.chargedBatteries || 0}/
+                  {selectedStation.maxInventory}
                 </p>
               </div>
 

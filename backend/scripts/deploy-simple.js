@@ -4,7 +4,7 @@ import path from "path";
 
 // Import the compiled contract
 const contractArtifact = JSON.parse(
-  fs.readFileSync("./artifacts/contracts/AuditLog.sol/AuditLog.json", "utf8")
+  fs.readFileSync("./artifacts/contracts/AuditLog.sol/AuditLog.json", "utf8"),
 );
 
 async function main() {
@@ -12,11 +12,12 @@ async function main() {
 
   // Connect to the local Hardhat node
   const provider = new ethers.JsonRpcProvider("http://127.0.0.1:8545");
-  
+
   // Use the first account from Hardhat node
-  const privateKey = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+  const privateKey =
+    "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
   const wallet = new ethers.Wallet(privateKey, provider);
-  
+
   console.log("Deploying contracts with account:", wallet.address);
 
   // Check deployer balance
@@ -27,13 +28,13 @@ async function main() {
   const contractFactory = new ethers.ContractFactory(
     contractArtifact.abi,
     contractArtifact.bytecode,
-    wallet
+    wallet,
   );
 
   // Deploy the contract
   console.log("Deploying AuditLog contract...");
   const auditLog = await contractFactory.deploy();
-  
+
   // Wait for deployment to complete
   await auditLog.waitForDeployment();
   const contractAddress = await auditLog.getAddress();
@@ -46,11 +47,14 @@ async function main() {
   try {
     const totalLogs = await auditLog.totalLogs();
     console.log("Contract verification - Total logs:", totalLogs.toString());
-    
+
     const contractInfo = await auditLog.getContractInfo();
     console.log("Contract info - Owner:", contractInfo[0]);
     console.log("Contract info - Total logs:", contractInfo[1].toString());
-    console.log("Contract info - Total submissions:", contractInfo[2].toString());
+    console.log(
+      "Contract info - Total submissions:",
+      contractInfo[2].toString(),
+    );
   } catch (error) {
     console.error("Contract verification failed:", error.message);
   }
@@ -63,7 +67,7 @@ async function main() {
     blockNumber: auditLog.deploymentTransaction().blockNumber,
     deployedAt: new Date().toISOString(),
     network: "localhost",
-    chainId: 31337
+    chainId: 31337,
   };
 
   // Create deployment info file
@@ -95,7 +99,7 @@ CHAIN_ID=31337
   return {
     contractAddress,
     deployerAddress: wallet.address,
-    transactionHash: auditLog.deploymentTransaction().hash
+    transactionHash: auditLog.deploymentTransaction().hash,
   };
 }
 

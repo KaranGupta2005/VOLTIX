@@ -66,7 +66,9 @@ export default function DashboardMap({
   if (!showMap) {
     // Fallback UI when leaflet is not available
     return (
-      <div className={`${className} bg-slate-100 dark:bg-slate-900 rounded-lg p-6`}>
+      <div
+        className={`${className} bg-slate-100 dark:bg-slate-900 rounded-lg p-6`}
+      >
         <div className="text-center mb-6">
           <MapPin className="h-12 w-12 mx-auto mb-4 text-blue-500" />
           <h3 className="text-lg font-semibold mb-2">Station Locations</h3>
@@ -87,20 +89,22 @@ export default function DashboardMap({
               onClick={() => onStationSelect?.(station)}
             >
               <div className="flex items-start justify-between mb-2">
-                <div className="font-semibold text-sm">Station {station.id}</div>
+                <div className="font-semibold text-sm">
+                  Station {station.id}
+                </div>
                 <span
                   className={`px-2 py-0.5 rounded-full text-white text-xs ${getStatusColor(
-                    station.status
+                    station.status,
                   )}`}
                 >
                   {station.statusLabel}
                 </span>
               </div>
-              
+
               <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">
                 {station.address}
               </div>
-              
+
               <div className="flex items-center justify-between text-xs">
                 <span className="flex items-center gap-1">
                   <Zap className="h-3 w-3" />
@@ -121,7 +125,9 @@ export default function DashboardMap({
           <button
             onClick={() => {
               // Install leaflet command
-              console.log("To enable full map: npm install leaflet react-leaflet");
+              console.log(
+                "To enable full map: npm install leaflet react-leaflet",
+              );
             }}
             className="text-xs text-blue-500 hover:text-blue-600 underline"
           >
@@ -141,7 +147,9 @@ export default function DashboardMap({
 
   // Rest of the original map code would go here...
   return (
-    <div className={`${className} bg-slate-100 dark:bg-slate-900 animate-pulse flex items-center justify-center`}>
+    <div
+      className={`${className} bg-slate-100 dark:bg-slate-900 animate-pulse flex items-center justify-center`}
+    >
       <div className="text-muted-foreground">Map component loading...</div>
     </div>
   );

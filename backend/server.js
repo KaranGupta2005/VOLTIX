@@ -26,6 +26,7 @@ import testRoutes from "./routes/test.js";
 import decisionsRoutes from "./routes/decisions.js";
 import stationsRoutes from "./routes/stations.js";
 import trafficRoutes from "./routes/traffic.js";
+import demoRoutes from "./routes/demo.js";
 
 dotenv.config();
 
@@ -87,26 +88,27 @@ app.use("/api/test", testRoutes);
 app.use("/api/decisions", decisionsRoutes);
 app.use("/api/stations", stationsRoutes);
 app.use("/api/traffic", trafficRoutes);
+app.use("/api/demo", demoRoutes);
 
 // 404 handler for API routes
-app.use('/api', (req, res) => {
-    res.status(404).json({
-        success: false,
-        message: `API endpoint ${req.originalUrl} not found`
-    });
+app.use("/api", (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `API endpoint ${req.originalUrl} not found`,
+  });
 });
 
 // Error handling middleware (MUST be after routes)
 app.use((err, req, res, next) => {
-    console.error('❌ Error caught by middleware:', err);
-    const status = typeof err.status === "number" ? err.status : 500;
-    const message = err.message || "Internal Server Error";
-    if (res.headersSent) return next(err);
-    res.status(status).json({ 
-        success: false,
-        message,
-        ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
-    });
+  console.error("❌ Error caught by middleware:", err);
+  const status = typeof err.status === "number" ? err.status : 500;
+  const message = err.message || "Internal Server Error";
+  if (res.headersSent) return next(err);
+  res.status(status).json({
+    success: false,
+    message,
+    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
+  });
 });
 
 const server = http.createServer(app);

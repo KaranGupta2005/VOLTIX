@@ -1,9 +1,9 @@
 {
   "contractAddress": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
   "deployerAddress": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-  "transactionHash": "0xd70b9e52613b9dec398b394c27d25f99a782e8fa23248425d1e198e8431f37c2",
+  "transactionHash": "0xbc996149b07c337d19e1805ca68d7ee04858e723ed591b668b30369dc7ae9739",
   "blockNumber": null,
-  "deployedAt": "2026-01-31T15:44:26.760Z",
+  "deployedAt": "2026-02-01T04:00:27.104Z",
   "network": "localhost",
   "chainId": 31337
 }

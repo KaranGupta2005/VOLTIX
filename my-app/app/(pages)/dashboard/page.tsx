@@ -17,6 +17,7 @@ import { DashboardDecisions } from "@/app/components/dashboard-decisions";
 import BatteryBay from "@/app/components/dashboard/BatteryBay";
 import ProtectedRoute from "@/app/components/ProtectedRoute";
 import TrafficNotificationToast from "@/app/components/TrafficNotificationToast";
+import LiveAgentConsole from "@/app/components/live-agent-console";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("home");
@@ -96,11 +97,7 @@ export default function Dashboard() {
                       <BatteryBay />
                     </TabsContent>
                     <TabsContent value="files" className="mt-0">
-                      <div className="flex h-96 items-center justify-center rounded-3xl border border-dashed">
-                        <p className="text-muted-foreground">
-                          Agents content will go here
-                        </p>
-                      </div>
+                      <LiveAgentConsole />
                     </TabsContent>
                     <TabsContent value="projects" className="mt-0">
                       <div className="bg-white/50 backdrop-blur-sm rounded-3xl p-6 border border-gray-100 min-h-[500px]">

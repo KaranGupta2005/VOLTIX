@@ -1,13 +1,27 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { connectSocket, getSocket } from "../config/socket";
 import { subscribePush, checkPushSubscription } from "../services/pushService";
 import { toast } from "sonner";
 
 export interface Notification {
   id: string;
-  type: "SYSTEM" | "AGENT" | "ALERT" | "INFO" | "SUCCESS" | "WARNING" | "ERROR" | "INCENTIVE";
+  type:
+    | "SYSTEM"
+    | "AGENT"
+    | "ALERT"
+    | "INFO"
+    | "SUCCESS"
+    | "WARNING"
+    | "ERROR"
+    | "INCENTIVE";
   title: string;
   message: string;
   timestamp: string;
@@ -35,7 +49,7 @@ interface NotificationContextType {
   unreadCount: number;
   isConnected: boolean;
   isPushEnabled: boolean;
-  addNotification: (notification: Omit<Notification, 'id' | 'read'>) => void;
+  addNotification: (notification: Omit<Notification, "id" | "read">) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   clearNotification: (id: string) => void;
@@ -44,7 +58,9 @@ interface NotificationContextType {
   getNotificationsByType: (type: string) => Notification[];
 }
 
-const NotificationContext = createContext<NotificationContextType | undefined>(undefined);
+const NotificationContext = createContext<NotificationContextType | undefined>(
+  undefined,
+);
 
 export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -52,11 +68,11 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   const [isPushEnabled, setIsPushEnabled] = useState(false);
 
   useEffect(() => {
-    console.log('🔔 NotificationContext: Initializing...');
-    
+    console.log("🔔 NotificationContext: Initializing...");
+
     // Initialize socket connection
     const socket = connectSocket();
-    console.log('🔔 NotificationContext: Socket created');
+    console.log("🔔 NotificationContext: Socket created");
 
     // Check push notification status
     checkPushSubscription().then(setIsPushEnabled);
@@ -75,8 +91,8 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     // Generic notification handler
     const handleNotification = (data: any) => {
       console.log("🔔 New notification received:", data);
-      
-      const notification: Omit<Notification, 'id' | 'read'> = {
+
+      const notification: Omit<Notification, "id" | "read"> = {
         type: data.type || "INFO",
         title: data.title || "Notification",
         message: data.message || "",
@@ -87,7 +103,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         stationId: data.stationId,
         meta: data.meta,
         actionData: data.actionData,
-        incentive: data.incentive
+        incentive: data.incentive,
       };
 
       addNotification(notification);
@@ -97,11 +113,12 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     // Agent decision handler
     const handleAgentDecision = (decision: any) => {
       console.log("🤖 Agent decision received:", decision);
-      
-      const notification: Omit<Notification, 'id' | 'read'> = {
+
+      const notification: Omit<Notification, "id" | "read"> = {
         type: "AGENT",
         title: `${decision.agent || decision.agentType} Decision`,
-        message: decision.explanation || decision.message || "Agent made a decision",
+        message:
+          decision.explanation || decision.message || "Agent made a decision",
         timestamp: decision.timestamp || new Date().toISOString(),
         priority: decision.priority || "medium",
         category: "agent_decision",
@@ -111,8 +128,8 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
           agent: decision.agent || decision.agentType,
           action: decision.action,
           confidence: decision.confidence,
-          reasoning: decision.reasoning
-        }
+          reasoning: decision.reasoning,
+        },
       };
 
       addNotification(notification);
@@ -122,15 +139,15 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     // System alert handler
     const handleSystemAlert = (alert: any) => {
       console.log("⚠️ System alert received:", alert);
-      
-      const notification: Omit<Notification, 'id' | 'read'> = {
+
+      const notification: Omit<Notification, "id" | "read"> = {
         type: alert.severity?.toUpperCase() || "ALERT",
         title: alert.title || "System Alert",
         message: alert.message || "",
         timestamp: alert.timestamp || new Date().toISOString(),
         priority: alert.priority || "high",
         category: "system_alert",
-        meta: alert.meta
+        meta: alert.meta,
       };
 
       addNotification(notification);
@@ -140,8 +157,8 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     // Station update handler
     const handleStationUpdate = (update: any) => {
       console.log("🔌 Station update received:", update);
-      
-      const notification: Omit<Notification, 'id' | 'read'> = {
+
+      const notification: Omit<Notification, "id" | "read"> = {
         type: "INFO",
         title: `Station ${update.stationId} Update`,
         message: update.message || `Station status changed to ${update.status}`,
@@ -152,8 +169,8 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         meta: {
           stationId: update.stationId,
           status: update.status,
-          location: update.location
-        }
+          location: update.location,
+        },
       };
 
       addNotification(notification);
@@ -163,8 +180,8 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     // Incentive offer handler
     const handleIncentiveOffer = (incentive: any) => {
       console.log("💰 Incentive offer received:", incentive);
-      
-      const notification: Omit<Notification, 'id' | 'read'> = {
+
+      const notification: Omit<Notification, "id" | "read"> = {
         type: "INCENTIVE",
         title: "Special Offer Available!",
         message: `Save ₹${incentive.amount} by switching to a nearby station`,
@@ -175,14 +192,14 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         incentive: {
           amount: incentive.amount,
           type: incentive.type || "discount_amount",
-          validUntil: incentive.validUntil
+          validUntil: incentive.validUntil,
         },
         actionData: {
           actionType: "accept_incentive",
           actionText: "Accept Offer",
-          expiresAt: incentive.validUntil
+          expiresAt: incentive.validUntil,
         },
-        meta: incentive
+        meta: incentive,
       };
 
       addNotification(notification);
@@ -215,88 +232,97 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  const addNotification = (notificationData: Omit<Notification, 'id' | 'read'>) => {
+  const addNotification = (
+    notificationData: Omit<Notification, "id" | "read">,
+  ) => {
     const notification: Notification = {
       ...notificationData,
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      read: false
+      read: false,
     };
 
-    setNotifications(prev => [notification, ...prev]);
+    setNotifications((prev) => [notification, ...prev]);
   };
 
-  const showToast = (notification: Omit<Notification, 'id' | 'read'>) => {
+  const showToast = (notification: Omit<Notification, "id" | "read">) => {
     const toastOptions = {
-      duration: notification.priority === 'urgent' ? 10000 : 
-                notification.priority === 'high' ? 7000 : 
-                notification.priority === 'low' ? 3000 : 5000,
+      duration:
+        notification.priority === "urgent"
+          ? 10000
+          : notification.priority === "high"
+            ? 7000
+            : notification.priority === "low"
+              ? 3000
+              : 5000,
     };
 
     switch (notification.type) {
       case "SUCCESS":
-        toast.success(notification.message, { 
+        toast.success(notification.message, {
           ...toastOptions,
-          description: notification.title 
+          description: notification.title,
         });
         break;
       case "ERROR":
       case "ALERT":
-        toast.error(notification.message, { 
+        toast.error(notification.message, {
           ...toastOptions,
-          description: notification.title 
+          description: notification.title,
         });
         break;
       case "WARNING":
-        toast.warning(notification.message, { 
+        toast.warning(notification.message, {
           ...toastOptions,
-          description: notification.title 
+          description: notification.title,
         });
         break;
       case "INCENTIVE":
-        toast.success(`💰 ${notification.message}`, { 
+        toast.success(`💰 ${notification.message}`, {
           ...toastOptions,
           description: notification.title,
-          action: notification.actionData ? {
-            label: notification.actionData.actionText,
-            onClick: () => {
-              // Handle incentive acceptance
-              console.log("Incentive accepted:", notification.incentive);
-            }
-          } : undefined
+          action: notification.actionData
+            ? {
+                label: notification.actionData.actionText,
+                onClick: () => {
+                  // Handle incentive acceptance
+                  console.log("Incentive accepted:", notification.incentive);
+                },
+              }
+            : undefined,
         });
         break;
       case "AGENT":
-        toast.info(`🤖 ${notification.message}`, { 
+        toast.info(`🤖 ${notification.message}`, {
           ...toastOptions,
-          description: notification.title 
+          description: notification.title,
         });
         break;
       default:
-        toast.info(notification.message, { 
+        toast.info(notification.message, {
           ...toastOptions,
-          description: notification.title 
+          description: notification.title,
         });
     }
   };
 
   const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === id 
-          ? { ...notification, read: true }
-          : notification
-      )
+    setNotifications((prev) =>
+      prev.map((notification) =>
+        notification.id === id ? { ...notification, read: true } : notification,
+      ),
     );
   };
 
   const markAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(notification => ({ ...notification, read: true }))
+    setNotifications((prev) =>
+      prev.map((notification) => ({ ...notification, read: true })),
     );
   };
 
   const clearNotification = (id: string) => {
-    setNotifications(prev => prev.filter(notification => notification.id !== id));
+    setNotifications((prev) =>
+      prev.filter((notification) => notification.id !== id),
+    );
   };
 
   const clearAllNotifications = () => {
@@ -321,10 +347,10 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const getNotificationsByType = (type: string): Notification[] => {
-    return notifications.filter(notification => notification.type === type);
+    return notifications.filter((notification) => notification.type === type);
   };
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter((n) => !n.read).length;
 
   const value: NotificationContextType = {
     notifications,
@@ -337,7 +363,7 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     clearNotification,
     clearAllNotifications,
     enablePushNotifications,
-    getNotificationsByType
+    getNotificationsByType,
   };
 
   return (
@@ -350,7 +376,9 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 export const useNotificationCenter = () => {
   const context = useContext(NotificationContext);
   if (context === undefined) {
-    throw new Error('useNotificationCenter must be used within a NotificationProvider');
+    throw new Error(
+      "useNotificationCenter must be used within a NotificationProvider",
+    );
   }
   return context;
 };
