@@ -3,7 +3,17 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ChevronDown, Search, Settings, Zap, Home, Info, Phone, Download, LogOut } from "lucide-react";
+import {
+  ChevronDown,
+  Search,
+  Settings,
+  Zap,
+  Home,
+  Info,
+  Phone,
+  Download,
+  LogOut,
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -45,26 +55,28 @@ export function DashboardSidebar() {
   const handleLogout = async () => {
     try {
       const tokenRow = document.cookie
-        .split('; ')
-        .find((row) => row.startsWith('accessToken='));
-      const token = tokenRow ? tokenRow.split('=')[1] : null;
+        .split("; ")
+        .find((row) => row.startsWith("accessToken="));
+      const token = tokenRow ? tokenRow.split("=")[1] : null;
 
       if (token) {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+        const apiUrl =
+          process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
         await fetch(`${apiUrl}/api/auth/logout`, {
-          method: 'POST',
+          method: "POST",
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
         });
       }
     } catch (error) {
       console.error("Logout failed", error);
     } finally {
       // Clear the cookie
-      document.cookie = "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
-      router.push('/');
+      document.cookie =
+        "accessToken=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+      router.push("/");
     }
   };
 
@@ -122,10 +134,7 @@ export function DashboardSidebar() {
             <SidebarMenu>
               {sidebarItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    className="rounded-2xl"
-                  >
+                  <SidebarMenuButton asChild className="rounded-2xl">
                     <Link
                       href={item.url}
                       className="flex items-center justify-between"
@@ -146,7 +155,10 @@ export function DashboardSidebar() {
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton className="rounded-2xl text-red-500 hover:text-red-600 hover:bg-red-50" onClick={handleLogout}>
+            <SidebarMenuButton
+              className="rounded-2xl text-red-500 hover:text-red-600 hover:bg-red-50"
+              onClick={handleLogout}
+            >
               <LogOut className="h-5 w-5" />
               <span>Logout</span>
             </SidebarMenuButton>

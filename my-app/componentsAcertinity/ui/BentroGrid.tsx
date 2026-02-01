@@ -1,11 +1,21 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
 import { gsap } from "gsap";
 
+import {
+  BarChart2,
+  LayoutDashboard,
+  Users,
+  Zap,
+  Puzzle,
+  Shield,
+} from "lucide-react";
+
 export interface BentoCardProps {
   color?: string;
   title?: string;
   description?: string;
   label?: string;
+  icon?: React.ReactNode;
   textAutoHide?: boolean;
   disableAnimations?: boolean;
 }
@@ -35,36 +45,42 @@ const cardData: BentoCardProps[] = [
     title: "Analytics",
     description: "Track user behavior",
     label: "Insights",
+    icon: <BarChart2 className="w-6 h-6 text-emerald-500" />,
   },
   {
     color: "#0a0a0a",
     title: "Dashboard",
     description: "Centralized data view",
     label: "Overview",
+    icon: <LayoutDashboard className="w-6 h-6 text-emerald-500" />,
   },
   {
     color: "#0a0a0a",
     title: "Collaboration",
     description: "Work together seamlessly",
     label: "Teamwork",
+    icon: <Users className="w-6 h-6 text-emerald-500" />,
   },
   {
     color: "#0a0a0a",
     title: "Automation",
     description: "Streamline workflows",
     label: "Efficiency",
+    icon: <Zap className="w-6 h-6 text-emerald-500" />,
   },
   {
     color: "#0a0a0a",
     title: "Integration",
     description: "Connect favorite tools",
     label: "Connectivity",
+    icon: <Puzzle className="w-6 h-6 text-emerald-500" />,
   },
   {
     color: "#0a0a0a",
     title: "Security",
     description: "Enterprise-grade protection",
     label: "Protection",
+    icon: <Shield className="w-6 h-6 text-emerald-500" />,
   },
 ];
 
@@ -750,7 +766,10 @@ const MagicBento: React.FC<BentoProps> = ({
                   enableMagnetism={enableMagnetism}
                 >
                   <div className="card__header flex justify-between gap-3 relative text-white">
-                    <span className="card__label text-base">{card.label}</span>
+                    <span className="card__label text-base flex items-center gap-2">
+                      {card.icon}
+                      {card.label}
+                    </span>
                   </div>
                   <div className="card__content flex flex-col relative text-white">
                     <h3
