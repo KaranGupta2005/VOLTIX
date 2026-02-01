@@ -15,6 +15,10 @@ import {
   MapPin,
   Clock,
   Zap,
+  TrendingUp,
+  AlertTriangle,
+  DollarSign,
+  Target,
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +27,8 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { connectSocket } from "@/app/config/socket";
+import trafficService from "@/app/services/trafficService";
+import { useLiveLocation } from "@/app/hooks/useLiveLocation";
 
 // Leaflet imports (dynamic)
 let L: any = null;
@@ -47,6 +53,8 @@ interface Station {
   demand: any;
   inventory: any;
   errors: any;
+  distance?: number;
+  trafficStatus?: string;
 }
 
 interface RouteData {
@@ -58,6 +66,13 @@ interface RouteData {
     distance: number;
     time: number;
   }>;
+}
+
+interface TrafficOptimization {
+  primaryRoute: any;
+  alternatives: any[];
+  recommendation: any;
+  trafficAnalysis: any;
 }
 
 // Custom marker icon creator with better styling
@@ -153,7 +168,18 @@ export function HomeContent() {
   const [isLoadingRoute, setIsLoadingRoute] = useState(false);
   const [mapReady, setMapReady] = useState(false);
   const [userLocation, setUserLocation] = useState<[number, number]>([19.0760, 72.8777]); // Default: Mumbai
+  const [trafficOptimization, setTrafficOptimization] = useState<TrafficOptimization | null>(null);
+  const [showIncentive, setShowIncentive] = useState(false);
   const mapRef = useRef<any>(null);
+
+  // Live location tracking
+  const {
+    location: liveLocation,
+    error: locationError,
+    loading: locationLoading,
+    watchLocation,
+    stopWatching,
+  } = useLiveLocation();
 
   // Load Leaflet dynamically
   useEffect(() => {
@@ -180,19 +206,59 @@ export function HomeContent() {
     loadLeaflet();
   }, []);
 
-  // Get user location
+  // Start live location tracking
   useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setUserLocation([position.coords.latitude, position.coords.longitude]);
-        },
-        (error) => {
-          console.log("Using default location (Mumbai)");
+    watchLocation();
+    
+    return () => {
+      stopWatching();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
+
+  // Update user location when live location changes
+  useEffect(() => {
+    if (liveLocation && liveLocation.coordinates) {
+      const newLocation: [number, number] = [
+        liveLocation.coordinates.latitude,
+        liveLocation.coordinates.longitude,
+      ];
+      setUserLocation(newLocation);
+
+      // Update location on backend (debounced to avoid too many requests)
+      const updateBackend = async () => {
+        try {
+          const data = await trafficService.updateLocation(
+            newLocation, 
+            liveLocation.coordinates.accuracy
+          );
+          console.log("Location updated:", data);
+          
+          // Update nearby stations with traffic info
+          if (data.nearbyStations) {
+            setStations((prev) => {
+              const updatedStations = [...prev];
+              data.nearbyStations.forEach((nearbyStation: any) => {
+                const index = updatedStations.findIndex((s) => s.id === nearbyStation.id);
+                if (index !== -1) {
+                  updatedStations[index] = {
+                    ...updatedStations[index],
+                    ...nearbyStation,
+                  };
+                }
+              });
+              return updatedStations;
+            });
+          }
+        } catch (error) {
+          console.error("Failed to update location:", error);
         }
-      );
+      };
+
+      updateBackend();
     }
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [liveLocation?.timestamp]); // Only update when location timestamp changes
 
   // Fetch stations from API
   useEffect(() => {
@@ -268,65 +334,83 @@ export function HomeContent() {
     };
   }, [selectedStation]);
 
-  // Fetch route from OpenRouteService
+  // Fetch route with traffic optimization
   const fetchRoute = async (destination: Station) => {
     setIsLoadingRoute(true);
+    setTrafficOptimization(null);
+    setShowIncentive(false);
+    
     try {
-      // TODO: Replace with your OpenRouteService API key
-      // Get free API key from: https://openrouteservice.org/dev/#/signup
-      const apiKey = "YOUR_OPENROUTESERVICE_API_KEY";
+      // Get traffic-optimized route
+      const optimization = await trafficService.optimizeRoute(
+        userLocation,
+        destination.id,
+        {
+          maxDistance: 10,
+          distance_weight: 0.4,
+          queue_weight: 0.3,
+          price_weight: 0.2,
+          rating_weight: 0.1,
+        },
+        {
+          timeValuePerMinute: 2,
+          costPerKm: 5,
+          priceSensitivity: 0.5,
+        }
+      );
+
+      setTrafficOptimization(optimization);
+
+      // Use primary route
+      const route = optimization.primaryRoute.route;
       
-      if (apiKey === "YOUR_OPENROUTESERVICE_API_KEY") {
-        console.warn("OpenRouteService API key not configured. Using fallback route.");
-        // Fallback: create simple straight line
-        setRouteData({
-          coordinates: [userLocation, [destination.latitude, destination.longitude]],
-          distance: calculateDistance(userLocation, [destination.latitude, destination.longitude]),
-          duration: 1800, // 30 minutes estimate
-          instructions: [
-            { text: "Head towards destination", distance: 0, time: 0 },
-            { text: `Arrive at ${destination.name}`, distance: 0, time: 0 }
-          ],
-        });
-        setIsLoadingRoute(false);
-        return;
-      }
-      
-      const url = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${apiKey}&start=${userLocation[1]},${userLocation[0]}&end=${destination.longitude},${destination.latitude}`;
-      
-      const response = await fetch(url);
-      const data = await response.json();
-      
-      if (data.features && data.features[0]) {
-        const route = data.features[0];
-        const coordinates = route.geometry.coordinates.map((coord: number[]) => [
-          coord[1],
-          coord[0],
-        ]);
+      if (route && route.success) {
+        // Convert route geometry to coordinates
+        let coordinates: [number, number][] = [];
         
-        const instructions = route.properties.segments[0].steps.map((step: any) => ({
-          text: step.instruction,
-          distance: step.distance,
-          time: step.duration,
-        }));
-        
+        if (route.geometry && route.geometry.coordinates) {
+          coordinates = route.geometry.coordinates.map((coord: number[]) => [
+            coord[1],
+            coord[0],
+          ]);
+        } else {
+          // Fallback to straight line
+          coordinates = [userLocation, [destination.latitude, destination.longitude]];
+        }
+
+        // Extract instructions
+        const instructions = route.steps?.map((step: any) => ({
+          text: step.instruction || step.maneuver?.instruction || "Continue",
+          distance: step.distance || 0,
+          time: step.duration || 0,
+        })) || [
+          { text: "Head towards destination", distance: 0, time: 0 },
+          { text: `Arrive at ${destination.name}`, distance: 0, time: 0 },
+        ];
+
         setRouteData({
           coordinates,
-          distance: route.properties.segments[0].distance,
-          duration: route.properties.segments[0].duration,
+          distance: route.distance_km * 1000 || calculateDistance(userLocation, [destination.latitude, destination.longitude]) * 1000,
+          duration: route.duration_minutes * 60 || 1800,
           instructions,
         });
+
+        // Show incentive if there's a better alternative
+        if (optimization.recommendation && optimization.recommendation.type === 'alternative_station') {
+          setShowIncentive(true);
+        }
       }
     } catch (error) {
-      console.error("Failed to fetch route:", error);
+      console.error("Failed to fetch optimized route:", error);
+      
       // Fallback: create simple straight line
       setRouteData({
         coordinates: [userLocation, [destination.latitude, destination.longitude]],
-        distance: calculateDistance(userLocation, [destination.latitude, destination.longitude]),
+        distance: calculateDistance(userLocation, [destination.latitude, destination.longitude]) * 1000,
         duration: 1800,
         instructions: [
           { text: "Head towards destination", distance: 0, time: 0 },
-          { text: `Arrive at ${destination.name}`, distance: 0, time: 0 }
+          { text: `Arrive at ${destination.name}`, distance: 0, time: 0 },
         ],
       });
     } finally {

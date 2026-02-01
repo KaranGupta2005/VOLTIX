@@ -16,6 +16,7 @@ import { DashboardHeader } from "@/app/components/dashboard-header";
 import { DashboardDecisions } from "@/app/components/dashboard-decisions";
 import BatteryBay from "@/app/components/dashboard/BatteryBay";
 import ProtectedRoute from "@/app/components/ProtectedRoute";
+import TrafficNotificationToast from "@/app/components/TrafficNotificationToast";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("home");
@@ -121,6 +122,7 @@ export default function Dashboard() {
           </SidebarInset>
         </SidebarProvider>
         <ChatBot />
+        <TrafficNotificationToast />
       </div>
     </ProtectedRoute>
   );
