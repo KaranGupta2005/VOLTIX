@@ -55,21 +55,12 @@ export interface LocationUpdate {
 }
 
 class TrafficService {
-  private token: string | null = null;
-
-  setToken(token: string) {
-    this.token = token;
-  }
-
   private getHeaders() {
     const headers: HeadersInit = {
       "Content-Type": "application/json",
     };
 
-    if (this.token) {
-      headers["Authorization"] = `Bearer ${this.token}`;
-    }
-
+    // Token will be sent via cookies with credentials: "include"
     return headers;
   }
 
@@ -83,7 +74,7 @@ class TrafficService {
       const response = await fetch(`${API_BASE_URL}/api/traffic/optimize-route`, {
         method: "POST",
         headers: this.getHeaders(),
-        credentials: "include",
+        credentials: "include", // Important: sends cookies
         body: JSON.stringify({
           userLocation,
           destinationStationId,
@@ -95,13 +86,13 @@ class TrafficService {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to optimize route");
+        throw new Error(data.error || data.message || "Failed to optimize route");
       }
 
       return data.optimization;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Route optimization error:", error);
-      throw error;
+      throw new Error(error.message || "Failed to optimize route");
     }
   }
 
