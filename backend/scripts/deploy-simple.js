@@ -11,7 +11,13 @@ async function main() {
   console.log("Starting AuditLog contract deployment...");
 
   // Connect to the local Hardhat node
+<<<<<<< HEAD
   const provider = new ethers.JsonRpcProvider("http://127.0.0.1:8545");
+=======
+  const rpcUrl = process.env.BLOCKCHAIN_RPC_URL || "http://127.0.0.1:8545";
+  console.log(`Connecting to blockchain at: ${rpcUrl}`);
+  const provider = new ethers.JsonRpcProvider(rpcUrl);
+>>>>>>> aa993d87623c12db174e6dc06c2f117717d021f5
 
   // Use the first account from Hardhat node
   const privateKey =

@@ -571,7 +571,6 @@ export function HomeContent() {
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-
             {selectedStation &&
               selectedStation.latitude &&
               selectedStation.longitude && (
@@ -580,9 +579,48 @@ export function HomeContent() {
                 />
               )}
 
+            {/* User location marker */}
+            {userLocation && userLocation[0] && userLocation[1] && (
+              <Marker
+                position={userLocation}
+                icon={L?.divIcon({
+                  html: `
+                    <div style="position: relative; width: 32px; height: 32px;">
+                      <div style="
+                        position: absolute;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        width: 24px;
+                        height: 24px;
+                        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-center;
+                        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.5), 0 0 0 3px white, 0 0 0 4px #3b82f6;
+                        border: 2px solid white;
+                        animation: pulse 2s ease-in-out infinite;
+                      ">
+                        <div style="width: 8px; height: 8px; background: white; border-radius: 50%;"></div>
+                      </div>
+                    </div>
+                  `,
+                  className: "user-location-marker",
+                  iconSize: [32, 32],
+                  iconAnchor: [16, 16],
+                })}
+              />
+            )}
             {/* Station markers */}
             {stations
-              .filter((station) => station.latitude && station.longitude)
+              .filter(
+                (station) =>
+                  station.latitude &&
+                  station.longitude &&
+                  !isNaN(station.latitude) &&
+                  !isNaN(station.longitude),
+              )
               .map((station) => (
                 <Marker
                   key={station.id}
@@ -630,6 +668,45 @@ export function HomeContent() {
           </div>
         )}
       </div>
+
+      {/* Live Location Indicator - Top Right */}
+      {liveLocation && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute top-4 right-4 z-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-2xl border border-white/50 dark:border-slate-700/50 shadow-xl px-4 py-2"
+        >
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+              <div className="absolute inset-0 w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
+            </div>
+            <div className="text-xs">
+              <p className="font-medium text-foreground">Live Location</p>
+              <p className="text-muted-foreground">
+                {liveLocation.coordinates.latitude.toFixed(4)},{" "}
+                {liveLocation.coordinates.longitude.toFixed(4)}
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Location Error Indicator */}
+      {locationError && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="absolute top-4 right-4 z-10 bg-red-500/90 backdrop-blur-xl rounded-2xl border border-red-400/50 shadow-xl px-4 py-2"
+        >
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-white" />
+            <p className="text-xs text-white font-medium">
+              Location access denied
+            </p>
+          </div>
+        </motion.div>
+      )}
 
       {/* Floating Station Panel (Glassmorphism Overlay) - Collapsible */}
       <AnimatePresence mode="wait">
