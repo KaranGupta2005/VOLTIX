@@ -1,25 +1,11 @@
-import Redis from 'ioredis';
+import redis, { safeRedisOperation } from '../config/redis.js';
 import { v4 as uuidv4 } from 'uuid';
 
 class DataIngestionService {
   constructor() {
-    // Redis connection for queuing
-    this.redis = new Redis({
-      host: process.env.REDIS_HOST || 'localhost',
-      port: process.env.REDIS_PORT || 6379,
-      password: process.env.REDIS_PASSWORD || null,
-      db: process.env.REDIS_DB || 0,
-      retryDelayOnFailover: 100,
-      maxRetriesPerRequest: 3,
-    });
-
-    // Redis pub/sub for agent events
-    this.publisher = new Redis({
-      host: process.env.REDIS_HOST || 'localhost',
-      port: process.env.REDIS_PORT || 6379,
-      password: process.env.REDIS_PASSWORD || null,
-      db: process.env.REDIS_DB || 0,
-    });
+    // Use shared Redis instance
+    this.redis = redis;
+    this.publisher = redis.duplicate();
 
     // Queue names
     this.SIGNAL_QUEUE = 'signal_events';
@@ -168,7 +154,7 @@ class DataIngestionService {
 
   // Get queue statistics
   async getQueueStats() {
-    try {
+    return await safeRedisOperation(async () => {
       const queueLength = await this.redis.llen(this.SIGNAL_QUEUE);
       const memoryUsage = await this.redis.memory('usage', this.SIGNAL_QUEUE);
       
@@ -177,42 +163,33 @@ class DataIngestionService {
         memoryUsage: memoryUsage || 0,
         queueName: this.SIGNAL_QUEUE
       };
-    } catch (error) {
-      console.error('Queue stats failed:', error);
-      return {
-        queueLength: 0,
-        memoryUsage: 0,
-        error: error.message
-      };
-    }
+    }, {
+      queueLength: 0,
+      memoryUsage: 0,
+      error: 'Redis unavailable'
+    });
   }
 
   // Clear queue (for testing/maintenance)
   async clearQueue() {
-    try {
+    return await safeRedisOperation(async () => {
       const deleted = await this.redis.del(this.SIGNAL_QUEUE);
       console.log(`🧹 Queue cleared: ${deleted} items removed`);
       return { success: true, itemsRemoved: deleted };
-    } catch (error) {
-      console.error('Queue clear failed:', error);
-      throw error;
-    }
+    }, { success: false, error: 'Redis unavailable' });
   }
 
   // Peek at queue without removing items
   async peekQueue(count = 5) {
-    try {
+    return await safeRedisOperation(async () => {
       const items = await this.redis.lrange(this.SIGNAL_QUEUE, 0, count - 1);
       return items.map(item => JSON.parse(item));
-    } catch (error) {
-      console.error('Queue peek failed:', error);
-      return [];
-    }
+    }, []);
   }
 
   // Health check
   async healthCheck() {
-    try {
+    return await safeRedisOperation(async () => {
       const ping = await this.redis.ping();
       const queueStats = await this.getQueueStats();
       
@@ -222,13 +199,12 @@ class DataIngestionService {
         queue: queueStats,
         timestamp: new Date().toISOString()
       };
-    } catch (error) {
-      return {
-        status: 'unhealthy',
-        error: error.message,
-        timestamp: new Date().toISOString()
-      };
-    }
+    }, {
+      status: 'unhealthy',
+      redis: 'disconnected',
+      error: 'Redis unavailable',
+      timestamp: new Date().toISOString()
+    });
   }
 
   // Close connections

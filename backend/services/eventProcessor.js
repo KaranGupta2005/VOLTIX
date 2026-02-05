@@ -1,4 +1,4 @@
-import Redis from 'ioredis';
+import redis, { safeRedisOperation } from '../config/redis.js';
 import SignalLog from '../models/SignalLog.js';
 import StationState from '../models/StationState.js';
 import EnergyMarket from '../models/EnergyMarket.js';
@@ -6,21 +6,9 @@ import { decisionEngine } from './notificationDispatch.js';
 
 class EventProcessor {
   constructor() {
-    // Redis for queue processing
-    this.redis = new Redis({
-      host: process.env.REDIS_HOST || 'localhost',
-      port: process.env.REDIS_PORT || 6379,
-      password: process.env.REDIS_PASSWORD || null,
-      db: process.env.REDIS_DB || 0,
-    });
-
-    // Redis for pub/sub (agent communication)
-    this.publisher = new Redis({
-      host: process.env.REDIS_HOST || 'localhost',
-      port: process.env.REDIS_PORT || 6379,
-      password: process.env.REDIS_PASSWORD || null,
-      db: process.env.REDIS_DB || 0,
-    });
+    // Use shared Redis instance
+    this.redis = redis;
+    this.publisher = redis.duplicate();
 
     // Queue and channel names
     this.SIGNAL_QUEUE = 'signal_events';
@@ -201,7 +189,7 @@ class EventProcessor {
 
   // Update live state in Redis (for fast agent access)
   async updateLiveState(event) {
-    try {
+    await safeRedisOperation(async () => {
       const stateKey = `station:${event.data.stationId}`;
       const currentState = await this.redis.hgetall(stateKey);
 
@@ -220,11 +208,7 @@ class EventProcessor {
       await this.redis.expire(stateKey, 24 * 60 * 60);
 
       console.log(`Live state updated: ${stateKey}`);
-
-    } catch (error) {
-      console.error('Live state update failed:', error);
-      throw error;
-    }
+    }, null);
   }
 
   // Trigger agent analysis

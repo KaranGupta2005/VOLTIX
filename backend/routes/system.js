@@ -1,7 +1,7 @@
 import express from 'express';
 import StationState from '../models/StationState.js';
 import DecisionLog from '../models/DecisionLog.js';
-import redis from '../config/redis.js';
+import redis, { isRedisAvailable, safeRedisOperation } from '../config/redis.js';
 
 const router = express.Router();
 
@@ -78,12 +78,13 @@ router.get('/status', async (req, res) => {
     }
 
     // Check Redis connection
-    let redisStatus = 'connected';
-    try {
-      await redis.ping();
-    } catch (error) {
-      redisStatus = 'disconnected';
-    }
+    const redisStatus = await safeRedisOperation(
+      async () => {
+        await redis.ping();
+        return 'connected';
+      },
+      'disconnected'
+    );
 
     // Calculate system health score
     const stations = stationStats[0] || {};
