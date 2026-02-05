@@ -18,6 +18,14 @@ class StationDataService {
   async loadStationsData() {
     const csvPath = path.join(__dirname, '../../ml/datasets/stations.csv');
     
+    // Check if file exists
+    if (!fs.existsSync(csvPath)) {
+      console.log('⚠️ ML dataset not found, generating mock station data...');
+      this.stations = this.generateMockStations();
+      console.log(`Generated ${this.stations.length} mock stations`);
+      return Promise.resolve(this.stations);
+    }
+    
     return new Promise((resolve, reject) => {
       const stations = [];
       
@@ -48,11 +56,51 @@ class StationDataService {
         })
         .on('end', () => {
           this.stations = stations;
-          console.log(`Loaded ${stations.length} stations from ML dataset`);
+          console.log(`✅ Loaded ${stations.length} stations from ML dataset`);
           resolve(stations);
         })
-        .on('error', reject);
+        .on('error', (error) => {
+          console.error('❌ Error loading CSV, using mock data:', error.message);
+          this.stations = this.generateMockStations();
+          resolve(this.stations);
+        });
     });
+  }
+
+  // Generate mock stations if CSV not available
+  generateMockStations() {
+    const cities = ['Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai'];
+    const types = ['fast', 'standard', 'ultra'];
+    const operators = ['ChargePoint', 'EVgo', 'Electrify America'];
+    const stations = [];
+
+    for (let i = 1; i <= 20; i++) {
+      const city = cities[Math.floor(Math.random() * cities.length)];
+      const maxInventory = Math.floor(Math.random() * 30) + 20;
+      
+      stations.push({
+        id: `ST${String(i).padStart(3, '0')}`,
+        name: `${city} Station ${i}`,
+        city,
+        type: types[Math.floor(Math.random() * types.length)],
+        capacity: Math.floor(Math.random() * 10) + 5,
+        maxInventory,
+        latitude: 12.9716 + (Math.random() - 0.5) * 10,
+        longitude: 77.5946 + (Math.random() - 0.5) * 10,
+        isHighway: Math.random() > 0.7,
+        isMall: Math.random() > 0.6,
+        isOffice: Math.random() > 0.5,
+        installationDate: new Date(Date.now() - Math.random() * 365 * 24 * 60 * 60 * 1000).toISOString(),
+        operator: operators[Math.floor(Math.random() * operators.length)],
+        status: this.getRandomStatus(),
+        health: this.generateHealthMetrics(),
+        demand: this.generateDemandMetrics(),
+        inventory: this.generateInventoryMetrics(maxInventory),
+        errors: this.generateErrorMetrics()
+      });
+    }
+
+    return stations;
   }
 
   // Generate random status based on realistic distribution
