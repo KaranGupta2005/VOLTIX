@@ -1,10 +1,10 @@
 import Redis from "ioredis";
 
-const redis = new Redis(process.env.REDIS_URL, {
+const redisConfig = {
   tls: {},
   lazyConnect: false,
   maxRetriesPerRequest: 3,
-  enableOfflineQueue: false,
+  enableOfflineQueue: true, // Allow queuing commands while connecting
   retryStrategy(times) {
     const maxRetries = 10;
     if (times > maxRetries) {
@@ -16,39 +16,52 @@ const redis = new Redis(process.env.REDIS_URL, {
     return delay;
   },
   reconnectOnError(err) {
-    console.error("❌ Redis reconnect on error:", err.message);
-    return false; // Don't reconnect on error
+    const targetErrors = ['READONLY', 'ECONNRESET'];
+    if (targetErrors.some(e => err.message.includes(e))) {
+      return true; // Reconnect on these errors
+    }
+    return false;
   }
-});
+};
+
+const redis = new Redis(process.env.REDIS_URL, redisConfig);
 
 let isConnected = false;
+let hasLoggedError = false;
 
 redis.on("connect", () => {
   console.log("✅ Redis connected (Upstash)");
   isConnected = true;
+  hasLoggedError = false;
 });
 
 redis.on("ready", () => {
   console.log("🚀 Redis ready");
   isConnected = true;
+  hasLoggedError = false;
 });
 
 redis.on("error", (err) => {
   isConnected = false;
-  // Only log unique errors, not repeated connection failures
-  if (!err.message.includes("ECONNREFUSED")) {
+  // Only log the first error to avoid spam
+  if (!hasLoggedError) {
     console.error("❌ Redis error:", err.message);
+    hasLoggedError = true;
   }
 });
 
 redis.on("close", () => {
   isConnected = false;
-  console.log("⚠️ Redis connection closed");
+  if (!hasLoggedError) {
+    console.log("⚠️ Redis connection closed");
+  }
 });
 
 redis.on("end", () => {
   isConnected = false;
-  console.log("⚠️ Redis connection ended");
+  if (!hasLoggedError) {
+    console.log("⚠️ Redis connection ended");
+  }
 });
 
 // Helper function to check if Redis is available
@@ -66,6 +79,27 @@ export const safeRedisOperation = async (operation, fallback = null) => {
     console.error("❌ Redis operation failed:", error.message);
     return fallback;
   }
+};
+
+// Create a duplicate with proper error handling
+export const createRedisDuplicate = () => {
+  const duplicate = redis.duplicate();
+  
+  let duplicateHasLoggedError = false;
+  
+  duplicate.on("error", (err) => {
+    // Only log the first error to avoid spam
+    if (!duplicateHasLoggedError) {
+      console.error("❌ Redis duplicate error:", err.message);
+      duplicateHasLoggedError = true;
+    }
+  });
+  
+  duplicate.on("connect", () => {
+    duplicateHasLoggedError = false;
+  });
+  
+  return duplicate;
 };
 
 export default redis;

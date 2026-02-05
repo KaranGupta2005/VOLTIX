@@ -1,21 +1,10 @@
-import Redis from 'ioredis';
+import redis, { createRedisDuplicate } from '../config/redis.js';
 
 class AgentBus {
   constructor() {
-    // Redis for agent communication
-    this.subscriber = new Redis({
-      host: process.env.REDIS_HOST || 'localhost',
-      port: process.env.REDIS_PORT || 6379,
-      password: process.env.REDIS_PASSWORD || null,
-      db: process.env.REDIS_DB || 0,
-    });
-
-    this.publisher = new Redis({
-      host: process.env.REDIS_HOST || 'localhost',
-      port: process.env.REDIS_PORT || 6379,
-      password: process.env.REDIS_PASSWORD || null,
-      db: process.env.REDIS_DB || 0,
-    });
+    // Use shared Redis instance
+    this.subscriber = createRedisDuplicate();
+    this.publisher = createRedisDuplicate();
 
     // Agent communication channels
     this.AGENT_CHANNEL = 'agent_events';
@@ -47,23 +36,55 @@ class AgentBus {
       this.supervisorAgent.setIO(io);
     }
 
-    // Subscribe to agent events channel
-    this.subscriber.subscribe(this.AGENT_CHANNEL, (err, count) => {
-      if (err) {
-        console.error('AgentBus subscription failed:', err);
+    // Wait for subscriber to be ready before subscribing
+    try {
+      await this.waitForRedisReady(this.subscriber, 5000);
+      
+      // Subscribe to agent events channel
+      this.subscriber.subscribe(this.AGENT_CHANNEL, (err, count) => {
+        if (err) {
+          console.error('AgentBus subscription failed:', err);
+          return;
+        }
+        console.log(`AgentBus subscribed to ${count} channel(s)`);
+      });
+
+      // Handle incoming agent events
+      this.subscriber.on('message', async (channel, message) => {
+        if (channel === this.AGENT_CHANNEL) {
+          await this.handleAgentEvent(message);
+        }
+      });
+
+      console.log('AgentBus started - listening for agent events');
+    } catch (error) {
+      console.error('AgentBus failed to start:', error.message);
+      console.log('AgentBus will continue without Redis pub/sub');
+    }
+  }
+
+  // Wait for Redis connection to be ready
+  async waitForRedisReady(redisClient, timeout = 5000) {
+    return new Promise((resolve, reject) => {
+      if (redisClient.status === 'ready') {
+        resolve();
         return;
       }
-      console.log(`AgentBus subscribed to ${count} channel(s)`);
-    });
 
-    // Handle incoming agent events
-    this.subscriber.on('message', async (channel, message) => {
-      if (channel === this.AGENT_CHANNEL) {
-        await this.handleAgentEvent(message);
-      }
-    });
+      const timer = setTimeout(() => {
+        reject(new Error('Redis connection timeout'));
+      }, timeout);
 
-    console.log('AgentBus started - listening for agent events');
+      redisClient.once('ready', () => {
+        clearTimeout(timer);
+        resolve();
+      });
+
+      redisClient.once('error', (err) => {
+        clearTimeout(timer);
+        reject(err);
+      });
+    });
   }
 
   // Load supervisor agent dynamically

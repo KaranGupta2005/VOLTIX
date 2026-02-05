@@ -1,4 +1,4 @@
-import redis, { safeRedisOperation } from '../config/redis.js';
+import redis, { safeRedisOperation, createRedisDuplicate } from '../config/redis.js';
 import SignalLog from '../models/SignalLog.js';
 import StationState from '../models/StationState.js';
 import EnergyMarket from '../models/EnergyMarket.js';
@@ -8,7 +8,7 @@ class EventProcessor {
   constructor() {
     // Use shared Redis instance
     this.redis = redis;
-    this.publisher = redis.duplicate();
+    this.publisher = createRedisDuplicate();
 
     // Queue and channel names
     this.SIGNAL_QUEUE = 'signal_events';

@@ -1,11 +1,11 @@
-import redis, { safeRedisOperation } from '../config/redis.js';
+import redis, { safeRedisOperation, createRedisDuplicate } from '../config/redis.js';
 import { v4 as uuidv4 } from 'uuid';
 
 class DataIngestionService {
   constructor() {
     // Use shared Redis instance
     this.redis = redis;
-    this.publisher = redis.duplicate();
+    this.publisher = createRedisDuplicate();
 
     // Queue names
     this.SIGNAL_QUEUE = 'signal_events';

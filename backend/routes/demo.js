@@ -5,16 +5,9 @@ import auditorAgent from "../agents/AuditorAgent.js";
 import supervisorAgent from "../agents/SupervisorAgent.js";
 import blockchainService from "../services/blockchainService.js";
 import decisionLogger from "../services/decisionLogger.js";
-import Redis from "ioredis";
+import redis from "../config/redis.js";
 
 const router = express.Router();
-
-// Redis client for publishing events
-const redis = new Redis({
-  host: process.env.REDIS_HOST || "localhost",
-  port: process.env.REDIS_PORT || 6379,
-  password: process.env.REDIS_PASSWORD || null,
-});
 
 // Demo 1: Self-Healing Agent - Hardware Fault Detection & Auto-Recovery
 router.post("/mechanic/self-healing", async (req, res) => {
