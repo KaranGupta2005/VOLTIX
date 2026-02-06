@@ -3,20 +3,30 @@ import ExpressError from "../middlewares/expressError.js";
 
 class OTPService {
   constructor() {
-    // Email transporter
-    this.transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER || "guptakaran.port@gmail.com",
-        pass: process.env.EMAIL_PASSWORD || "lrzezfqowhfshsuv",
-      },
-    });
+    // Email transporter - make it optional for production
+    try {
+      this.transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER || "guptakaran.port@gmail.com",
+          pass: process.env.EMAIL_PASSWORD || "lrzezfqowhfshsuv",
+        },
+      });
 
-    // Verify transporter
-    this.transporter.verify((err) => {
-      if (err) console.error("Mailer connection failed:", err);
-      else console.log("Mailer ready to send emails");
-    });
+      // Verify transporter (don't block startup if it fails)
+      this.transporter.verify((err) => {
+        if (err) {
+          console.error("⚠️ Mailer connection failed:", err.message);
+          console.log("📧 Email service will be disabled");
+          this.transporter = null;
+        } else {
+          console.log("✅ Mailer ready to send emails");
+        }
+      });
+    } catch (error) {
+      console.error("⚠️ Failed to initialize mailer:", error.message);
+      this.transporter = null;
+    }
 
     // In-memory OTP storage (in production, use Redis)
     this.otpStore = new Map();
@@ -117,6 +127,15 @@ class OTPService {
     }
 
     try {
+      // Skip email if transporter is not available
+      if (!this.transporter) {
+        console.log("⚠️ Email service unavailable, OTP logged to console");
+        return {
+          success: true,
+          message: "OTP generated (email service unavailable)",
+        };
+      }
+
       const emailContent = this.getEmailContent(type, otp);
 
       await this.transporter.sendMail({
@@ -134,16 +153,12 @@ class OTPService {
     } catch (error) {
       console.error("❌ OTP email failed:", error.message);
 
-      // In development, don't throw error - OTP is already stored
-      if (process.env.NODE_ENV === "development") {
-        console.log("⚠️  Email failed but OTP is available in console above");
-        return {
-          success: true,
-          message: "OTP generated (check server console in dev mode)",
-        };
-      }
-
-      throw new ExpressError(500, "Failed to send OTP");
+      // Don't throw error - OTP is already stored and logged
+      console.log("⚠️ Email failed but OTP is available in console above");
+      return {
+        success: true,
+        message: "OTP generated (check server console)",
+      };
     }
   }
 
