@@ -33,9 +33,39 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// CORS Configuration - Support multiple origins
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  process.env.CLIENT_URL,
+  // Add your Vercel URLs here
+].filter(Boolean);
+
+// If CLIENT_URL contains multiple URLs (comma-separated), split them
+if (process.env.CLIENT_URL && process.env.CLIENT_URL.includes(',')) {
+  const urls = process.env.CLIENT_URL.split(',').map(url => url.trim());
+  allowedOrigins.push(...urls);
+}
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: function (origin, callback) {
+      // Allow requests with no origin (mobile apps, Postman, etc.)
+      if (!origin) return callback(null, true);
+      
+      // Check if origin is in allowed list
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        // In development, allow all origins
+        if (process.env.NODE_ENV === 'development') {
+          callback(null, true);
+        } else {
+          console.warn(`CORS blocked origin: ${origin}`);
+          callback(new Error('Not allowed by CORS'));
+        }
+      }
+    },
     credentials: true,
   }),
 );
@@ -43,6 +73,29 @@ app.use(
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+app.get("/", (req, res) => {
+  res.json({ 
+    message: "Voltix Backend API is running",
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      health: "/api/health",
+      auth: "/api/auth",
+      stations: "/api/stations",
+      decisions: "/api/decisions"
+    }
+  });
+});
+
+app.get("/api/health", (req, res) => {
+  res.json({ 
+    status: "healthy",
+    message: "Backend is running",
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || "development"
+  });
+});
 
 app.get("/test", (req, res) => {
   res.json({ message: "Server is running" });
