@@ -42,7 +42,7 @@ class MLConfig:
     API_SETTINGS = {
         'host': os.getenv('ML_HOST', '0.0.0.0'),
         'port': int(os.getenv('ML_PORT', 8000)),
-        'reload': os.getenv('ML_RELOAD', 'true').lower() == 'true',
+        'reload': os.getenv('ML_RELOAD', 'false').lower() == 'true',
         'log_level': os.getenv('ML_LOG_LEVEL', 'info')
     }
     
