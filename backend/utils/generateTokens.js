@@ -21,24 +21,23 @@ export const generateRefreshToken = (userId) => {
 };
 
 export const setAuthTokens = (res, accessToken, refreshToken) => {
+  const isProduction = process.env.NODE_ENV === 'production';
+  
   const accessOptions = {
     httpOnly: true,
-    sameSite: 'Strict',
+    sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-origin in production
+    secure: isProduction, // Required when sameSite='none'
     maxAge: 15 * 60 * 1000, // 15 mins
     path: '/'
   };
 
   const refreshOptions = {
     httpOnly: true,
-    sameSite: 'Strict',
+    sameSite: isProduction ? 'none' : 'lax', // 'none' for cross-origin in production
+    secure: isProduction, // Required when sameSite='none'
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     path: '/'
   };
-
-  if (process.env.NODE_ENV === 'production') {
-    accessOptions.secure = true;
-    refreshOptions.secure = true;
-  }
 
   res.cookie('accessToken', accessToken, accessOptions);
   res.cookie('refreshToken', refreshToken, refreshOptions);
