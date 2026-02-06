@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 import express from "express";
-import Groq from "groq-sdk";
+import groqClient from "../services/groqClient.js";
 import fs from "fs";
 
 const chatrouter = express.Router();
@@ -28,21 +28,8 @@ chatrouter.post("/", async (req, res) => {
   }
 
   try {
-    const apiKey = process.env.GROQ_API_KEY;
-    console.log(
-      "API Key loaded:",
-      apiKey ? apiKey.substring(0, 10) + "..." : "UNDEFINED",
-    );
-    console.log("Groq key length:", apiKey?.length);
-
-    if (!apiKey) {
-      throw new Error("GROQ_API_KEY is missing in environment variables.");
-    }
-
-    const groq = new Groq({ apiKey });
-
     // Build comprehensive system prompt with complete project context
-    let systemPrompt = `EV Charging Station AI Assistant - Intelligent Infrastructure Management
+    const systemPrompt = `EV Charging Station AI Assistant - Intelligent Infrastructure Management
 
 You are an AI assistant for an advanced EV charging station management system with autonomous agents and ML-powered decision making.
 
@@ -104,52 +91,6 @@ DECISION CRITERIA & ESCALATION:
 - Success Rates: 80%+ expected for all actions
 - User Satisfaction: 80%+ target across all services
 
-ML PREDICTIONS & INSIGHTS:
-- Failure Prediction: Sensor data analysis with 85%+ accuracy
-- Traffic Forecasting: 4-hour demand predictions with elasticity modeling
-- Stockout Prevention: 6-hour inventory predictions with 88% accuracy
-- Energy Price Forecasting: 24-hour market predictions with arbitrage opportunities
-- Route Optimization: Multi-stop routing with real-time traffic integration
-
-REAL-TIME MONITORING:
-- Station States: Operational status, queue lengths, inventory levels
-- Sensor Data: Temperature, voltage, current, vibration, humidity
-- Performance Metrics: Uptime, error rates, response times, efficiency
-- Environmental Data: Weather conditions, air quality, renewable generation
-- User Analytics: Charging patterns, satisfaction scores, incentive responses
-
-NOTIFICATION SYSTEM:
-- Multi-Channel: Socket.io, push notifications, email alerts
-- Priority Levels: Low, medium, high, urgent
-- Agent-Specific: Maintenance alerts, traffic incentives, inventory warnings, energy opportunities
-- User Targeting: Location-based, preference-based, behavior-based
-
-BUSINESS INTELLIGENCE:
-- Revenue Optimization: Dynamic pricing, demand shaping, cost reduction
-- Operational Efficiency: Predictive maintenance, resource allocation, route optimization
-- Environmental Impact: Carbon footprint tracking, renewable integration, sustainability metrics
-- User Experience: Wait time reduction, service reliability, personalized incentives
-
-COMMON USER QUERIES & RESPONSES:
-
-1. **"Why is my charging slot not working?"**
-   → Check MechanicAgent status, explain self-healing in progress, provide ETA for resolution
-
-2. **"Why are prices higher right now?"**
-   → Explain TrafficAgent surge pricing, show demand levels, offer alternative stations with incentives
-
-3. **"When will more charging slots be available?"**
-   → Show LogisticsAgent inventory predictions, dispatch status, expected restocking times
-
-4. **"Can I sell energy back to the grid?"**
-   → Explain EnergyAgent vehicle-to-grid capabilities, current market rates, participation requirements
-
-5. **"How do you ensure fair pricing?"**
-   → Describe AuditorAgent compliance monitoring, blockchain audit trail, transparent algorithms
-
-6. **"What happens if there's a system failure?"**
-   → Explain multi-layer redundancy, supervisor oversight, emergency protocols, human escalation
-
 RESPONSE GUIDELINES:
 - Be technical but accessible - explain complex systems in simple terms
 - Always provide specific numbers, thresholds, and timeframes when available
@@ -160,25 +101,11 @@ RESPONSE GUIDELINES:
 
 LANGUAGE: Respond only in English. Use clear, professional language suitable for EV users, station operators, and technical stakeholders.`;
 
-    const completion = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      messages: [
-        {
-          role: "system",
-          content: systemPrompt,
-        },
-        {
-          role: "user",
-          content: message,
-        },
-      ],
+    const reply = await groqClient.askGroq(message, {
+      system_prompt: systemPrompt,
       temperature: 0.7,
-      max_completion_tokens: 800,
+      max_tokens: 800,
     });
-
-    const reply =
-      completion.choices?.[0]?.message?.content ||
-      "Sorry, I couldn't generate a response. Please try again.";
 
     // Save chat log for analytics
     saveChatLog(message, reply);
@@ -188,6 +115,7 @@ LANGUAGE: Respond only in English. Use clear, professional language suitable for
     console.error("Groq API Error:", err);
     res.status(500).json({
       error: "Error contacting EV Station Assistant. Please try again later.",
+      details: err.message,
     });
   }
 });
