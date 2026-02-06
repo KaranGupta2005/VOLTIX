@@ -89,7 +89,7 @@ export default function LiveAgentConsole() {
   const consoleRef = useRef<HTMLDivElement>(null);
 
   const backendUrl =
-    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000";
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   // Connect to socket for real-time updates
   useEffect(() => {
