@@ -177,32 +177,6 @@ class OTPService {
     }
   }
 
-      const emailContent = this.getEmailContent(type, otp);
-
-      await this.transporter.sendMail({
-        from: `"EV Copilot" <${process.env.EMAIL_USER || "guptakaran.port@gmail.com"}>`,
-        to: email,
-        subject: emailContent.subject,
-        html: emailContent.html,
-      });
-
-      console.log(`✅ OTP email sent to ${email}`);
-      return {
-        success: true,
-        message: "OTP sent successfully",
-      };
-    } catch (error) {
-      console.error("❌ OTP email failed:", error.message);
-
-      // Don't throw error - OTP is already stored and logged
-      console.log("⚠️ Email failed but OTP is available in console above");
-      return {
-        success: true,
-        message: "OTP generated (check server console)",
-      };
-    }
-  }
-
   // Get email content based on type
   getEmailContent(type, otp) {
     const baseStyle = `
