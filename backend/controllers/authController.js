@@ -220,6 +220,8 @@ export const login = async (req, res) => {
   res.status(200).json({
     success: true,
     message: "Login successful",
+    accessToken,  // Add tokens to response
+    refreshToken, // Add tokens to response
     user: {
       userId: user.userId,
       name: user.profile.name,
