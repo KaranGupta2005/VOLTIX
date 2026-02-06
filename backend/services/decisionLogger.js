@@ -84,14 +84,21 @@ class DecisionLogger {
       let transactionHash = null;
 
       try {
-        const auditResult = await blockchainService.auditDecision(logEntry);
+        // Use recordAgent method instead of auditDecision
+        const auditResult = await blockchainService.recordAgent(
+          logEntry.stationId,
+          logEntry.action,
+          explanation || 'No explanation available',
+          logEntry.mlMetrics?.confidenceScore || 0.7,
+          5 // autonomy level
+        );
+        
         if (auditResult.success) {
           blockchainHash = auditResult.hash;
-          transactionHash = auditResult.transactionHash;
           logEntry.blockchainHash = blockchainHash;
-          logEntry.transactionHash = transactionHash;
+          logEntry.auditHash = blockchainHash;
           console.log(
-            `[DecisionLogger] Blockchain audit completed: ${transactionHash}`,
+            `[DecisionLogger] Blockchain audit completed: ${blockchainHash}`,
           );
         } else {
           console.warn(

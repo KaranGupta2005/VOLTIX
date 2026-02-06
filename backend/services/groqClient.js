@@ -18,7 +18,7 @@ class GroqClient {
     }
 
     const {
-      model = "llama3-70b-8192",
+      model = "llama-3.3-70b-versatile", // Updated to supported model
       temperature = 0.3,
       max_tokens = 500,
       system_prompt = null,

@@ -6,7 +6,7 @@ const DecisionLogSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
-      match: /^DEC_\d{6}$/,
+      match: /^DEC_\d+_[a-z0-9]+$/, // Updated to match DEC_timestamp_randomstring format
     },
     timestamp: {
       type: Date,
@@ -26,6 +26,14 @@ const DecisionLogSchema = new mongoose.Schema(
         "LogisticsAgent",
         "EnergyAgent",
         "AuditorAgent",
+        // Also accept lowercase versions
+        "mechanic",
+        "traffic",
+        "logistics",
+        "energy",
+        "audit",
+        "auditor",
+        "supervisor"
       ],
     },
     action: {
@@ -43,6 +51,9 @@ const DecisionLogSchema = new mongoose.Schema(
         "external_event",
         "scheduled_task",
         "emergency",
+        "agent_cycle", // Add this for agent cycles
+        "periodic_check",
+        "manual_trigger"
       ],
     },
     context: {
