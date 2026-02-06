@@ -3,29 +3,42 @@ import ExpressError from "../middlewares/expressError.js";
 
 class OTPService {
   constructor() {
-    // Email transporter - make it optional for production
+    // Email transporter with better error handling
+    this.transporter = null;
+    this.emailEnabled = false;
+    
     try {
-      this.transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: process.env.EMAIL_USER || "guptakaran.port@gmail.com",
-          pass: process.env.EMAIL_PASSWORD || "lrzezfqowhfshsuv",
-        },
-      });
+      const emailUser = process.env.EMAIL_USER;
+      const emailPass = process.env.EMAIL_PASSWORD;
+      
+      if (!emailUser || !emailPass) {
+        console.warn("⚠️ EMAIL_USER or EMAIL_PASSWORD not set - Email service disabled");
+        console.log("📧 OTPs will only be logged to console");
+      } else {
+        this.transporter = nodemailer.createTransport({
+          service: "gmail",
+          auth: {
+            user: emailUser,
+            pass: emailPass,
+          },
+        });
 
-      // Verify transporter (don't block startup if it fails)
-      this.transporter.verify((err) => {
-        if (err) {
-          console.error("⚠️ Mailer connection failed:", err.message);
-          console.log("📧 Email service will be disabled");
-          this.transporter = null;
-        } else {
-          console.log("✅ Mailer ready to send emails");
-        }
-      });
+        // Verify transporter
+        this.transporter.verify((err) => {
+          if (err) {
+            console.error("⚠️ Mailer connection failed:", err.message);
+            console.log("📧 Common issue: Gmail requires 'App Password' not regular password");
+            console.log("📧 Generate App Password: https://myaccount.google.com/apppasswords");
+            this.emailEnabled = false;
+          } else {
+            console.log("✅ Mailer ready to send emails");
+            this.emailEnabled = true;
+          }
+        });
+      }
     } catch (error) {
       console.error("⚠️ Failed to initialize mailer:", error.message);
-      this.transporter = null;
+      this.emailEnabled = false;
     }
 
     // In-memory OTP storage (in production, use Redis)
@@ -115,26 +128,54 @@ class OTPService {
     const otp = this.generateOTP();
     this.storeOTP(userId, otp, type);
 
-    // DEV MODE: Log OTP to console for testing
-    if (process.env.NODE_ENV === "development") {
-      console.log("\n========================================");
-      console.log("🔐 DEV MODE - OTP GENERATED");
-      console.log(`   User ID: ${userId}`);
-      console.log(`   Email: ${email}`);
-      console.log(`   Type: ${type}`);
-      console.log(`   OTP: ${otp}`);
-      console.log("========================================\n");
-    }
+    // ALWAYS log OTP to console (for backup)
+    console.log("\n========================================");
+    console.log("🔐 OTP GENERATED");
+    console.log(`   User ID: ${userId}`);
+    console.log(`   Email: ${email}`);
+    console.log(`   Type: ${type}`);
+    console.log(`   OTP: ${otp}`);
+    console.log(`   Email Service: ${this.emailEnabled ? 'ENABLED' : 'DISABLED'}`);
+    console.log("========================================\n");
 
     try {
-      // Skip email if transporter is not available
-      if (!this.transporter) {
-        console.log("⚠️ Email service unavailable, OTP logged to console");
+      // Try to send email if service is available
+      if (!this.transporter || !this.emailEnabled) {
+        console.log("⚠️ Email service unavailable, OTP logged to console above");
         return {
           success: true,
-          message: "OTP generated (email service unavailable)",
+          message: "OTP generated (check server logs for OTP)",
         };
       }
+
+      const emailContent = this.getEmailContent(type, otp);
+
+      console.log(`📧 Attempting to send OTP email to ${email}...`);
+
+      await this.transporter.sendMail({
+        from: `"EV Copilot" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: emailContent.subject,
+        html: emailContent.html,
+      });
+
+      console.log(`✅ OTP email sent successfully to ${email}`);
+      return {
+        success: true,
+        message: "OTP sent to your email",
+      };
+    } catch (error) {
+      console.error("❌ OTP email failed:", error.message);
+      console.log("⚠️ Email failed but OTP is available in console above");
+      
+      // Don't throw error - OTP is already stored and logged
+      return {
+        success: true,
+        message: "OTP generated (email delivery failed, check server logs)",
+        emailError: error.message
+      };
+    }
+  }
 
       const emailContent = this.getEmailContent(type, otp);
 
