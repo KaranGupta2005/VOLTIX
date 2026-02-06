@@ -156,12 +156,18 @@ export const clearTokens = () => {
   removeAuthToken();
 };
 
-// Request interceptor to add token
+// Request interceptor to add token (skip for auth routes)
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("accessToken");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    // Don't add token for signup/login/verify routes
+    const authRoutes = ['/api/auth/signup', '/api/auth/login', '/api/auth/verify-email', '/api/auth/forgot-password', '/api/auth/reset-password'];
+    const isAuthRoute = authRoutes.some(route => config.url?.includes(route));
+    
+    if (!isAuthRoute) {
+      const token = localStorage.getItem("accessToken");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return config;
   },
