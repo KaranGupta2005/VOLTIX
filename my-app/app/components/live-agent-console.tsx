@@ -144,6 +144,12 @@ export default function LiveAgentConsole() {
     setIsRunning(true);
     setActivities([]);
 
+    // Debug: Log the backend URL being used
+    console.log("🔍 Demo Debug Info:");
+    console.log("  Backend URL:", backendUrl);
+    console.log("  Demo Type:", demoType);
+    console.log("  Env Variable:", process.env.NEXT_PUBLIC_API_URL);
+
     try {
       let endpoint = "";
       let body = {};
@@ -170,22 +176,37 @@ export default function LiveAgentConsole() {
           body = { stationId: "ST001", faultType: "protocol_timeout" };
       }
 
+      console.log("  Endpoint:", endpoint);
+      console.log("  Request Body:", body);
+
       const response = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
 
+      console.log("  Response Status:", response.status);
+      console.log("  Response OK:", response.ok);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
       const result = await response.json();
-      console.log("Demo result:", result);
+      console.log("✅ Demo result:", result);
     } catch (error) {
-      console.error("Demo error:", error);
+      console.error("❌ Demo error:", error);
+      console.error("  Error details:", {
+        message: error.message,
+        name: error.name,
+        stack: error.stack
+      });
+      
       setNotifications((prev) => [
         {
           type: "ERROR",
           title: "Demo Failed",
-          message:
-            "Could not connect to backend. Make sure the server is running.",
+          message: `Could not connect to backend: ${error.message}`,
           priority: "urgent",
           timestamp: new Date().toISOString(),
         },
