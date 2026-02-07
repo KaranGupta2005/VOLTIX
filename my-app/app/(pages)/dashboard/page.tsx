@@ -17,7 +17,7 @@ import { DashboardDecisions } from "@/app/components/dashboard-decisions";
 import BatteryBay from "@/app/components/dashboard/BatteryBay";
 import ProtectedRoute from "@/app/components/ProtectedRoute";
 import TrafficNotificationToast from "@/app/components/TrafficNotificationToast";
-import LiveAgentConsole from "@/app/components/live-agent-console";
+import LiveAgentConsole from "@/app/components/live-agent-console-v2";
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("home");

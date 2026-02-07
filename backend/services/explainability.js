@@ -42,14 +42,21 @@ class ExplainabilityService {
       };
       
     } catch (error) {
-      console.error('Explainability service error:', error);
+      // Check if it's a rate limit error
+      const isRateLimit = error.message?.includes('Rate limit') || error.message?.includes('429');
+      
+      if (isRateLimit) {
+        console.warn('⚠️ Groq API rate limit reached - using fallback explanation');
+      } else {
+        console.error('Explainability service error:', error.message);
+      }
       
       // Fallback explanation if Groq fails
       const fallbackExplanation = this.generateFallbackExplanation(data);
       
       return {
         success: false,
-        error: error.message,
+        error: isRateLimit ? 'Rate limit reached' : error.message,
         explanation: fallbackExplanation,
         fallback: true,
         timestamp: new Date().toISOString()

@@ -112,11 +112,40 @@ LANGUAGE: Respond only in English. Use clear, professional language suitable for
 
     res.json({ reply });
   } catch (err) {
-    console.error("Groq API Error:", err);
-    res.status(500).json({
-      error: "Error contacting EV Station Assistant. Please try again later.",
-      details: err.message,
-    });
+    // Check if it's a rate limit error
+    const isRateLimit = err.message?.includes('Rate limit') || err.message?.includes('429');
+    
+    if (isRateLimit) {
+      console.warn('⚠️ Groq API rate limit reached for chat');
+      
+      // Provide helpful fallback response
+      const fallbackReply = `I'm currently experiencing high demand and have reached my API rate limit. Please try again in a few minutes, or here's what I can tell you:
+
+**VOLTIX EV Charging System Overview:**
+
+Our intelligent infrastructure uses 5 autonomous agents:
+- 🔧 **Mechanic Agent**: Self-healing hardware (L5 autonomy)
+- 🚦 **Traffic Agent**: Dynamic incentives & demand shaping (L5 autonomy)
+- 📦 **Logistics Agent**: Predictive inventory management (L3 autonomy)
+- ⚡ **Energy Agent**: Market trading & grid services (L5 autonomy)
+- 🛡️ **Auditor Agent**: Compliance & risk monitoring (L5 autonomy)
+
+**Key Features:**
+- Real-time ML predictions for failures, traffic, and energy prices
+- Blockchain audit trail for all decisions
+- Dynamic pricing based on demand and time-of-use
+- Self-healing capabilities for 80%+ of hardware issues
+
+For specific questions, please try again in a few minutes when my API access resets.`;
+
+      res.json({ reply: fallbackReply, rateLimited: true });
+    } else {
+      console.error("Groq API Error:", err.message);
+      res.status(500).json({
+        error: "Error contacting EV Station Assistant. Please try again later.",
+        details: err.message,
+      });
+    }
   }
 });
 
