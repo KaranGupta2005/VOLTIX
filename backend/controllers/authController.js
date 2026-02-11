@@ -10,8 +10,11 @@ import ExpressError from "../middlewares/expressError.js";
 import otpService from "../services/otpService.js";
 
 export const signup = async (req, res) => {
-  console.log('🔍 Signup controller - Request body:', JSON.stringify(req.body, null, 2));
-  
+  console.log(
+    "🔍 Signup controller - Request body:",
+    JSON.stringify(req.body, null, 2),
+  );
+
   const {
     name,
     email,
@@ -24,16 +27,16 @@ export const signup = async (req, res) => {
     vehicleYear,
     batteryCapacity,
     registrationNumber,
-    subscriptionPlan = 'basic'
+    subscriptionPlan = "basic",
   } = req.body;
 
   // Check if user already exists
   const existingUser = await User.findOne({
     $or: [
-      { 'profile.email': email.toLowerCase() },
-      { 'profile.phone': phone },
-      { 'vehicle.registrationNumber': registrationNumber }
-    ]
+      { "profile.email": email.toLowerCase() },
+      { "profile.phone": phone },
+      { "vehicle.registrationNumber": registrationNumber },
+    ],
   });
 
   if (existingUser) {
@@ -44,13 +47,16 @@ export const signup = async (req, res) => {
       throw new ExpressError(400, "Phone number already registered");
     }
     if (existingUser.vehicle.registrationNumber === registrationNumber) {
-      throw new ExpressError(400, "Vehicle registration number already registered");
+      throw new ExpressError(
+        400,
+        "Vehicle registration number already registered",
+      );
     }
   }
 
   // Generate unique userId
   const userCount = await User.countDocuments();
-  const userId = `USR_${(userCount + 1).toString().padStart(6, '0')}`;
+  const userId = `USR_${(userCount + 1).toString().padStart(6, "0")}`;
 
   // Calculate subscription end date
   const subscriptionEndDate = new Date();
@@ -62,13 +68,13 @@ export const signup = async (req, res) => {
     profile: {
       name: name.trim(),
       email: email.toLowerCase().trim(),
-      phone
+      phone,
     },
     authentication: {
-      password: password // Don't hash here - let the pre-save middleware handle it
+      password: password, // Don't hash here - let the pre-save middleware handle it
     },
     location: {
-      city
+      city,
     },
     vehicle: {
       type: vehicleType,
@@ -76,75 +82,84 @@ export const signup = async (req, res) => {
       model: vehicleModel,
       year: vehicleYear,
       batteryCapacity,
-      registrationNumber: registrationNumber.toUpperCase()
+      registrationNumber: registrationNumber.toUpperCase(),
     },
     subscription: {
       plan: subscriptionPlan,
       startDate: new Date(),
-      endDate: subscriptionEndDate
-    }
+      endDate: subscriptionEndDate,
+    },
   });
 
   // Generate OTP and send email
-  await otpService.generateAndSendOTP(newUser.userId, email, 'email_verification');
+  await otpService.generateAndSendOTP(
+    newUser.userId,
+    email,
+    "email_verification",
+  );
 
-  console.log('✅ User created successfully:', {
+  console.log("✅ User created successfully:", {
     userId: newUser.userId,
     email: newUser.profile.email,
-    name: newUser.profile.name
+    name: newUser.profile.name,
   });
 
   res.status(201).json({
     success: true,
-    message: "User registered successfully. Please verify your email with the OTP sent.",
+    message:
+      "User registered successfully. Please verify your email with the OTP sent.",
     userId: newUser.userId, // Make sure userId is returned
     user: {
       userId: newUser.userId,
       name: newUser.profile.name,
       email: newUser.profile.email,
       phone: newUser.profile.phone,
-      isEmailVerified: newUser.authentication.isEmailVerified
-    }
+      isEmailVerified: newUser.authentication.isEmailVerified,
+    },
   });
 };
 
 export const verifyEmail = async (req, res) => {
   const { userId, otp } = req.body;
 
-  console.log('🔍 Email verification attempt:', { userId, otp, body: req.body });
+  console.log("🔍 Email verification attempt:", {
+    userId,
+    otp,
+    body: req.body,
+  });
 
   if (!userId || !otp) {
-    console.log('❌ Missing userId or otp:', { userId: !!userId, otp: !!otp });
+    console.log("❌ Missing userId or otp:", { userId: !!userId, otp: !!otp });
     throw new ExpressError(400, "User ID and OTP are required");
   }
 
   // Verify OTP
-  const isValid = await otpService.verifyOTP(userId, otp, 'email_verification');
-  console.log('🔍 OTP verification result:', { userId, otp, isValid });
-  
+  const isValid = await otpService.verifyOTP(userId, otp, "email_verification");
+  console.log("🔍 OTP verification result:", { userId, otp, isValid });
+
   if (!isValid) {
-    console.log('❌ Invalid OTP for user:', userId);
+    console.log("❌ Invalid OTP for user:", userId);
     throw new ExpressError(400, "Invalid or expired OTP");
   }
 
   // Update user verification status
   const user = await User.findOneAndUpdate(
     { userId },
-    { 
-      $set: { 
-        'authentication.isEmailVerified': true,
-        'authentication.lastLogin': new Date()
-      }
+    {
+      $set: {
+        "authentication.isEmailVerified": true,
+        "authentication.lastLogin": new Date(),
+      },
     },
-    { new: true }
+    { new: true },
   );
 
   if (!user) {
-    console.log('❌ User not found:', userId);
+    console.log("❌ User not found:", userId);
     throw new ExpressError(404, "User not found");
   }
 
-  console.log('✅ Email verified successfully for user:', userId);
+  console.log("✅ Email verified successfully for user:", userId);
 
   // Generate tokens
   const accessToken = generateAccessToken(user.userId);
@@ -152,7 +167,8 @@ export const verifyEmail = async (req, res) => {
 
   // Save refresh token
   user.authentication.refreshTokens = user.authentication.refreshTokens || [];
-  user.authentication.refreshTokens = user.authentication.refreshTokens.slice(-4); // Keep only last 4
+  user.authentication.refreshTokens =
+    user.authentication.refreshTokens.slice(-4); // Keep only last 4
   user.authentication.refreshTokens.push({ token: refreshToken });
   await user.save();
 
@@ -167,10 +183,10 @@ export const verifyEmail = async (req, res) => {
       email: user.profile.email,
       phone: user.profile.phone,
       isEmailVerified: user.authentication.isEmailVerified,
-      subscription: user.subscription
+      subscription: user.subscription,
     },
     accessToken,
-    refreshToken
+    refreshToken,
   });
 };
 
@@ -178,7 +194,7 @@ export const login = async (req, res) => {
   const { email, password } = req.body;
 
   const user = await User.findOne({
-    'profile.email': email.toLowerCase()
+    "profile.email": email.toLowerCase(),
   }).select("+authentication.password");
 
   if (!user) {
@@ -187,7 +203,10 @@ export const login = async (req, res) => {
 
   // Check if account is locked
   if (user.isLocked) {
-    throw new ExpressError(423, "Account is temporarily locked due to too many failed login attempts");
+    throw new ExpressError(
+      423,
+      "Account is temporarily locked due to too many failed login attempts",
+    );
   }
 
   const isMatch = await bcrypt.compare(password, user.authentication.password);
@@ -199,8 +218,15 @@ export const login = async (req, res) => {
   // Check if email is verified
   if (!user.authentication.isEmailVerified) {
     // Send new OTP
-    await otpService.generateAndSendOTP(user.userId, user.profile.email, 'email_verification');
-    throw new ExpressError(403, "Please verify your email first. New OTP sent to your email.");
+    await otpService.generateAndSendOTP(
+      user.userId,
+      user.profile.email,
+      "email_verification",
+    );
+    throw new ExpressError(
+      403,
+      "Please verify your email first. New OTP sent to your email.",
+    );
   }
 
   // Reset login attempts on successful login
@@ -211,7 +237,8 @@ export const login = async (req, res) => {
 
   // Manage refresh tokens
   user.authentication.refreshTokens = user.authentication.refreshTokens || [];
-  user.authentication.refreshTokens = user.authentication.refreshTokens.slice(-4);
+  user.authentication.refreshTokens =
+    user.authentication.refreshTokens.slice(-4);
   user.authentication.refreshTokens.push({ token: refreshToken });
   await user.save();
 
@@ -227,38 +254,42 @@ export const login = async (req, res) => {
       phone: user.profile.phone,
       subscription: user.subscription,
       preferences: user.preferences,
-      wallet: user.wallet
-    }
+      wallet: user.wallet,
+    },
   });
 };
 
 export const forgotPassword = async (req, res) => {
   const { email } = req.body;
 
-  const user = await User.findOne({ 'profile.email': email.toLowerCase() });
+  const user = await User.findOne({ "profile.email": email.toLowerCase() });
   if (!user) {
     throw new ExpressError(404, "User with this email does not exist");
   }
 
   // Generate and send OTP
-  await otpService.generateAndSendOTP(user.userId, email, 'password_reset');
+  await otpService.generateAndSendOTP(user.userId, email, "password_reset");
 
   res.status(200).json({
     success: true,
-    message: "Password reset OTP sent to your email"
+    message: "Password reset OTP sent to your email",
   });
 };
 
 export const resetPassword = async (req, res) => {
   const { email, otp, newPassword } = req.body;
 
-  const user = await User.findOne({ 'profile.email': email.toLowerCase() });
+  const user = await User.findOne({ "profile.email": email.toLowerCase() });
   if (!user) {
     throw new ExpressError(404, "User not found");
   }
 
   // Verify OTP
-  const isValid = await otpService.verifyOTP(user.userId, otp, 'password_reset');
+  const isValid = await otpService.verifyOTP(
+    user.userId,
+    otp,
+    "password_reset",
+  );
   if (!isValid) {
     throw new ExpressError(400, "Invalid or expired OTP");
   }
@@ -266,19 +297,20 @@ export const resetPassword = async (req, res) => {
   // Update password
   const hashedPassword = await bcrypt.hash(newPassword, 12);
   user.authentication.password = hashedPassword;
-  
+
   // Clear all refresh tokens for security
   user.authentication.refreshTokens = [];
   await user.save();
 
   res.status(200).json({
     success: true,
-    message: "Password reset successfully. Please login with your new password."
+    message:
+      "Password reset successfully. Please login with your new password.",
   });
 };
 
 export const resendOTP = async (req, res) => {
-  const { userId, type = 'email_verification' } = req.body;
+  const { userId, type = "email_verification" } = req.body;
 
   const user = await User.findOne({ userId });
   if (!user) {
@@ -289,7 +321,7 @@ export const resendOTP = async (req, res) => {
 
   res.status(200).json({
     success: true,
-    message: "OTP sent successfully"
+    message: "OTP sent successfully",
   });
 };
 
@@ -298,13 +330,14 @@ export const logout = async (req, res) => {
 
   if (refreshToken) {
     const user = await User.findOne({
-      "authentication.refreshTokens.token": refreshToken
+      "authentication.refreshTokens.token": refreshToken,
     });
 
     if (user) {
-      user.authentication.refreshTokens = user.authentication.refreshTokens.filter(
-        (rt) => rt.token !== refreshToken
-      );
+      user.authentication.refreshTokens =
+        user.authentication.refreshTokens.filter(
+          (rt) => rt.token !== refreshToken,
+        );
       await user.save();
     }
   }
@@ -323,9 +356,9 @@ export const logout = async (req, res) => {
     path: "/",
   });
 
-  res.status(200).json({ 
+  res.status(200).json({
     success: true,
-    message: "Logged out successfully" 
+    message: "Logged out successfully",
   });
 };
 
@@ -348,7 +381,9 @@ export const refreshToken = async (req, res) => {
     throw new ExpressError(401, "Unauthorized");
   }
 
-  const tokenExists = user.authentication.refreshTokens?.find((rt) => rt.token === token);
+  const tokenExists = user.authentication.refreshTokens?.find(
+    (rt) => rt.token === token,
+  );
   if (!tokenExists) {
     throw new ExpressError(401, "Invalid refresh token");
   }
@@ -358,16 +393,16 @@ export const refreshToken = async (req, res) => {
 
   // Rotate refresh token
   user.authentication.refreshTokens = user.authentication.refreshTokens.filter(
-    (rt) => rt.token !== token
+    (rt) => rt.token !== token,
   );
   user.authentication.refreshTokens.push({ token: newRefreshToken });
   await user.save();
 
   setAuthTokens(res, newAccessToken, newRefreshToken);
 
-  res.status(200).json({ 
+  res.status(200).json({
     success: true,
-    message: "Access token refreshed" 
+    message: "Access token refreshed",
   });
 };
 
@@ -382,40 +417,46 @@ export const updateProfile = async (req, res) => {
     vehicleModel,
     vehicleYear,
     batteryCapacity,
-    preferences
+    preferences,
   } = req.body;
 
   const updateData = {};
 
-  if (name) updateData['profile.name'] = name.trim();
+  if (name) updateData["profile.name"] = name.trim();
   if (phone) {
     // Check if phone is already taken by another user
     const existingUser = await User.findOne({
-      'profile.phone': phone,
-      userId: { $ne: userId }
+      "profile.phone": phone,
+      userId: { $ne: userId },
     });
     if (existingUser) {
       throw new ExpressError(400, "Phone number already registered");
     }
-    updateData['profile.phone'] = phone;
+    updateData["profile.phone"] = phone;
   }
-  if (city) updateData['location.city'] = city;
-  if (vehicleMake) updateData['vehicle.make'] = vehicleMake;
-  if (vehicleModel) updateData['vehicle.model'] = vehicleModel;
-  if (vehicleYear) updateData['vehicle.year'] = vehicleYear;
-  if (batteryCapacity) updateData['vehicle.batteryCapacity'] = batteryCapacity;
+  if (city) updateData["location.city"] = city;
+  if (vehicleMake) updateData["vehicle.make"] = vehicleMake;
+  if (vehicleModel) updateData["vehicle.model"] = vehicleModel;
+  if (vehicleYear) updateData["vehicle.year"] = vehicleYear;
+  if (batteryCapacity) updateData["vehicle.batteryCapacity"] = batteryCapacity;
   if (preferences) {
-    if (preferences.maxDistance) updateData['preferences.maxDistance'] = preferences.maxDistance;
-    if (preferences.pricePreference) updateData['preferences.pricePreference'] = preferences.pricePreference;
-    if (preferences.chargingTimePreference) updateData['preferences.chargingTimePreference'] = preferences.chargingTimePreference;
-    if (preferences.notifications) updateData['preferences.notifications'] = preferences.notifications;
-    if (preferences.language) updateData['preferences.language'] = preferences.language;
+    if (preferences.maxDistance)
+      updateData["preferences.maxDistance"] = preferences.maxDistance;
+    if (preferences.pricePreference)
+      updateData["preferences.pricePreference"] = preferences.pricePreference;
+    if (preferences.chargingTimePreference)
+      updateData["preferences.chargingTimePreference"] =
+        preferences.chargingTimePreference;
+    if (preferences.notifications)
+      updateData["preferences.notifications"] = preferences.notifications;
+    if (preferences.language)
+      updateData["preferences.language"] = preferences.language;
   }
 
   const user = await User.findOneAndUpdate(
     { userId },
     { $set: updateData },
-    { new: true, runValidators: true }
+    { new: true, runValidators: true },
   );
 
   if (!user) {
@@ -430,8 +471,8 @@ export const updateProfile = async (req, res) => {
       profile: user.profile,
       location: user.location,
       vehicle: user.vehicle,
-      preferences: user.preferences
-    }
+      preferences: user.preferences,
+    },
   });
 };
 
@@ -441,20 +482,28 @@ export const changePassword = async (req, res) => {
   const { currentPassword, newPassword } = req.body;
 
   if (!currentPassword || !newPassword) {
-    throw new ExpressError(400, "Current password and new password are required");
+    throw new ExpressError(
+      400,
+      "Current password and new password are required",
+    );
   }
 
   if (newPassword.length < 6) {
     throw new ExpressError(400, "New password must be at least 6 characters");
   }
 
-  const user = await User.findOne({ userId }).select("+authentication.password");
+  const user = await User.findOne({ userId }).select(
+    "+authentication.password",
+  );
   if (!user) {
     throw new ExpressError(404, "User not found");
   }
 
   // Verify current password
-  const isMatch = await bcrypt.compare(currentPassword, user.authentication.password);
+  const isMatch = await bcrypt.compare(
+    currentPassword,
+    user.authentication.password,
+  );
   if (!isMatch) {
     throw new ExpressError(400, "Current password is incorrect");
   }
@@ -462,14 +511,14 @@ export const changePassword = async (req, res) => {
   // Hash new password
   const hashedPassword = await bcrypt.hash(newPassword, 12);
   user.authentication.password = hashedPassword;
-  
+
   // Clear all refresh tokens for security
   user.authentication.refreshTokens = [];
   await user.save();
 
   res.status(200).json({
     success: true,
-    message: "Password changed successfully. Please login again."
+    message: "Password changed successfully. Please login again.",
   });
 };
 
@@ -482,7 +531,9 @@ export const deleteAccount = async (req, res) => {
     throw new ExpressError(400, "Password is required to delete account");
   }
 
-  const user = await User.findOne({ userId }).select("+authentication.password");
+  const user = await User.findOne({ userId }).select(
+    "+authentication.password",
+  );
   if (!user) {
     throw new ExpressError(404, "User not found");
   }
@@ -494,7 +545,7 @@ export const deleteAccount = async (req, res) => {
   }
 
   // Soft delete - mark as deleted instead of removing
-  user.status = 'deleted';
+  user.status = "deleted";
   user.authentication.refreshTokens = [];
   await user.save();
 
@@ -515,7 +566,7 @@ export const deleteAccount = async (req, res) => {
 
   res.status(200).json({
     success: true,
-    message: "Account deleted successfully"
+    message: "Account deleted successfully",
   });
 };
 
@@ -528,8 +579,8 @@ export const verifyPhone = async (req, res) => {
   }
 
   // Verify OTP
-  const isValid = await otpService.verifyOTP(userId, otp, 'phone_verification');
-  
+  const isValid = await otpService.verifyOTP(userId, otp, "phone_verification");
+
   if (!isValid) {
     throw new ExpressError(400, "Invalid or expired OTP");
   }
@@ -537,12 +588,12 @@ export const verifyPhone = async (req, res) => {
   // Update user verification status
   const user = await User.findOneAndUpdate(
     { userId },
-    { 
-      $set: { 
-        'authentication.isPhoneVerified': true
-      }
+    {
+      $set: {
+        "authentication.isPhoneVerified": true,
+      },
     },
-    { new: true }
+    { new: true },
   );
 
   if (!user) {
@@ -554,8 +605,8 @@ export const verifyPhone = async (req, res) => {
     message: "Phone number verified successfully",
     user: {
       userId: user.userId,
-      isPhoneVerified: user.authentication.isPhoneVerified
-    }
+      isPhoneVerified: user.authentication.isPhoneVerified,
+    },
   });
 };
 
@@ -568,10 +619,14 @@ export const sendPhoneOTP = async (req, res) => {
     throw new ExpressError(404, "User not found");
   }
 
-  await otpService.generateAndSendOTP(userId, user.profile.email, 'phone_verification');
+  await otpService.generateAndSendOTP(
+    userId,
+    user.profile.email,
+    "phone_verification",
+  );
 
   res.status(200).json({
     success: true,
-    message: "Phone verification OTP sent to your email"
+    message: "Phone verification OTP sent to your email",
   });
 };
